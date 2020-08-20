@@ -58,7 +58,7 @@ function testPutExistingEntry() {
     checkpanic cache.put(key, "Random value");
     checkpanic cache.put(key, "Ballerina");
     test:assertEquals(cache.size(), 1);
-    test:assertEquals(cache.get(key), "Ballerina");
+    test:assertEquals(cache.get(key).toString(), "Ballerina");
 }
 
 @test:Config {}
@@ -84,7 +84,8 @@ function testGetExistingEntry() {
     string value = "Ballerina";
     Cache cache = new(config);
     checkpanic cache.put(key, value);
-    test:assertEquals(cache.get(key), value);
+    any|CacheError expected = cache.get(key);
+    test:assertEquals(expected.toString(), value);
 }
 
 @test:Config {}

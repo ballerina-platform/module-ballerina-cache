@@ -1,13 +1,13 @@
 [project]
 org-name = "ballerina"
-version = "2.0.0"
+version = "@toml.version@"
 
 [platform]
 target = "java8"
 
     [[platform.libraries]]
     artifactId = "cache"
-    version = "2.0.0-SNAPSHOT"
-    path = "../cache-native/build/libs/cache-native-2.0.0-SNAPSHOT.jar"
+    version = "@project.version@"
+    path = "../cache-native/build/libs/cache-native-@project.version@.jar"
     groupId = "ballerina"
     modules = ["cache"]
