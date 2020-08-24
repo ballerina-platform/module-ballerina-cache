@@ -58,7 +58,7 @@ allprojects {
         }
 
         maven {
-            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-task'
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-cache'
         }
     }
 }
