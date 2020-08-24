@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.ballerinalang.cache;
+package org.ballerinalang.stdlib.cache.nativeimpl;
 
 import org.ballerinalang.jvm.values.ArrayValueImpl;
 import org.ballerinalang.jvm.values.MapValue;
