@@ -21,15 +21,14 @@ description = 'Ballerina - Cache Ballerina Generator'
 
 configurations {
     jbalTools
-    taskBallerinaBirDir
-    taskBallerinaJar
-    externalJars
 }
 
 dependencies {
+    compile group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
     jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
+    compile project(':cache-native')
 }
 
 clean {
@@ -51,11 +50,6 @@ task unpackJballerinaTools(type: Copy) {
     }
 }
 
-task copyToLib(type: Copy) {
-    into "$project.projectDir/lib"
-    from configurations.externalJars
-}
-
 def moduleName = "cache"
 def moduleOrg = "ballerina"
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
@@ -68,10 +62,6 @@ def targetBallerinaJar = file("$project.projectDir/target/caches/jar_cache/${mod
 def targetNativeJar = file("$project.rootDir/${moduleName}-native/build/libs/${moduleName}-native-${project.version}.jar")
 
 task ballerinaBuild {
-    if (project.hasProperty("debugBallerina")) {
-        def port = project.getProperty("debugBallerina").toString();
-        additionalBuildParams += "--debug ${port}"
-    }
     inputs.dir file(project.projectDir)
     doLast {
         def originalConfig = ballerinaConfigFile.text
@@ -126,26 +116,19 @@ task ballerinaBuild {
             into file("$artifactLibParent/libs")
         }
 
-        copy {
-            from configurations.externalJars
-            into file("$artifactLibParent/libs")
+        // Publish to central
+        if (!project.version.endsWith('-SNAPSHOT') && ballerinaCentralAccessToken != null && project.hasProperty("publishToCentral")) {
+            println("Publishing to the ballerina central..")
+            exec {
+                workingDir project.projectDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat push ${moduleName}"
+                } else {
+                    commandLine 'sh', '-c', "$distributionBinPath/ballerina push ${moduleName}"
+                }
+            }
         }
-
-//        Disable publish to central until it confirmed
-//        // Publish to central
-//        if (!project.version.endsWith('-SNAPSHOT') && ballerinaCentralAccessToken != null && project.hasProperty("publishToCentral")) {
-//            println("Publishing to the ballerina central..")
-//            exec {
-//                workingDir project.projectDir
-//                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-//                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-//                    commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat push ${moduleName}"
-//                } else {
-//                    commandLine 'sh', '-c', "$distributionBinPath/ballerina push ${moduleName}"
-//                }
-//            }
-//
-//        }
         // Doc creation and packing
         exec {
             workingDir project.projectDir
@@ -192,7 +175,6 @@ publishing {
     }
 }
 
-unpackJballerinaTools.dependsOn copyToLib
-ballerinaBuild.dependsOn unpackJballerinaTools
 ballerinaBuild.dependsOn ":cache-native:build"
+ballerinaBuild.dependsOn unpackJballerinaTools
 build.dependsOn ballerinaBuild
