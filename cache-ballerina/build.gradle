@@ -25,6 +25,7 @@ configurations {
 
 dependencies {
     compile group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
+    compile group: 'org.ballerinalang', name: 'ballerina-task', version: "${ballerinaLangVersion}"
     jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
