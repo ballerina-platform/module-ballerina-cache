@@ -21,7 +21,6 @@ description = 'Ballerina - Cache Ballerina Generator'
 
 configurations {
     jbalTools
-    externalJars
 }
 
 dependencies {
@@ -30,9 +29,6 @@ dependencies {
         transitive = false
     }
     compile project(':cache-native')
-    externalJars (group: 'org.ballerinalang', name: 'task-ballerina', version: "${stdlibTaskVersion}") {
-        transitive = false
-    }
 }
 
 clean {
@@ -68,8 +64,6 @@ task unpackStdLibs() {
 task copyStdlibs(type: Copy) {
     def ballerinaDist = "build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
     into ballerinaDist
-
-    into "$project.projectDir/lib" from configurations.externalJars
 
     /* Standard Libraries */
     configurations.ballerinaStdLibs.resolvedConfiguration.resolvedArtifacts.each { artifact ->
@@ -109,7 +103,6 @@ def targetNativeJar = file("$project.rootDir/${moduleName}-native/build/libs/${m
 def originalConfig = ballerinaConfigFile.text
 
 task updateTomlVerions {
-    inputs.dir file(project.projectDir)
     doLast {
         def stdlibDependentTaskVersion = project.stdlibTaskVersion.split("-")[0]
         def stdlibDependentTimeVersion = project.stdlibTimeVersion.split("-")[0]
