@@ -26,6 +26,11 @@ ext.ballerinaLangVersion = project.ballerinaLangVersion
 ext.stdlibTaskVersion = project.stdlibTaskVersion
 ext.stdlibTimeVersion = project.stdlibTimeVersion
 ext.stdlibLogVersion = project.stdlibLogVersion
+ext.stdlibRuntimeVersion = project.stdlibRuntimeVersion
+ext.stdlibSystemVersion = project.stdlibSystemVersion
+ext.stdlibConfigVersion = project.stdlibConfigVersion
+ext.stdlibStringutilsVersion = project.stdlibStringutilsVersion
+ext.stdlibIoVersion = project.stdlibIoVersion
 
 allprojects {
     group = 'org.ballerinalang'
@@ -86,12 +91,51 @@ allprojects {
                 password System.getenv("packagePAT")
             }
         }
+
+        maven {
+            url "https://maven.pkg.github.com/ballerina-platform/module-ballerina-runtime"
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url "https://maven.pkg.github.com/ballerina-platform/module-ballerina-system"
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url "https://maven.pkg.github.com/ballerina-platform/module-ballerina-config"
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url "https://maven.pkg.github.com/ballerina-platform/module-ballerina-io"
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
+
+        maven {
+            url "https://maven.pkg.github.com/ballerina-platform/module-ballerina-stringutils"
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
     }
 }
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'maven-publish'
 
     configurations {
         ballerinaStdLibs
@@ -101,6 +145,11 @@ subprojects {
         ballerinaStdLibs "org.ballerinalang:task-ballerina:${stdlibTaskVersion}"
         ballerinaStdLibs "org.ballerinalang:time-ballerina:${stdlibTimeVersion}"
         ballerinaStdLibs "org.ballerinalang:log-ballerina:${stdlibLogVersion}"
+        ballerinaStdLibs "org.ballerinalang:runtime-ballerina:${stdlibRuntimeVersion}"
+        ballerinaStdLibs "org.ballerinalang:system-ballerina:${stdlibSystemVersion}"
+        ballerinaStdLibs "org.ballerinalang:config-ballerina:${stdlibConfigVersion}"
+        ballerinaStdLibs "org.ballerinalang:stringutils-ballerina:${stdlibStringutilsVersion}"
+        ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
     }
 
     release {
