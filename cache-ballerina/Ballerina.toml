@@ -6,6 +6,11 @@ version = "@toml.version@"
 "ballerina/task" = "@stdlib.task.version@"
 "ballerina/log" = "@stdlib.log.version@"
 "ballerina/time" = "@stdlib.time.version@"
+"ballerina/runtime" = "@stdlib.runtime.version@"
+"ballerina/io" = "@stdlib.io.version@"
+"ballerina/system" = "@stdlib.system.version@"
+"ballerina/stringutils" = "@stdlib.stringutils.version@"
+"ballerina/config" = "@stdlib.config.version@"
 
 [platform]
 target = "java8"
