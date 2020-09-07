@@ -33,7 +33,6 @@ function testCreateCache() {
     } else {
        test:assertFail(cache.toString());
     }
-
 }
 
 @test:Config {}
@@ -96,7 +95,6 @@ function testGetNonExistingEntry() {
     };
     Cache cache = new(config);
     test:assertEquals(cache.get("Hello").toString(), "error Cache entry from the given key: Hello, is not available.");
-
 }
 
 @test:Config {}
@@ -317,7 +315,7 @@ function testCreateCacheWithZeroEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
-    "error Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
+                      "error Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
 }
 
 @test:Config {}
@@ -329,7 +327,7 @@ function testCreateCacheWithNegativeEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
-    "error Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
+                      "error Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
 }
 
 @test:Config {}
@@ -341,7 +339,7 @@ function testCreateCacheWithInvalidEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
-    "error Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
+                      "error Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
 }
 
 @test:Config {}
@@ -354,7 +352,7 @@ function testCreateCacheWithZeroDefaultMaxAge() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
-    "error Default max age should be greater than 0 or -1 for indicate forever valid.");
+                      "error Default max age should be greater than 0 or -1 for indicate forever valid.");
 }
 
 @test:Config {}
@@ -367,5 +365,5 @@ function testCreateCacheWithNegativeDefaultMaxAge() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
-    "error Default max age should be greater than 0 or -1 for indicate forever valid.");
+                      "error Default max age should be greater than 0 or -1 for indicate forever valid.");
 }
