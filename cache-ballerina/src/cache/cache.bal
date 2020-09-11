@@ -58,7 +58,7 @@ service cleanupService = service {
 
 # The `cache:Cache` object, which is used for all the cache-related operations. It is not recommended to insert `()`
 # as the value of the cache since it doesn't make any sense to cache a nil.
-class Cache {
+public class Cache {
 
     *AbstractCache;
 
