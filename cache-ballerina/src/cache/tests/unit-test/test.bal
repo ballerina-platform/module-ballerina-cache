@@ -33,7 +33,6 @@ function testCreateCache() {
     } else {
        test:assertFail(cache.toString());
     }
-
 }
 
 @test:Config {}
@@ -96,7 +95,6 @@ function testGetNonExistingEntry() {
     };
     Cache cache = new(config);
     test:assertEquals(cache.get("Hello").toString(), "error Cache entry from the given key: Hello, is not available.");
-
 }
 
 @test:Config {}
