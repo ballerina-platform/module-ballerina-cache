@@ -258,7 +258,7 @@ function testCacheEvictionWithTimer1() {
         defaultMaxAgeInSeconds: 1,
         cleanupIntervalInSeconds: cleanupIntervalInSeconds
     };
-    Cache cache = new Cache(config);
+    Cache cache = new(config);
     checkpanic cache.put("A", "1");
     checkpanic cache.put("B", "2");
     checkpanic cache.put("C", "3");
@@ -277,7 +277,7 @@ function testCacheEvictionWithTimer2() {
         defaultMaxAgeInSeconds: 1,
         cleanupIntervalInSeconds: cleanupIntervalInSeconds
     };
-    Cache cache = new Cache(config);
+    Cache cache = new(config);
     checkpanic cache.put("A", "1");
     checkpanic cache.put("B", "2", 3600);
     checkpanic cache.put("C", "3");
@@ -293,7 +293,7 @@ function testCreateCacheWithZeroCapacity() {
         capacity: 0,
         evictionFactor: 0.2
     };
-    Cache|error cache = trap new Cache(config);
+    Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(), "error (\"Capacity must be greater than 0.\")");
 }
@@ -304,7 +304,7 @@ function testCreateCacheWithNegativeCapacity() {
         capacity: -1,
         evictionFactor: 0.2
     };
-    Cache|error cache = trap new Cache(config);
+    Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(), "error (\"Capacity must be greater than 0.\")");
 }
@@ -315,7 +315,7 @@ function testCreateCacheWithZeroEvictionFactor() {
         capacity: 10,
         evictionFactor: 0
     };
-    Cache|error cache = trap new Cache(config);
+    Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
         "error (\"Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).\")");
@@ -327,7 +327,7 @@ function testCreateCacheWithNegativeEvictionFactor() {
         capacity: 10,
         evictionFactor: -1
     };
-    Cache|error cache = trap new Cache(config);
+    Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
         "error (\"Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).\")");
@@ -339,7 +339,7 @@ function testCreateCacheWithInvalidEvictionFactor() {
         capacity: 10,
         evictionFactor: 1.1
     };
-    Cache|error cache = trap new Cache(config);
+    Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
         "error (\"Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).\")");
@@ -352,7 +352,7 @@ function testCreateCacheWithZeroDefaultMaxAge() {
         evictionFactor: 0.2,
         defaultMaxAgeInSeconds: 0
     };
-    Cache|error cache = trap new Cache(config);
+    Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
         "error (\"Default max age should be greater than 0 or -1 for indicate forever valid.\")");
@@ -365,7 +365,7 @@ function testCreateCacheWithNegativeDefaultMaxAge() {
         evictionFactor: 0.2,
         defaultMaxAgeInSeconds: -10
     };
-    Cache|error cache = trap new Cache(config);
+    Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     test:assertEquals(cache.toString(),
         "error (\"Default max age should be greater than 0 or -1 for indicate forever valid.\")");
