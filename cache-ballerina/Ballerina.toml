@@ -1,23 +1,23 @@
 [project]
 org-name = "ballerina"
-version = "2.0.0"
+version = "@toml.version@"
 
 [dependencies]
-"ballerina/task" = "1.1.0"
-"ballerina/log" = "1.0.0"
-"ballerina/time" = "1.0.1"
-"ballerina/runtime" = "0.5.0"
-"ballerina/io" = "0.5.0"
-"ballerina/system" = "0.6.0"
-"ballerina/stringutils" = "0.5.0"
-"ballerina/config" = "1.0.0"
+"ballerina/task" = "@stdlib.task.version@"
+"ballerina/log" = "@stdlib.log.version@"
+"ballerina/time" = "@stdlib.time.version@"
+"ballerina/io" = "@stdlib.io.version@"
+"ballerina/stringutils" = "@stdlib.stringutils.version@"
+"ballerina/config" = "@stdlib.config.version@"
+"ballerina/system" = "@stdlib.system.version@"
+"ballerina/runtime" = "@stdlib.runtime.version@"
 
 [platform]
 target = "java8"
 
     [[platform.libraries]]
     artifactId = "cache"
-    version = "2.0.0-SNAPSHOT"
-    path = "../cache-native/build/libs/cache-native-2.0.0-SNAPSHOT.jar"
+    version = "@project.version@"
+    path = "../cache-native/build/libs/cache-native-@project.version@.jar"
     groupId = "ballerina"
     modules = ["cache"]
