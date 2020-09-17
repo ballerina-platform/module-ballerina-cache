@@ -45,7 +45,7 @@ type CacheEntry record {|
 boolean cleanupInProgress = false;
 
 // Cleanup service which cleans the cache entries periodically.
-service cleanupService = service {
+final service cleanupService = service {
     resource function onTrigger(Cache cache, LinkedList list, AbstractEvictionPolicy evictionPolicy) {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
@@ -71,7 +71,7 @@ public class Cache {
     # Called when a new `cache:Cache` object is created.
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    public function init(CacheConfig cacheConfig = {}) {
+    public isolated function init(CacheConfig cacheConfig = {}) {
         self.capacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
@@ -124,7 +124,7 @@ public class Cache {
     # + maxAgeInSeconds - The time in seconds for which the cache entry is valid. If the value is '-1', the entry is
     #                     valid forever.
     # + return - `()` if successfully added to the cache or `Error` if a `()` value is inserted to the cache.
-    public function put(string key, any value, int maxAgeInSeconds = -1) returns Error? {
+    public isolated function put(string key, any value, int maxAgeInSeconds = -1) returns Error? {
         if (value is ()) {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".",
                                 logLevel = LOG_LEVEL_DEBUG);
@@ -166,7 +166,7 @@ public class Cache {
     # + key - Key of the cached value, which should be retrieved
     # + return - The cached value associated with the provided key or an `Error` if the provided cache key is not
     #            exisiting in the cache or any error occurred while retrieving the value from the cache.
-    public function get(string key) returns any|Error {
+    public isolated function get(string key) returns any|Error {
         if (!self.hasKey(key)) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.",
                                 logLevel = LOG_LEVEL_DEBUG);
@@ -193,7 +193,7 @@ public class Cache {
     # + key - Key of the cache value, which needs to be discarded from the cache
     # + return - `()` if successfully discarded the value or an `Error` if the provided cache key is not present in the
     #            cache
-    public function invalidate(string key) returns Error? {
+    public isolated function invalidate(string key) returns Error? {
         if (!self.hasKey(key)) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.",
                                 logLevel = LOG_LEVEL_DEBUG);
@@ -259,7 +259,7 @@ isolated function evict(Cache cache, LinkedList list, AbstractEvictionPolicy evi
     }
 }
 
-function cleanup(Cache cache, LinkedList list, AbstractEvictionPolicy evictionPolicy) {
+isolated function cleanup(Cache cache, LinkedList list, AbstractEvictionPolicy evictionPolicy) {
     if (externSize(cache) == 0) {
         return;
     }

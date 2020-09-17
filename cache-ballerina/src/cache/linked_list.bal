@@ -70,20 +70,12 @@ public isolated function addFirst(LinkedList list, Node node) {
     list.head = node;
 }
 
-// This flag is used to avoid concurrency issues occurring during the removing nodes from the linked-list.
-// Ballerina locks cannot be used for this since it may lead to unexpected results.
-boolean removeInProgress = false;
-
 # Removes a node from the provided linked list.
 #
 # + list - Linked list from which the provided node should be removed
 # + node - The node, which should be removed from the provided linked list
-public function remove(LinkedList list, Node node) {
-    // Using this flag, we prevent the concurrency issues, but this will avoid removing some nodes from the linked-list.
-    // Due to that, when the eviction happens, there can be situations where a node which is used recently is get
-    // removed from the cache.
-    if (!removeInProgress) {
-        removeInProgress = true;
+public isolated function remove(LinkedList list, Node node) {
+
         if (node.prev is ()) {
             list.head = node.next;
         } else {
@@ -99,7 +91,6 @@ public function remove(LinkedList list, Node node) {
         }
         node.next = ();
         node.prev = ();
-        removeInProgress = false;
     }
 }
 

@@ -24,7 +24,7 @@ public class LruEvictionPolicy {
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is retrieved
-    public function get(LinkedList list, Node node) {
+    public isolated function get(LinkedList list, Node node) {
         remove(list, node);
         addFirst(list, node);
     }
@@ -41,7 +41,7 @@ public class LruEvictionPolicy {
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is deleted
-    public function remove(LinkedList list, Node node) {
+    public isolated function remove(LinkedList list, Node node) {
         remove(list, node);
     }
 
@@ -50,7 +50,7 @@ public class LruEvictionPolicy {
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + newNode - Node of the linked list, which will be replacing the `oldNode`
     # + oldNode - Node of the linked list, which will be replaced by the `newNode`
-    public function replace(LinkedList list, Node newNode, Node oldNode) {
+    public isolated gitfunction replace(LinkedList list, Node newNode, Node oldNode) {
         remove(list, oldNode);
         addFirst(list, newNode);
     }

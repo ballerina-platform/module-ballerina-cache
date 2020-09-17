@@ -27,21 +27,21 @@ public type AbstractCache object {
     #                     forever
     # + return - `()` if successfully added to the cache or `Error` if any error occurred while inserting the entry
     #            to the cache
-    public function put(string key, any value, int maxAgeInSeconds = -1) returns Error?;
+    public isolated function put(string key, any value, int maxAgeInSeconds = -1) returns Error?;
 
     # Returns the cached value associated with the provided key.
     #
     # + key - The key used to retrieve the cached value
     # + return - The cached value associated with the given key or an `Error` if the provided cache key is not
     #            available or if any error occurred while retrieving from the cache
-    public function get(string key) returns any|Error;
+    public isolated function get(string key) returns any|Error;
 
     # Discards a cached value from the cache.
     #
     # + key - Key of the cache entry which needs to be discarded
     # + return - `()` if successfully discarded or an `Error` if the provided cache key is not available or if any
     #            error occurred while discarding from the cache
-    public function invalidate(string key) returns Error?;
+    public isolated function invalidate(string key) returns Error?;
 
     # Discards all the cached values from the cache.
     #
