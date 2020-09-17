@@ -54,20 +54,20 @@ public type AbstractCache object {
     # + key - The key to be checked
     # + return - `true` if an associated cache value is available for the provided key or `false` if there is not a
     #            cache value associated with the provided key
-    public function hasKey(string key) returns boolean;
+    public isolated function hasKey(string key) returns boolean;
 
     # Returns all keys from the cache.
     #
     # + return - Array of all the keys from the cache
-    public function keys() returns string[];
+    public isolated function keys() returns string[];
 
     # Returns the current size of the cache.
     #
     # + return - The size of the cache
-    public function size() returns int;
+    public isolated function size() returns int;
 
     # Returns the capacity of the cache.
     #
     # + return - The capacity of the cache
-    public function capacity() returns int;
+    public isolated function capacity() returns int;
 };

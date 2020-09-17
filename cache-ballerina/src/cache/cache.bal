@@ -218,28 +218,28 @@ public class Cache {
     # + key - The key to be checked in the cache
     # + return - `true` if a cached value is available for the provided key or `false` if there is no cached value
     #            associated for the given key
-    public function hasKey(string key) returns boolean {
+    public isolated function hasKey(string key) returns boolean {
         return externHasKey(self, key);
     }
 
     # Returns a list of all the keys from the cache.
     #
     # + return - Array of all the keys from the cache
-    public function keys() returns string[] {
+    public isolated function keys() returns string[] {
         return externKeys(self);
     }
 
     # Returns the size of the cache.
     #
     # + return - The size of the cache
-    public function size() returns int {
+    public isolated function size() returns int {
         return externSize(self);
     }
 
     # Returns the capacity of the cache.
     #
     # + return - The capacity of the cache
-    public function capacity() returns int {
+    public isolated function capacity() returns int {
         return self.capacity;
     }
 }
@@ -296,14 +296,14 @@ function externRemoveAll(Cache cache) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
-function externHasKey(Cache cache, string key) returns boolean = @java:Method {
+isolated function externHasKey(Cache cache, string key) returns boolean = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
-function externKeys(Cache cache) returns string[] = @java:Method {
+isolated function externKeys(Cache cache) returns string[] = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
-function externSize(Cache cache) returns int = @java:Method {
+isolated function externSize(Cache cache) returns int = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
