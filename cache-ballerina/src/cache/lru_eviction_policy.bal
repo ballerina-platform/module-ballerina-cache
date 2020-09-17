@@ -50,7 +50,7 @@ public class LruEvictionPolicy {
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + newNode - Node of the linked list, which will be replacing the `oldNode`
     # + oldNode - Node of the linked list, which will be replaced by the `newNode`
-    public isolated gitfunction replace(LinkedList list, Node newNode, Node oldNode) {
+    public isolated function replace(LinkedList list, Node newNode, Node oldNode) {
         remove(list, oldNode);
         addFirst(list, newNode);
     }

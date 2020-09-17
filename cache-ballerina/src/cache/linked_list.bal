@@ -76,22 +76,21 @@ public isolated function addFirst(LinkedList list, Node node) {
 # + node - The node, which should be removed from the provided linked list
 public isolated function remove(LinkedList list, Node node) {
 
-        if (node.prev is ()) {
-            list.head = node.next;
-        } else {
-            Node prev = <Node>node.prev;
-            prev.next = node.next;
-        }
-
-        if (node.next is ()) {
-            list.tail = node.prev;
-        } else {
-            Node next = <Node>node.next;
-            next.prev = node.prev;
-        }
-        node.next = ();
-        node.prev = ();
+    if (node.prev is ()) {
+        list.head = node.next;
+    } else {
+        Node prev = <Node>node.prev;
+        prev.next = node.next;
     }
+
+    if (node.next is ()) {
+        list.tail = node.prev;
+    } else {
+        Node next = <Node>node.next;
+        next.prev = node.prev;
+    }
+    node.next = ();
+    node.prev = ();
 }
 
 # Removes the last node from the provided linked list.
