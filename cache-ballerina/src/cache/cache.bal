@@ -208,7 +208,7 @@ public class Cache {
     #
     # + return - `()` if successfully discarded all the values from the cache or an `Error` if any error occurred while
     # discarding all the values from the cache.
-    public function invalidateAll() returns Error? {
+    public isolated function invalidateAll() returns Error? {
         self.evictionPolicy.clear(self.list);
         externRemoveAll(self);
     }
@@ -244,7 +244,7 @@ public class Cache {
     }
 }
 
-function evict(Cache cache, LinkedList list, AbstractEvictionPolicy evictionPolicy, int capacity, float evictionFactor) {
+isolated function evict(Cache cache, LinkedList list, AbstractEvictionPolicy evictionPolicy, int capacity, float evictionFactor) {
     int evictionKeysCount = <int>(capacity * evictionFactor);
     foreach int i in 1...evictionKeysCount {
         Node? node = evictionPolicy.evict(list);
@@ -276,23 +276,23 @@ function cleanup(Cache cache, LinkedList list, AbstractEvictionPolicy evictionPo
     }
 }
 
-function externInit(Cache cache, int capacity) = @java:Method {
+isolated function externInit(Cache cache, int capacity) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
-function externPut(Cache cache, string key, Node value) = @java:Method {
+isolated function externPut(Cache cache, string key, Node value) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
-function externGet(Cache cache, string key) returns Node = @java:Method {
+isolated function externGet(Cache cache, string key) returns Node = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
-function externRemove(Cache cache, string key) = @java:Method {
+isolated function externRemove(Cache cache, string key) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
-function externRemoveAll(Cache cache) = @java:Method {
+isolated function externRemoveAll(Cache cache) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 

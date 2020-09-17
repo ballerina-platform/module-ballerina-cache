@@ -28,7 +28,7 @@ public type AbstractEvictionPolicy object {
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is added newly
-    public function put(LinkedList list, Node node);
+    public isolated function put(LinkedList list, Node node);
 
     # Updates the linked list based on the remove operation.
     #
@@ -46,12 +46,12 @@ public type AbstractEvictionPolicy object {
     # Updates the linked list based on the clear operation.
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
-    public function clear(LinkedList list);
+    public isolated function clear(LinkedList list);
 
     # Updates the linked list based on the evict operation.
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + return - The Node, which is evicted from the linked list or `()` if nothing to be evicted
-    public function evict(LinkedList list) returns Node?;
+    public isolated function evict(LinkedList list) returns Node?;
 
 };

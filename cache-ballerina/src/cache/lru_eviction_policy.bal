@@ -33,7 +33,7 @@ public class LruEvictionPolicy {
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is added newly
-    public function put(LinkedList list, Node node) {
+    public isolated function put(LinkedList list, Node node) {
         addFirst(list, node);
     }
 
@@ -58,7 +58,7 @@ public class LruEvictionPolicy {
     # Updates the linked list based on the clear operation related to the LRU eviction algorithm.
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
-    public function clear(LinkedList list) {
+    public isolated function clear(LinkedList list) {
         clear(list);
     }
 
@@ -66,7 +66,7 @@ public class LruEvictionPolicy {
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + return - The Node, which is evicted from the linked list or `()` if nothing to be evicted
-    public function evict(LinkedList list) returns Node? {
+    public isolated function evict(LinkedList list) returns Node? {
         return removeLast(list);
     }
 

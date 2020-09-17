@@ -47,7 +47,7 @@ public type AbstractCache object {
     #
     # + return - `()` if successfully discarded all or  an `Error` if any error occurred while discarding all from the
     #            cache
-    public function invalidateAll() returns Error?;
+    public isolated function invalidateAll() returns Error?;
 
     # Checks whether the given key has an associated cache value.
     #

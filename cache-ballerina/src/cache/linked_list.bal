@@ -40,7 +40,7 @@ public type LinkedList record {
 #
 # + list - Linked list to which the provided node should be added
 # + node - The node, which should be added to the provided linked list
-public function addLast(LinkedList list, Node node) {
+public isolated function addLast(LinkedList list, Node node) {
     if (list.tail is ()) {
         list.head = node;
         list.tail = list.head;
@@ -57,7 +57,7 @@ public function addLast(LinkedList list, Node node) {
 #
 # + list - Linked list to which the provided node should be added
 # + node - The node, which should be added to the provided linked list
-public function addFirst(LinkedList list, Node node) {
+public isolated function addFirst(LinkedList list, Node node) {
     if (list.head is ()) {
         list.head = node;
         list.tail = list.head;
@@ -107,7 +107,7 @@ public function remove(LinkedList list, Node node) {
 #
 # + list - Linked list from which the last node should be removed
 # + return - Last node of the provided linked list or `()` if the last node is empty
-public function removeLast(LinkedList list) returns Node? {
+public isolated function removeLast(LinkedList list) returns Node? {
     if (list.tail is ()) {
         return ();
     }
@@ -123,7 +123,7 @@ public function removeLast(LinkedList list) returns Node? {
 # Clears the provided linked list.
 #
 # + list - Linked list which should be cleared
-public function clear(LinkedList list) {
+public isolated function clear(LinkedList list) {
     list.head = ();
     list.tail = ();
 }
