@@ -19,14 +19,15 @@
 public class LruEvictionPolicy {
 
     *AbstractEvictionPolicy;
+    private LruLinkedList linkedList = new LruLinkedList();
 
     # Updates the linked list based on the get operation related to the LRU eviction algorithm.
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is retrieved
     public isolated function get(LinkedList list, Node node) {
-        remove(list, node);
-        addFirst(list, node);
+        self.linkedList.remove(list, node);
+        self.linkedList.addFirst(list, node);
     }
 
     # Updates the linked list based on the put operation related to the LRU eviction algorithm.
@@ -34,7 +35,7 @@ public class LruEvictionPolicy {
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is added newly
     public isolated function put(LinkedList list, Node node) {
-        addFirst(list, node);
+        self.linkedList.addFirst(list, node);
     }
 
     # Updates the linked list based on the remove operation related to the LRU eviction algorithm.
@@ -42,7 +43,7 @@ public class LruEvictionPolicy {
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is deleted
     public isolated function remove(LinkedList list, Node node) {
-        remove(list, node);
+        self.linkedList.remove(list, node);
     }
 
     # Updates the linked list based on the replace operation related to the LRU eviction algorithm.
@@ -51,15 +52,15 @@ public class LruEvictionPolicy {
     # + newNode - Node of the linked list, which will be replacing the `oldNode`
     # + oldNode - Node of the linked list, which will be replaced by the `newNode`
     public isolated function replace(LinkedList list, Node newNode, Node oldNode) {
-        remove(list, oldNode);
-        addFirst(list, newNode);
+        self.linkedList.remove(list, oldNode);
+        self.linkedList.addFirst(list, newNode);
     }
 
     # Updates the linked list based on the clear operation related to the LRU eviction algorithm.
     #
     # + list - Linked list data structure, which is used to govern the eviction policy
     public isolated function clear(LinkedList list) {
-        clear(list);
+        self.linkedList.clear(list);
     }
 
     # Updates the linked list based on the evict operation.
@@ -67,7 +68,7 @@ public class LruEvictionPolicy {
     # + list - Linked list data structure, which is used to govern the eviction policy
     # + return - The Node, which is evicted from the linked list or `()` if nothing to be evicted
     public isolated function evict(LinkedList list) returns Node? {
-        return removeLast(list);
+        return self.linkedList.removeLast(list);
     }
 
 }
