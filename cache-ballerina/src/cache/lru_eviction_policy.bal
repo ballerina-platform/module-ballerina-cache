@@ -19,7 +19,12 @@
 public class LruEvictionPolicy {
 
     *AbstractEvictionPolicy;
-    LinkedList linkedList = new LinkedList();
+    LinkedList linkedList;
+
+    # Called when a new `cache:LruEvictionPolicy` object is created.
+    public isolated function init() {
+        self.linkedList = new LinkedList();
+    }
 
     # Updates the linked list based on the get operation related to the LRU eviction algorithm.
     #
