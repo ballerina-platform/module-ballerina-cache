@@ -49,11 +49,11 @@ public class LinkedList {
             self.tail = self.head;
             return;
         }
-
+        Node newNode = node;
         Node tailNode = <Node>self.tail;
-        node.prev = tailNode;
-        tailNode.next = node;
-        self.tail = node;
+        newNode.prev = tailNode;
+        tailNode.next = newNode;
+        self.tail = newNode;
     }
 
     # Adds a node to the start of the provided linked list.
@@ -65,11 +65,11 @@ public class LinkedList {
             self.tail = self.head;
             return;
         }
-
+        Node newNode = node;
         Node headNode = <Node>self.head;
-        node.next = headNode;
-        headNode.prev = node;
-        self.head = node;
+        newNode.next = headNode;
+        headNode.prev = newNode;
+        self.head = newNode;
     }
 
     # Removes a node from the provided linked list.

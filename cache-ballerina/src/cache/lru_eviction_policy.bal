@@ -29,7 +29,7 @@ public class LruEvictionPolicy {
     # Updates the linked list based on the get operation related to the LRU eviction algorithm.
     #
     # + node - Node of the linked list, which is retrieved
-    public isolated function get(@tainted Node node) {
+    public isolated function get(Node node) {
         self.linkedList.remove(node);
         self.linkedList.addFirst(node);
     }
@@ -37,7 +37,7 @@ public class LruEvictionPolicy {
     # Updates the linked list based on the put operation related to the LRU eviction algorithm.
     #
     # + node - Node of the linked list, which is added newly
-    public isolated function put(@tainted Node node) {
+    public isolated function put(Node node) {
         self.linkedList.addFirst(node);
     }
 
@@ -52,7 +52,7 @@ public class LruEvictionPolicy {
     #
     # + newNode - Node of the linked list, which will be replacing the `oldNode`
     # + oldNode - Node of the linked list, which will be replaced by the `newNode`
-    public isolated function replace(@tainted Node newNode, Node oldNode) {
+    public isolated function replace(Node newNode, Node oldNode) {
         self.linkedList.remove(oldNode);
         self.linkedList.addFirst(newNode);
     }
