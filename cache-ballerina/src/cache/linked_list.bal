@@ -27,7 +27,7 @@ public type Node record {|
     Node? next = ();
 |};
 
-# The `cache:LruLinkedList` object consists operations of `LinkedList` data structure which are related
+# The `cache:LinkedList` object consists operations of `LinkedList` data structure which are related
 # to LRU eviction algorithm
 #
 # + head - The first node of the linked list
