@@ -27,75 +27,68 @@ public type Node record {|
     Node? next = ();
 |};
 
-# Represents a linked list, which is used to govern the cache eviction policy.
+# The `cache:LruLinkedList` object consists operations of `LinkedList` data structure which are related
+# to LRU eviction algorithm
 #
 # + head - The first node of the linked list
 # + tail - The last node of the linked list
-public type LinkedList record {
-    Node? head;
-    Node? tail;
-};
-
-# The `cache:LruLinkedList` object consists operations of `LinkedList` data structure which are related
-# to LRU eviction algorithm
-public class LruLinkedList {
+public class LinkedList {
 
     // This flag is used to avoid concurrency issues occurring during the removing nodes from the linked-list.
     // Ballerina locks cannot be used for this since it may lead to unexpected results.
     boolean removeInProgress = false;
+    Node? head = ();
+    Node? tail = ();
 
     # Adds a node to the end of the provided linked list.
     #
-    # + list - Linked list to which the provided node should be added
     # + node - The node, which should be added to the provided linked list
-    public isolated function addLast(LinkedList list, Node node) {
-        if (list.tail is ()) {
-            list.head = node;
-            list.tail = list.head;
+    public isolated function addLast(Node node) {
+        if (self.tail is ()) {
+            self.head = node;
+            self.tail = self.head;
             return;
         }
 
-        Node tailNode = <Node>list.tail;
+        Node tailNode = <Node>self.tail;
         node.prev = tailNode;
         tailNode.next = node;
-        list.tail = node;
+        self.tail = node;
     }
 
     # Adds a node to the start of the provided linked list.
     #
-    # + list - Linked list to which the provided node should be added
     # + node - The node, which should be added to the provided linked list
-    public isolated function addFirst(LinkedList list, Node node) {
-        if (list.head is ()) {
-            list.head = node;
-            list.tail = list.head;
+    public isolated function addFirst(Node node) {
+        if (self.head is ()) {
+            self.head = node;
+            self.tail = self.head;
             return;
         }
 
-        Node headNode = <Node>list.head;
+        Node headNode = <Node>self.head;
         node.next = headNode;
         headNode.prev = node;
-        list.head = node;
+        self.head = node;
     }
 
     # Removes a node from the provided linked list.
     #
-    # + list - Linked list from which the provided node should be removed
     # + node - The node, which should be removed from the provided linked list
-    public isolated function remove(LinkedList list, Node node) {
-        // Using this flag, we prevent the concurrency issues, but this will avoid removing some nodes from the
-        // linked-list. Due to that, when the eviction happens, there can be situations where a node which is used
-        // recently is get removed from the cache.
+    public isolated function remove(Node node) {
+        // Using this flag, we prevent the concurrency issues, but this will avoid removing some nodes from the linked-list.
+        // Due to that, when the eviction happens, there can be situations where a node which is used recently is get
+        // removed from the cache.
         if (!self.removeInProgress) {
             self.removeInProgress = true;
             if (node.prev is ()) {
-                list.head = node.next;
+                self.head = node.next;
             } else {
                 Node prev = <Node>node.prev;
                 prev.next = node.next;
             }
             if (node.next is ()) {
-                list.tail = node.prev;
+                self.tail = node.prev;
             } else {
                 Node next = <Node>node.next;
                 next.prev = node.prev;
@@ -108,15 +101,14 @@ public class LruLinkedList {
 
     # Removes the last node from the provided linked list.
     #
-    # + list - Linked list from which the last node should be removed
     # + return - Last node of the provided linked list or `()` if the last node is empty
-    public isolated function removeLast(LinkedList list) returns Node? {
-        if (list.tail is ()) {
+    public isolated function removeLast() returns Node? {
+        if (self.tail is ()) {
             return ();
         }
-        Node tail = <Node>list.tail;
+        Node tail = <Node>self.tail;
         Node predecessorOfTail = <Node>tail.prev;
-        list.tail = predecessorOfTail;
+        self.tail = predecessorOfTail;
         predecessorOfTail.next = ();
         tail.prev = ();
 
@@ -124,10 +116,8 @@ public class LruLinkedList {
     }
 
     # Clears the provided linked list.
-    #
-    # + list - Linked list which should be cleared
-    public isolated function clear(LinkedList list) {
-        list.head = ();
-        list.tail = ();
+    public isolated function clear() {
+        self.head = ();
+        self.tail = ();
     }
 }

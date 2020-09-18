@@ -20,38 +20,31 @@ public type AbstractEvictionPolicy object {
 
     # Updates the linked list based on the get operation.
     #
-    # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is retrieved
-    public isolated function get(LinkedList list, Node node);
+    public isolated function get(Node node);
 
     # Updates the linked list based on the put operation.
     #
-    # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is added newly
-    public isolated function put(LinkedList list, Node node);
+    public isolated function put(Node node);
 
     # Updates the linked list based on the remove operation.
     #
-    # + list - Linked list data structure, which is used to govern the eviction policy
     # + node - Node of the linked list, which is deleted
-    public isolated function remove(LinkedList list, Node node);
+    public isolated function remove(Node node);
 
     # Updates the linked list based on the replace operation.
     #
-    # + list - Linked list data structure, which is used to govern the eviction policy
     # + newNode - Node of the linked list, which will be replacing the `oldNode`
     # + oldNode - Node of the linked list, which will be replaced by the `newNode`
-    public isolated function replace(LinkedList list, Node newNode, Node oldNode);
+    public isolated function replace(Node newNode, Node oldNode);
 
     # Updates the linked list based on the clear operation.
-    #
-    # + list - Linked list data structure, which is used to govern the eviction policy
-    public isolated function clear(LinkedList list);
+    public isolated function clear();
 
     # Updates the linked list based on the evict operation.
     #
-    # + list - Linked list data structure, which is used to govern the eviction policy
     # + return - The Node, which is evicted from the linked list or `()` if nothing to be evicted
-    public isolated function evict(LinkedList list) returns Node?;
+    public isolated function evict() returns Node?;
 
 };
