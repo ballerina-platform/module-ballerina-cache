@@ -33,7 +33,7 @@ type LOG_LEVEL LOG_LEVEL_DEBUG|LOG_LEVEL_ERROR;
 # + err - `error` instance
 # + logLevel - Log level of the error message
 # + return - Prepared `Error` instance
-function prepareError(string message, error? err = (), LOG_LEVEL logLevel = LOG_LEVEL_ERROR) returns Error {
+isolated function prepareError(string message, error? err = (), LOG_LEVEL logLevel = LOG_LEVEL_ERROR) returns Error {
     if (logLevel == LOG_LEVEL_ERROR) {
         log:printError(message, err);
     } else if (logLevel == LOG_LEVEL_DEBUG) {
