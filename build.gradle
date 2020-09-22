@@ -161,7 +161,7 @@ if (moduleVersion.indexOf('-') != -1) {
 release {
     failOnPublishNeeded = false
 
-    buildTasks = []
+    buildTasks = ["build"]
     versionPropertyFile = 'gradle.properties'
     tagTemplate = 'v$version'
 
@@ -170,6 +170,11 @@ release {
         pushToRemote = 'origin'
     }
 }
+
+task build {
+    dependsOn('ldap-ballerina:build')
+}
+
 
 task codeCoverageReport(type: JacocoReport) {
     executionData fileTree(project.rootDir.absolutePath).include("**/build/coverage-reports/*.exec")
