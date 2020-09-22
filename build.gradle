@@ -175,7 +175,6 @@ task build {
     dependsOn('cache-ballerina:build')
 }
 
-
 task codeCoverageReport(type: JacocoReport) {
     executionData fileTree(project.rootDir.absolutePath).include("**/build/coverage-reports/*.exec")
 
