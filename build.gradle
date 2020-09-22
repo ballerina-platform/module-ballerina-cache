@@ -172,7 +172,7 @@ release {
 }
 
 task build {
-    dependsOn('ldap-ballerina:build')
+    dependsOn('cache-ballerina:build')
 }
 
 
