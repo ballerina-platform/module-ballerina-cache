@@ -5,7 +5,7 @@ This module provides APIs for handle caching in Ballerina. It consists of a defa
 The `cache:AbstractCache` object has the common APIs for the caching functionalities. Custom implementations of the cache can be done with different data storages like file, database, etc. with the structural equivalency to the `cache:AbstractCacheObject` object.
 
 ```ballerina
-public type AbstractCache abstract object {
+public type AbstractCache object {
     public function put(string key, any value, int maxAgeInSeconds) returns Error?;
     public function get(string key) returns any|Error;
     public function invalidate(string key) returns Error?;
@@ -17,20 +17,20 @@ public type AbstractCache abstract object {
 };
 ```
 
-The `cache:AbstractEvictionPolicy` object has the common APIs for the cache eviction functionalities. Custom implementations of the eviction policy can be done by maintaining the `cache:LinkedList` data structure according to the eviction algorithm.
+The `cache:AbstractEvictionPolicy` object has the common APIs for the cache eviction functionalities. Custom implementations of the eviction policy can be done by maintaining the `cache:LinkedList` class according to the eviction algorithm.
 
 ```ballerina
-public type AbstractEvictionPolicy abstract object {
-    public function get(LinkedList list, Node node);
-    public function put(LinkedList list, Node node);
-    public function remove(LinkedList list, Node node);
-    public function replace(LinkedList list, Node newNode, Node oldNode);
-    public function clear(LinkedList list);
-    public function evict(LinkedList list) returns Node?;
+public type AbstractEvictionPolicy object {
+    public function get(Node node);
+    public function put(Node node);
+    public function remove(Node node);
+    public function replace(Node newNode, Node oldNode);
+    public function clear();
+    public function evict() returns Node?;
 };
 ```
 
-The Ballerina Cache module provides the `cache:Cache` object, which is a `map` data structure based implementation of the `cache:AbstractCache` object. It is not recommended to insert `()` as the value of the cache since it doesn't make sense to cache a nil. Also, it provides the `cache:LruEvictionPolicy` object, which is based on the LRU eviction algorithm.
+The Ballerina Cache module provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object. It is not recommended to insert `()` as the value of the cache since it doesn't make sense to cache a nil. Also, it provides the `cache:LruEvictionPolicy` class, which is based on the LRU eviction algorithm.
 
 While initializing the `cache:Cache`, you need to pass the following parameters as the cache configurations.
 - `capacity` - Maximum number of entries allowed for the cache
@@ -61,7 +61,7 @@ There are 2 mandatory scenarios and 1 optional scenario in which a cache entry g
 
 The main benefit of using the `cleanupIntervalInSeconds` (optional) property is that the developer can optimize the memory usage while adding some additional CPU costs and vice versa. The default behaviour is the CPU-optimized method.
 
-The concept of the default `cache:Cache` object is based on the Ballerina `map` data structure and the `cache:LinkedList` data structure. The key of the map entry would be a string and the value of the map entry would be a node of the linked list.
+The concept of the default `cache:Cache` class is based on the Ballerina `map` data structure and the `cache:LinkedList` class. The key of the map entry would be a string and the value of the map entry would be a node of the linked list.
 
 ```ballerina
 public type Node record {|
