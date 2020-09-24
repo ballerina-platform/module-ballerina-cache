@@ -61,7 +61,7 @@ There are 2 mandatory scenarios and 1 optional scenario in which a cache entry g
 
 The main benefit of using the `cleanupIntervalInSeconds` (optional) property is that the developer can optimize the memory usage while adding some additional CPU costs and vice versa. The default behaviour is the CPU-optimized method.
 
-The concept of the default `cache:Cache` object is based on the Ballerina `map` data structure and the `cache:LinkedList` data structure. The key of the map entry would be a string and the value of the map entry would be a node of the linked list.
+The concept of the default `cache:Cache` object is based on the Ballerina `map` data structure and the `cache:LinkedList` object. The key of the map entry would be a string and the value of the map entry would be a node of the linked list.
 
 ```ballerina
 public type Node record {|
