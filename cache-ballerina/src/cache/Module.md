@@ -17,7 +17,7 @@ public type AbstractCache object {
 };
 ```
 
-The `cache:AbstractEvictionPolicy` object has the common APIs for the cache eviction functionalities. Custom implementations of the eviction policy can be done by maintaining the `cache:LinkedList` object according to the eviction algorithm.
+The `cache:AbstractEvictionPolicy` object has the common APIs for the cache eviction functionalities. Custom implementations of the eviction policy can be done by maintaining the `cache:LinkedList` class according to the eviction algorithm.
 
 ```ballerina
 public type AbstractEvictionPolicy object {
@@ -30,7 +30,7 @@ public type AbstractEvictionPolicy object {
 };
 ```
 
-The Ballerina Cache module provides the `cache:Cache` object, which is a `map` data structure based implementation of the `cache:AbstractCache` object. It is not recommended to insert `()` as the value of the cache since it doesn't make sense to cache a nil. Also, it provides the `cache:LruEvictionPolicy` object, which is based on the LRU eviction algorithm.
+The Ballerina Cache module provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object. It is not recommended to insert `()` as the value of the cache since it doesn't make sense to cache a nil. Also, it provides the `cache:LruEvictionPolicy` class, which is based on the LRU eviction algorithm.
 
 While initializing the `cache:Cache`, you need to pass the following parameters as the cache configurations.
 - `capacity` - Maximum number of entries allowed for the cache
@@ -61,7 +61,7 @@ There are 2 mandatory scenarios and 1 optional scenario in which a cache entry g
 
 The main benefit of using the `cleanupIntervalInSeconds` (optional) property is that the developer can optimize the memory usage while adding some additional CPU costs and vice versa. The default behaviour is the CPU-optimized method.
 
-The concept of the default `cache:Cache` object is based on the Ballerina `map` data structure and the `cache:LinkedList` object. The key of the map entry would be a string and the value of the map entry would be a node of the linked list.
+The concept of the default `cache:Cache` class is based on the Ballerina `map` data structure and the `cache:LinkedList` class. The key of the map entry would be a string and the value of the map entry would be a node of the linked list.
 
 ```ballerina
 public type Node record {|
