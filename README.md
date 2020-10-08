@@ -25,6 +25,17 @@ For example demonstrations of the usage, go to [Ballerina By Examples](https://b
 
 ## Building from the Source
 
+### Setting Up the Prerequisites
+
+1. Download and install Java SE Development Kit (JDK) version 11 (from one of the following locations).
+   * [Oracle](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
+   
+   * [OpenJDK](https://openjdk.java.net/projects/jdk/11/)
+   
+        > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
+     
+### Building the Source
+
 Execute the commands below to build from source.
 
 1. To build the library,
