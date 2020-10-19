@@ -241,9 +241,8 @@ public class Cache {
 isolated function evict(Cache cache, AbstractEvictionPolicy evictionPolicy, int capacity, float evictionFactor) {
     int evictionKeysCount = <int>(capacity * evictionFactor);
     foreach int i in 1...evictionKeysCount {
-        Node? node = evictionPolicy.evict();
-        if (node is Node) {
-            CacheEntry entry = <CacheEntry>node.value;
+        CacheEntry? entry = evictionPolicy.evict();
+        if (entry is CacheEntry) {
             externRemove(cache, entry.key);
             // The return result (error which occurred due to unavailability of the key or nil) is ignored
             // since no purpose of handling it.

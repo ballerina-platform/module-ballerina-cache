@@ -14,38 +14,44 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/java;
+//import ballerina/log;
+
 # The `cache:LruEvictionPolicy` object consists of the LRU eviction algorithm related operations based on a linked
 # list data structure.
 public class LruEvictionPolicy {
 
     *AbstractEvictionPolicy;
-    LinkedList linkedList;
+    //LinkedList linkedList;
 
     # Called when a new `cache:LruEvictionPolicy` object is created.
     public isolated function init() {
-        self.linkedList = new LinkedList();
+        externIni(self);
     }
 
     # Updates the linked list based on the get operation related to the LRU eviction algorithm.
     #
     # + node - Node of the linked list, which is retrieved
     public isolated function get(Node node) {
-        self.linkedList.remove(node);
-        self.linkedList.addFirst(node);
+        //log:printInfo("****************************");
+        externRemoveNode(self, node);
+        //log:printInfo("****************************");
+        externAddFirst(self, node);
+        //log:printInfo("****************************");
     }
 
     # Updates the linked list based on the put operation related to the LRU eviction algorithm.
     #
     # + node - Node of the linked list, which is added newly
     public isolated function put(Node node) {
-        self.linkedList.addFirst(node);
+        externAddFirst(self, node);
     }
 
     # Updates the linked list based on the remove operation related to the LRU eviction algorithm.
     #
     # + node - Node of the linked list, which is deleted
     public isolated function remove(Node node) {
-        self.linkedList.remove(node);
+        externRemoveNode(self, node);
     }
 
     # Updates the linked list based on the replace operation related to the LRU eviction algorithm.
@@ -53,19 +59,45 @@ public class LruEvictionPolicy {
     # + newNode - Node of the linked list, which will be replacing the `oldNode`
     # + oldNode - Node of the linked list, which will be replaced by the `newNode`
     public isolated function replace(Node newNode, Node oldNode) {
-        self.linkedList.remove(oldNode);
-        self.linkedList.addFirst(newNode);
+        externRemoveNode(self, oldNode);
+        externAddFirst(self, newNode);
     }
 
     # Updates the linked list based on the clear operation related to the LRU eviction algorithm.
     public isolated function clear() {
-        self.linkedList.clear();
+        externClear(self);
     }
 
     # Updates the linked list based on the evict operation.
     # + return - The Node, which is evicted from the linked list or `()` if nothing to be evicted
-    public isolated function evict() returns Node? {
-        return self.linkedList.removeLast();
+    public isolated function evict() returns CacheEntry? {
+        return externRemoveLast(self);
     }
 
 }
+
+isolated function externIni(LruEvictionPolicy lruEvictionPolicy) = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.LinkedList"
+} external;
+
+isolated function externAddLast(LruEvictionPolicy lruEvictionPolicy, Node node) = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.LinkedList"
+} external;
+
+isolated function externAddFirst(LruEvictionPolicy lruEvictionPolicy, Node node) = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.LinkedList"
+} external;
+
+isolated function externRemoveLast(LruEvictionPolicy lruEvictionPolicy) returns CacheEntry? = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.LinkedList"
+} external;
+
+isolated function externRemoveNode(LruEvictionPolicy lruEvictionPolicy, Node node) = @java:Method {
+    name: "externRemove",
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.LinkedList"
+
+} external;
+
+isolated function externClear(LruEvictionPolicy lruEvictionPolicy) = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.LinkedList"
+} external;

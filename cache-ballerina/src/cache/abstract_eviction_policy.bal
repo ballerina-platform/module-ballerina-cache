@@ -45,6 +45,6 @@ public type AbstractEvictionPolicy object {
     # Updates the linked list based on the evict operation.
     #
     # + return - The Node, which is evicted from the linked list or `()` if nothing to be evicted
-    public isolated function evict() returns Node?;
+    public isolated function evict() returns CacheEntry?;
 
 };
