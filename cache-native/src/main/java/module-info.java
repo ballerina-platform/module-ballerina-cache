@@ -17,6 +17,6 @@
  */
 
 module io.ballerina.stdlib.cache {
-    requires io.ballerina.jvm;
+    requires io.ballerina.runtime;
     exports org.ballerinalang.stdlib.cache.nativeimpl;
 }
