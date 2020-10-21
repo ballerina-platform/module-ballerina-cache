@@ -62,7 +62,7 @@ public class Cache {
 
     *AbstractCache;
 
-    private int capacity_;
+    private int maxCapacity;
     private AbstractEvictionPolicy evictionPolicy;
     private float evictionFactor;
     private int defaultMaxAgeInSeconds;
@@ -71,13 +71,13 @@ public class Cache {
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
     public isolated function init(CacheConfig cacheConfig = {}) {
-        self.capacity_ = cacheConfig.capacity;
+        self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAgeInSeconds = cacheConfig.defaultMaxAgeInSeconds;
 
         // Cache capacity must be a positive value.
-        if (self.capacity_ <= 0) {
+        if (self.maxCapacity <= 0) {
             panic prepareError("Capacity must be greater than 0.");
         }
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
@@ -91,7 +91,7 @@ public class Cache {
         }
 
         externLockInit();
-        externInit(self, self.capacity_);
+        externInit(self, self.maxCapacity);
 
         int? cleanupIntervalInSeconds = cacheConfig?.cleanupIntervalInSeconds;
         if (cleanupIntervalInSeconds is int) {
@@ -125,8 +125,8 @@ public class Cache {
                                 logLevel = LOG_LEVEL_DEBUG);
         }
         // If the current cache is full (i.e. size = capacity), evict cache.
-        if (self.size() == self.capacity_) {
-            evict(self, self.evictionPolicy, self.capacity_, self.evictionFactor);
+        if (self.size() == self.maxCapacity) {
+            evict(self, self.evictionPolicy, self.maxCapacity, self.evictionFactor);
         }
 
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
@@ -235,7 +235,7 @@ public class Cache {
     #
     # + return - The capacity of the cache
     public isolated function capacity() returns int {
-        return self.capacity_;
+        return self.maxCapacity;
     }
 }
 
