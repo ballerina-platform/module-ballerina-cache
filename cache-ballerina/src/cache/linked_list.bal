@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/java;
+
 // This is a linked list data structure implementation, which is used for the eviction algorithm of the cache.
 
 # Represents a structure to keep data and references to the adjacent nodes of the linked list.
@@ -34,9 +36,6 @@ public type Node record {|
 # + tail - The last node of the linked list
 public class LinkedList {
 
-    // This flag is used to avoid concurrency issues occurring during the removing nodes from the linked-list.
-    // Ballerina locks cannot be used for this since it may lead to unexpected results.
-    boolean removeInProgress = false;
     Node? head = ();
     Node? tail = ();
 
@@ -76,11 +75,7 @@ public class LinkedList {
     #
     # + node - The node, which should be removed from the provided linked list
     public isolated function remove(Node node) {
-        // Using this flag, we prevent the concurrency issues, but this will avoid removing some nodes from the linked-list.
-        // Due to that, when the eviction happens, there can be situations where a node which is used recently is get
-        // removed from the cache.
-        if (!self.removeInProgress) {
-            self.removeInProgress = true;
+        if (tryLock()) {
             if (node.prev is ()) {
                 self.head = node.next;
             } else {
@@ -95,7 +90,7 @@ public class LinkedList {
             }
             node.next = ();
             node.prev = ();
-            self.removeInProgress = false;
+            releaseLock();
         }
     }
 
@@ -121,3 +116,16 @@ public class LinkedList {
         self.tail = ();
     }
 }
+
+isolated function externLockInit() = @java:Method {
+    name: "init",
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
+} external;
+
+isolated function tryLock() returns boolean = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
+} external;
+
+isolated function releaseLock() = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
+} external;
