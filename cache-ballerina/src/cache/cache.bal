@@ -234,7 +234,7 @@ public class Cache {
     # Returns the capacity of the cache.
     #
     # + return - The capacity of the cache
-    public isolated function capacity() returns int {
+    public isolated function getCapacity() returns int {
         return self.capacity;
     }
 }

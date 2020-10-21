@@ -181,7 +181,7 @@ function testCapacity() {
         evictionFactor: 0.2
     };
     Cache cache = new(config);
-    test:assertEquals(cache.capacity(), 10);
+    test:assertEquals(cache.getCapacity(), 10);
 }
 
 @test:Config {}
