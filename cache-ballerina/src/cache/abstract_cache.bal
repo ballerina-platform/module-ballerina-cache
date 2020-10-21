@@ -69,5 +69,5 @@ public type AbstractCache object {
     # Returns the capacity of the cache.
     #
     # + return - The capacity of the cache
-    public isolated function getCapacity() returns int;
+    public isolated function capacity() returns int;
 };

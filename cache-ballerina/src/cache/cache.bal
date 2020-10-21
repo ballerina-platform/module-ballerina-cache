@@ -62,7 +62,7 @@ public class Cache {
 
     *AbstractCache;
 
-    private int capacity;
+    private int capacity_;
     private AbstractEvictionPolicy evictionPolicy;
     private float evictionFactor;
     private int defaultMaxAgeInSeconds;
@@ -71,13 +71,13 @@ public class Cache {
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
     public isolated function init(CacheConfig cacheConfig = {}) {
-        self.capacity = cacheConfig.capacity;
+        self.capacity_ = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAgeInSeconds = cacheConfig.defaultMaxAgeInSeconds;
 
         // Cache capacity must be a positive value.
-        if (self.capacity <= 0) {
+        if (self.capacity_ <= 0) {
             panic prepareError("Capacity must be greater than 0.");
         }
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
@@ -91,7 +91,7 @@ public class Cache {
         }
 
         externLockInit();
-        externInit(self, self.capacity);
+        externInit(self, self.capacity_);
 
         int? cleanupIntervalInSeconds = cacheConfig?.cleanupIntervalInSeconds;
         if (cleanupIntervalInSeconds is int) {
@@ -125,8 +125,8 @@ public class Cache {
                                 logLevel = LOG_LEVEL_DEBUG);
         }
         // If the current cache is full (i.e. size = capacity), evict cache.
-        if (self.size() == self.capacity) {
-            evict(self, self.evictionPolicy, self.capacity, self.evictionFactor);
+        if (self.size() == self.capacity_) {
+            evict(self, self.evictionPolicy, self.capacity_, self.evictionFactor);
         }
 
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
@@ -234,8 +234,8 @@ public class Cache {
     # Returns the capacity of the cache.
     #
     # + return - The capacity of the cache
-    public isolated function getCapacity() returns int {
-        return self.capacity;
+    public isolated function capacity() returns int {
+        return self.capacity_;
     }
 }
 
