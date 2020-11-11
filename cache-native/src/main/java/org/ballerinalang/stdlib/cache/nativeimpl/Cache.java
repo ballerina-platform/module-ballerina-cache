@@ -21,7 +21,7 @@ package org.ballerinalang.stdlib.cache.nativeimpl;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.runtime.values.ArrayValueImpl;
+import io.ballerina.runtime.internal.values.ArrayValueImpl;
 
 import java.util.concurrent.ConcurrentHashMap;
 
