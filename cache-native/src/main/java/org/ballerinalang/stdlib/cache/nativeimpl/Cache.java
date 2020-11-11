@@ -18,10 +18,11 @@
 
 package org.ballerinalang.stdlib.cache.nativeimpl;
 
+import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.runtime.internal.values.ArrayValueImpl;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -69,10 +70,10 @@ public class Cache {
         return map.containsKey(key);
     }
 
-    public static ArrayValueImpl externKeys(BObject cache) {
+    public static BArray externKeys(BObject cache) {
         ConcurrentHashMap<BString, BMap<BString, Object>> map =
                 (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
-        return new ArrayValueImpl(map.keySet().toArray(new BString[0]));
+        return ValueCreator.createArrayValue(map.keySet().toArray(new BString[0]));
     }
 
     public static int externSize(BObject cache) {
