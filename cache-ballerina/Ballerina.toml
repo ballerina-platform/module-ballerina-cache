@@ -5,18 +5,8 @@ version = "@toml.version@"
 
 [[dependency]]
 org = "ballerina"
-name = "io"
-version = "@stdlib.io.version@"
-
-[[dependency]]
-org = "ballerina"
 name = "time"
 version = "@stdlib.time.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "config"
-version = "@stdlib.config.version@"
 
 [[dependency]]
 org = "ballerina"
@@ -30,18 +20,8 @@ version = "@stdlib.log.version@"
 
 [[dependency]]
 org = "ballerina"
-name = "system"
-version = "@stdlib.system.version@"
-
-[[dependency]]
-org = "ballerina"
 name = "task"
 version = "@stdlib.task.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "stringutils"
-version = "@stdlib.stringutils.version@"
 
 [[platform.java11.dependency]]
 path = "../cache-native/build/libs/cache-native-@project.version@.jar"
