@@ -1,23 +1,50 @@
-[project]
-org-name = "ballerina"
+[package]
+org = "ballerina"
+name = "cache"
 version = "@toml.version@"
 
-[dependencies]
-"ballerina/task" = "@stdlib.task.version@"
-"ballerina/log" = "@stdlib.log.version@"
-"ballerina/time" = "@stdlib.time.version@"
-"ballerina/io" = "@stdlib.io.version@"
-"ballerina/stringutils" = "@stdlib.stringutils.version@"
-"ballerina/config" = "@stdlib.config.version@"
-"ballerina/system" = "@stdlib.system.version@"
-"ballerina/runtime" = "@stdlib.runtime.version@"
+[[dependency]]
+org = "ballerina"
+name = "io"
+version = "@stdlib.io.version@"
 
-[platform]
-target = "java11"
+[[dependency]]
+org = "ballerina"
+name = "time"
+version = "@stdlib.time.version@"
 
-    [[platform.libraries]]
-    artifactId = "cache"
-    version = "@project.version@"
-    path = "../cache-native/build/libs/cache-native-@project.version@.jar"
-    groupId = "ballerina"
-    modules = ["cache"]
+[[dependency]]
+org = "ballerina"
+name = "config"
+version = "@stdlib.config.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "runtime"
+version = "@stdlib.runtime.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "log"
+version = "@stdlib.log.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "system"
+version = "@stdlib.system.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "task"
+version = "@stdlib.task.version@"
+
+[[dependency]]
+org = "ballerina"
+name = "stringutils"
+version = "@stdlib.stringutils.version@"
+
+[[platform.java11.dependency]]
+path = "../cache-native/build/libs/cache-native-@project.version@.jar"
+groupId = "ballerina"
+artifactId = "cache"
+version = "@project.version@"
