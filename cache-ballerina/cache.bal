@@ -41,6 +41,7 @@ type CacheEntry record {|
     int expTime;       // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
 |};
 
+// Cleanup service which cleans the cache entries periodically.
 boolean cleanupInProgress = false;
 
 // Cleanup service which cleans the cache entries periodically.
