@@ -42,16 +42,12 @@ type CacheEntry record {|
 |};
 
 // Cleanup service which cleans the cache entries periodically.
-boolean cleanupInProgress = false;
-
-// Cleanup service which cleans the cache entries periodically.
-final service object{} cleanupService = service object {
-    remote function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
+final service isolated object{} cleanupService = service object {
+    remote isolated function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
         // This check will skip the processes triggered while the clean up in progress.
-        if (!cleanupInProgress) {
-            cleanupInProgress = true;
+        if (cleanupTryLock()) {
             cleanup(cache, evictionPolicy);
-            cleanupInProgress = false;
+            cleanupReleaseLock();
         }
     }
 };
@@ -70,7 +66,7 @@ public class Cache {
     # Called when a new `cache:Cache` object is created.
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    public function init(CacheConfig cacheConfig = {}) {
+    public isolated function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
@@ -95,6 +91,7 @@ public class Cache {
 
         int? cleanupIntervalInSeconds = cacheConfig?.cleanupIntervalInSeconds;
         if (cleanupIntervalInSeconds is int) {
+            cleanupLockInit();
             task:TimerConfiguration timerConfiguration = {
                 intervalInMillis: cleanupIntervalInSeconds,
                 initialDelayInMillis: cleanupIntervalInSeconds
@@ -301,4 +298,17 @@ isolated function externKeys(Cache cache) returns string[] = @java:Method {
 
 isolated function externSize(Cache cache) returns int = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function cleanupLockInit() = @java:Method {
+    name: "cleanupInit",
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
+} external;
+
+isolated function cleanupTryLock() returns boolean = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
+} external;
+
+isolated function cleanupReleaseLock() = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
 } external;

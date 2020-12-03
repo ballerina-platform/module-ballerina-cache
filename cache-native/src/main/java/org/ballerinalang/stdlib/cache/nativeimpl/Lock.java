@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Lock {
     private static AtomicBoolean locked;
+    private static AtomicBoolean cleanupLocked;
 
     public static void init() {
         locked = new AtomicBoolean(false);
@@ -36,5 +37,17 @@ public class Lock {
 
     public static void releaseLock() {
         locked.set(false);
+    }
+
+    public static void cleanupInit() {
+        cleanupLocked = new AtomicBoolean(false);
+    }
+
+    public static boolean cleanupTryLock() {
+        return cleanupLocked.compareAndSet(false, true);
+    }
+
+    public static void cleanupReleaseLock() {
+        cleanupLocked.set(false);
     }
 }
