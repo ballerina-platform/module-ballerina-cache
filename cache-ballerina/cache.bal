@@ -45,8 +45,8 @@ type CacheEntry record {|
 boolean cleanupInProgress = false;
 
 // Cleanup service which cleans the cache entries periodically.
-final service cleanupService = service {
-    resource function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
+final service object{} cleanupService = service object {
+    remote function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
             cleanupInProgress = true;
@@ -70,7 +70,7 @@ public class Cache {
     # Called when a new `cache:Cache` object is created.
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    public isolated function init(CacheConfig cacheConfig = {}) {
+    public function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
