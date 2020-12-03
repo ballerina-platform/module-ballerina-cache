@@ -41,12 +41,11 @@ type CacheEntry record {|
     int expTime;       // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
 |};
 
-// Cleanup service which cleans the cache entries periodically.
 boolean cleanupInProgress = false;
 
 // Cleanup service which cleans the cache entries periodically.
-final service cleanupService = service {
-    resource function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
+final service isolated object{} cleanupService = service object {
+    remote function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
             cleanupInProgress = true;
