@@ -41,13 +41,16 @@ type CacheEntry record {|
     int expTime;       // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
 |};
 
+boolean cleanupInProgress = false;
+
 // Cleanup service which cleans the cache entries periodically.
 final service isolated object{} cleanupService = service object {
-    remote isolated function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
+    remote function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
         // This check will skip the processes triggered while the clean up in progress.
-        if (cleanupTryLock()) {
+        if (!cleanupInProgress) {
+            cleanupInProgress = true;
             cleanup(cache, evictionPolicy);
-            cleanupReleaseLock();
+            cleanupInProgress = false;
         }
     }
 };
@@ -91,7 +94,6 @@ public class Cache {
 
         int? cleanupIntervalInSeconds = cacheConfig?.cleanupIntervalInSeconds;
         if (cleanupIntervalInSeconds is int) {
-            cleanupLockInit();
             task:TimerConfiguration timerConfiguration = {
                 intervalInMillis: cleanupIntervalInSeconds,
                 initialDelayInMillis: cleanupIntervalInSeconds
@@ -298,17 +300,4 @@ isolated function externKeys(Cache cache) returns string[] = @java:Method {
 
 isolated function externSize(Cache cache) returns int = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function cleanupLockInit() = @java:Method {
-    name: "cleanupInit",
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
-} external;
-
-isolated function cleanupTryLock() returns boolean = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
-} external;
-
-isolated function cleanupReleaseLock() = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
 } external;
