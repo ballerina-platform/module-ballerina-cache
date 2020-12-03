@@ -99,12 +99,12 @@ public class Cache {
                 initialDelayInMillis: cleanupIntervalInSeconds
             };
             task:Scheduler cleanupScheduler = new(timerConfiguration);
-            error? result = cleanupScheduler.attach(cleanupService, self, self.evictionPolicy);
-            if (result is error) {
+            task:SchedulerError? result = cleanupScheduler.attach(cleanupService, self, self.evictionPolicy);
+            if (result is task:SchedulerError) {
                 panic prepareError("Failed to create the cache cleanup task.", result);
             }
             result = cleanupScheduler.start();
-            if (result is error) {
+            if (result is task:SchedulerError) {
                 panic prepareError("Failed to start the cache cleanup task.", result);
             }
         }
