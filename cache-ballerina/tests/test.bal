@@ -18,7 +18,7 @@ import ballerina/runtime;
 import ballerina/test;
 
 @test:Config {}
-isolated function testCreateCache() {
+function testCreateCache() {
     LruEvictionPolicy lruEvictionPolicy = new;
     CacheConfig config = {
         capacity: 10,
@@ -36,7 +36,7 @@ isolated function testCreateCache() {
 }
 
 @test:Config {}
-isolated function testPutNewEntry() {
+function testPutNewEntry() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -47,7 +47,7 @@ isolated function testPutNewEntry() {
 }
 
 @test:Config {}
-isolated function testPutExistingEntry() {
+function testPutExistingEntry() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -61,7 +61,7 @@ isolated function testPutExistingEntry() {
 }
 
 @test:Config {}
-isolated function testPutWithMaxAge() {
+function testPutWithMaxAge() {
     int maxAge = 5;
     CacheConfig config = {
         capacity: 10,
@@ -74,7 +74,7 @@ isolated function testPutWithMaxAge() {
 }
 
 @test:Config {}
-isolated function testGetExistingEntry() {
+function testGetExistingEntry() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -88,7 +88,7 @@ isolated function testGetExistingEntry() {
 }
 
 @test:Config {}
-isolated function testGetNonExistingEntry() {
+function testGetNonExistingEntry() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -99,7 +99,7 @@ isolated function testGetNonExistingEntry() {
 }
 
 @test:Config {}
-isolated function testGetExpiredEntry() {
+function testGetExpiredEntry() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -114,7 +114,7 @@ isolated function testGetExpiredEntry() {
 }
 
 @test:Config {}
-isolated function testRemove() {
+function testRemove() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -128,7 +128,7 @@ isolated function testRemove() {
 }
 
 @test:Config {}
-isolated function testRemoveAll() {
+function testRemoveAll() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -145,7 +145,7 @@ isolated function testRemoveAll() {
 }
 
 @test:Config {}
-isolated function testHasKey() {
+function testHasKey() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -158,7 +158,7 @@ isolated function testHasKey() {
 }
 
 @test:Config {}
-isolated function testKeys() {
+function testKeys() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -175,7 +175,7 @@ isolated function testKeys() {
 }
 
 @test:Config {}
-isolated function testCapacity() {
+function testCapacity() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -185,7 +185,7 @@ isolated function testCapacity() {
 }
 
 @test:Config {}
-isolated function testSize() {
+function testSize() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -201,7 +201,7 @@ isolated function testSize() {
 }
 
 @test:Config {}
-isolated function testCacheEvictionWithCapacity1() {
+function testCacheEvictionWithCapacity1() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -224,7 +224,7 @@ isolated function testCacheEvictionWithCapacity1() {
 }
 
 @test:Config {}
-isolated function testCacheEvictionWithCapacity2() {
+function testCacheEvictionWithCapacity2() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -248,7 +248,7 @@ isolated function testCacheEvictionWithCapacity2() {
 }
 
 @test:Config {}
-isolated function testCacheEvictionWithTimer1() {
+function testCacheEvictionWithTimer1() {
     int cleanupIntervalInSeconds = 2;
     CacheConfig config = {
         capacity: 10,
@@ -267,7 +267,7 @@ isolated function testCacheEvictionWithTimer1() {
 }
 
 @test:Config {}
-isolated function testCacheEvictionWithTimer2() {
+function testCacheEvictionWithTimer2() {
     int cleanupIntervalInSeconds = 2;
     CacheConfig config = {
         capacity: 10,
@@ -286,7 +286,7 @@ isolated function testCacheEvictionWithTimer2() {
 }
 
 @test:Config {}
-isolated function testCreateCacheWithZeroCapacity() {
+function testCreateCacheWithZeroCapacity() {
     CacheConfig config = {
         capacity: 0,
         evictionFactor: 0.2
@@ -297,7 +297,7 @@ isolated function testCreateCacheWithZeroCapacity() {
 }
 
 @test:Config {}
-isolated function testCreateCacheWithNegativeCapacity() {
+function testCreateCacheWithNegativeCapacity() {
     CacheConfig config = {
         capacity: -1,
         evictionFactor: 0.2
@@ -308,7 +308,7 @@ isolated function testCreateCacheWithNegativeCapacity() {
 }
 
 @test:Config {}
-isolated function testCreateCacheWithZeroEvictionFactor() {
+function testCreateCacheWithZeroEvictionFactor() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0
@@ -320,7 +320,7 @@ isolated function testCreateCacheWithZeroEvictionFactor() {
 }
 
 @test:Config {}
-isolated function testCreateCacheWithNegativeEvictionFactor() {
+function testCreateCacheWithNegativeEvictionFactor() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: -1
@@ -332,7 +332,7 @@ isolated function testCreateCacheWithNegativeEvictionFactor() {
 }
 
 @test:Config {}
-isolated function testCreateCacheWithInvalidEvictionFactor() {
+function testCreateCacheWithInvalidEvictionFactor() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 1.1
@@ -344,7 +344,7 @@ isolated function testCreateCacheWithInvalidEvictionFactor() {
 }
 
 @test:Config {}
-isolated function testCreateCacheWithZeroDefaultMaxAge() {
+function testCreateCacheWithZeroDefaultMaxAge() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
@@ -357,7 +357,7 @@ isolated function testCreateCacheWithZeroDefaultMaxAge() {
 }
 
 @test:Config {}
-isolated function testCreateCacheWithNegativeDefaultMaxAge() {
+function testCreateCacheWithNegativeDefaultMaxAge() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
