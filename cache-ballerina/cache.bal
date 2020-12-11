@@ -121,8 +121,7 @@ public class Cache {
     # + return - `()` if successfully added to the cache or `Error` if a `()` value is inserted to the cache.
     public isolated function put(string key, any value, int maxAgeInSeconds = -1) returns Error? {
         if (value is ()) {
-            return prepareError("Unsupported cache value '()' for the key: " + key + ".",
-                                logLevel = LOG_LEVEL_DEBUG);
+            return prepareError("Unsupported cache value '()' for the key: " + key + ".");
         }
         // If the current cache is full (i.e. size = capacity), evict cache.
         if (self.size() == self.maxCapacity) {
@@ -163,8 +162,7 @@ public class Cache {
     #            exisiting in the cache or any error occurred while retrieving the value from the cache.
     public isolated function get(string key) returns any|Error {
         if (!self.hasKey(key)) {
-            return prepareError("Cache entry from the given key: " + key + ", is not available.",
-                                logLevel = LOG_LEVEL_DEBUG);
+            return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
 
         Node node = externGet(self, key);
@@ -190,8 +188,7 @@ public class Cache {
     #            cache
     public isolated function invalidate(string key) returns Error? {
         if (!self.hasKey(key)) {
-            return prepareError("Cache entry from the given key: " + key + ", is not available.",
-                                logLevel = LOG_LEVEL_DEBUG);
+            return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
 
         Node node = externGet(self, key);
