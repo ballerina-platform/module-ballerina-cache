@@ -35,9 +35,9 @@ type LOG_LEVEL LOG_LEVEL_DEBUG|LOG_LEVEL_ERROR;
 # + return - Prepared `Error` instance
 isolated function prepareError(string message, error? err = (), LOG_LEVEL logLevel = LOG_LEVEL_ERROR) returns Error {
     if (logLevel == LOG_LEVEL_ERROR) {
-        log:printError(message, err);
+        log:printError(message, err = err);
     } else if (logLevel == LOG_LEVEL_DEBUG) {
-        log:printDebug(message);
+        log:print(message);
     }
     Error cacheError;
     if (err is error) {
