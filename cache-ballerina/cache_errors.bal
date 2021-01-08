@@ -26,8 +26,8 @@ public type Error CacheError;
 # + message - Error message
 # + err - `error` instance
 # + return - Prepared `Error` instance
-isolated function prepareError(string message, error? err = ()) returns CacheError {
-    CacheError cacheError;
+isolated function prepareError(string message, error? err = ()) returns Error {
+    Error cacheError;
     if (err is error) {
         cacheError = error CacheError(message, err);
     } else {
