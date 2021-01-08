@@ -29,9 +29,9 @@ public type Error CacheError;
 isolated function prepareError(string message, error? err = ()) returns Error {
     Error cacheError;
     if (err is error) {
-        cacheError = CacheError(message, err);
+        cacheError = error CacheError(message, err);
     } else {
-        cacheError = CacheError(message);
+        cacheError = error CacheError(message);
     }
     return cacheError;
 }
