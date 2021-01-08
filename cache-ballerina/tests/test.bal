@@ -57,7 +57,12 @@ isolated function testPutExistingEntry() {
     checkpanic cache.put(key, "Random value");
     checkpanic cache.put(key, "Ballerina");
     test:assertEquals(cache.size(), 1);
-    test:assertEquals(cache.get(key).toString(), "Ballerina");
+    any|error results = cache.get(key);
+    if (results is any) {
+        test:assertEquals(results.toString(), "Ballerina");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -82,9 +87,16 @@ isolated function testGetExistingEntry() {
     string key = "Hello";
     string value = "Ballerina";
     Cache cache = new(config);
-    checkpanic cache.put(key, value);
-    any|CacheError expected = cache.get(key);
-    test:assertEquals(expected.toString(), value);
+    any|error results = cache.put(key, value);
+    if (results is error) {
+        test:assertFail("Test failed");
+    }
+    any|error expected = cache.get(key);
+    if (expected is any) {
+        test:assertEquals(expected.toString(), value);
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -94,8 +106,13 @@ isolated function testGetNonExistingEntry() {
         evictionFactor: 0.2
     };
     Cache cache = new(config);
-    test:assertEquals(cache.get("Hello").toString(), "error CacheError (\"Cache entry from the given key: " +
-                      "Hello, is not available.\")");
+    any|error expected = cache.get("Hello");
+    if (expected is error) {
+        test:assertEquals(expected.toString(), "error CacheError (\"Cache entry from the given key: " +
+                              "Hello, is not available.\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -110,7 +127,12 @@ isolated function testGetExpiredEntry() {
     int maxAgeInSeconds = 1;
     checkpanic cache.put(key, value, maxAgeInSeconds);
     runtime:sleep(maxAgeInSeconds * 1000 * 2 + 1000);
-    test:assertEquals(cache.get(key).toString(), "");
+    any|error expected = cache.get(key);
+    if (expected is any) {
+        test:assertEquals(expected.toString(), "");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -293,7 +315,11 @@ isolated function testCreateCacheWithZeroCapacity() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
+    if (cache is error) {
+        test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -304,7 +330,11 @@ isolated function testCreateCacheWithNegativeCapacity() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
+    if (cache is error) {
+        test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -315,8 +345,12 @@ isolated function testCreateCacheWithZeroEvictionFactor() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 (exclusive)" +
-                      " and 1.0 (inclusive).\")");
+    if (cache is error) {
+        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 (exclusive)" +
+                              " and 1.0 (inclusive).\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -327,8 +361,12 @@ isolated function testCreateCacheWithNegativeEvictionFactor() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
-                      "(exclusive) and 1.0 (inclusive).\")");
+    if (cache is error) {
+        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
+                              "(exclusive) and 1.0 (inclusive).\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -339,8 +377,12 @@ isolated function testCreateCacheWithInvalidEvictionFactor() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
-                      "(exclusive) and 1.0 (inclusive).\")");
+    if (cache is error) {
+        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
+                              "(exclusive) and 1.0 (inclusive).\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -352,8 +394,12 @@ isolated function testCreateCacheWithZeroDefaultMaxAge() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    test:assertEquals(cache.toString(), "error CacheError (\"Default max age should be greater " +
-                      "than 0 or -1 for indicate forever valid.\")");
+    if (cache is error) {
+        test:assertEquals(cache.toString(), "error CacheError (\"Default max age should be greater " +
+                              "than 0 or -1 for indicate forever valid.\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
 
 @test:Config {}
@@ -365,6 +411,10 @@ isolated function testCreateCacheWithNegativeDefaultMaxAge() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    test:assertEquals(cache.toString(), "error CacheError (\"Default max age should be greater than 0 or -1 " +
-                      "for indicate forever valid.\")");
+    if (cache is error) {
+        test:assertEquals(cache.toString(), "error CacheError (\"Default max age should be greater than 0 or -1 " +
+                              "for indicate forever valid.\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
 }
