@@ -22,12 +22,11 @@ isolated function testCreateCache() {
     LruEvictionPolicy lruEvictionPolicy = new;
     CacheConfig config = {
         capacity: 10,
-        evictionPolicy: lruEvictionPolicy,
         evictionFactor: 0.2,
         defaultMaxAgeInSeconds: 3600,
         cleanupIntervalInSeconds: 5
     };
-    Cache|error cache = trap new(config);
+    Cache|error cache = trap new(config, lruEvictionPolicy);
     if (cache is Cache) {
        test:assertEquals(cache.size(), 0);
     } else {

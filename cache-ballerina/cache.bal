@@ -21,7 +21,6 @@ import ballerina/time;
 # Represents configurations for the `cache:Cache` object.
 #
 # + capacity - Maximum number of entries allowed in the cache
-# + evictionPolicy - The policy, which defines the cache eviction algorithm
 # + evictionFactor - The factor by which the entries will be evicted once the cache is full
 # + defaultMaxAgeInSeconds - The default value in seconds which all the cache entries are valid.
 #                            '-1' means, the entries are valid forever. This will be overwritten by the the
@@ -29,7 +28,6 @@ import ballerina/time;
 # + cleanupIntervalInSeconds - Interval of the timer task, which will clean up the cache
 public type CacheConfig record {|
     int capacity = 100;
-    AbstractEvictionPolicy evictionPolicy = new LruEvictionPolicy();
     float evictionFactor = 0.25;
     int defaultMaxAgeInSeconds = -1;
     int cleanupIntervalInSeconds?;
@@ -70,9 +68,11 @@ public class Cache {
     # Called when a new `cache:Cache` object is created.
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    public isolated function init(CacheConfig cacheConfig = {}) {
+    # + evictionPolicy - The policy, which defines the cache eviction algorithm
+    public isolated function init(CacheConfig cacheConfig = {},
+                                  AbstractEvictionPolicy evictionPolicy = new LruEvictionPolicy()) {
         self.maxCapacity = cacheConfig.capacity;
-        self.evictionPolicy = cacheConfig.evictionPolicy;
+        self.evictionPolicy = evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAgeInSeconds = cacheConfig.defaultMaxAgeInSeconds;
 
