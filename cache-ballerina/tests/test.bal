@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/runtime;
+import ballerina/lang.runtime as runtime;
 import ballerina/test;
 
 @test:Config {}
@@ -73,7 +73,7 @@ isolated function testPutWithMaxAge() {
     };
     Cache cache = new(config);
     checkpanic cache.put("Hello", "Ballerina", maxAge);
-    runtime:sleep(maxAge * 1000 * 2 + 1000);
+    runtime:sleep(11);
     test:assertEquals(cache.size(), 1);
 }
 
@@ -125,7 +125,7 @@ isolated function testGetExpiredEntry() {
     Cache cache = new(config);
     int maxAgeInSeconds = 1;
     checkpanic cache.put(key, value, maxAgeInSeconds);
-    runtime:sleep(maxAgeInSeconds * 1000 * 2 + 1000);
+    runtime:sleep(3);
     any|error expected = cache.get(key);
     if (expected is any) {
         test:assertEquals(expected.toString(), "");
@@ -282,7 +282,7 @@ isolated function testCacheEvictionWithTimer1() {
     checkpanic cache.put("B", "2");
     checkpanic cache.put("C", "3");
     string[] keys = [];
-    runtime:sleep(cleanupIntervalInSeconds * 1000 * 2 + 1000);
+    runtime:sleep(5);
     test:assertEquals(cache.size(), keys.length());
     test:assertEquals(cache.keys(), keys);
 }
@@ -301,7 +301,7 @@ isolated function testCacheEvictionWithTimer2() {
     checkpanic cache.put("B", "2", 3600);
     checkpanic cache.put("C", "3");
     string[] keys = ["B"];
-    runtime:sleep(cleanupIntervalInSeconds * 1000 * 2 + 1000);
+    runtime:sleep(5);
     test:assertEquals(cache.size(), keys.length());
     test:assertEquals(cache.keys(), keys);
 }

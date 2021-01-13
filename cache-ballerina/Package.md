@@ -34,7 +34,6 @@ The Ballerina Cache module provides the `cache:Cache` class, which is a `map` da
 
 While initializing the `cache:Cache`, you need to pass the following parameters as the cache configurations.
 - `capacity` - Maximum number of entries allowed for the cache
-- `evictionPolicy` - The policy to define the cache eviction algorithm
 - `evictionFactor` - The factor by which the entries will be evicted once the cache is full
 - `defaultMaxAgeInSeconds` - Freshness time of all the cache entries in seconds. This value can be overwritten by the
 `maxAgeInSeconds` property when inserting an entry to the cache. '-1' means the entries are valid forever.
@@ -46,7 +45,6 @@ For a better user experience, the above-mentioned configuration is initialized w
 ```ballerina
 public type CacheConfig record {|
     int capacity = 100;
-    AbstractEvictionPolicy evictionPolicy = new LruEvictionPolicy();
     float evictionFactor = 0.25;
     int defaultMaxAgeInSeconds = -1;
     int cleanupIntervalInSeconds?;
