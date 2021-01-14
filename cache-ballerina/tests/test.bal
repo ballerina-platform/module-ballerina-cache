@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/runtime;
+import ballerina/lang.runtime as runtime;
 import ballerina/test;
 
 @test:Config {}
@@ -73,8 +73,13 @@ isolated function testPutWithMaxAge() {
     };
     Cache cache = new(config);
     checkpanic cache.put("Hello", "Ballerina", maxAge);
-    runtime:sleep(maxAge * 1000 * 2 + 1000);
-    test:assertEquals(cache.size(), 1);
+    decimal|error sleepTime = decimal:fromString((maxAge * 2 + 1).toString());
+    if (sleepTime is decimal) {
+        runtime:sleep(sleepTime);
+        test:assertEquals(cache.size(), 1);
+    } else {
+        test:assertFail("Test failed: " + sleepTime.message());
+    }
 }
 
 @test:Config {}
@@ -125,12 +130,17 @@ isolated function testGetExpiredEntry() {
     Cache cache = new(config);
     int maxAgeInSeconds = 1;
     checkpanic cache.put(key, value, maxAgeInSeconds);
-    runtime:sleep(maxAgeInSeconds * 1000 * 2 + 1000);
-    any|error expected = cache.get(key);
-    if (expected is any) {
-        test:assertEquals(expected.toString(), "");
+    decimal|error sleepTime = decimal:fromString((maxAgeInSeconds * 2 + 1).toString());
+    if (sleepTime is decimal) {
+        runtime:sleep(sleepTime);
+        any|error expected = cache.get(key);
+        if (expected is any) {
+            test:assertEquals(expected.toString(), "");
+        } else {
+             test:assertFail("Output mismatched");
+        }
     } else {
-         test:assertFail("Output mismatched");
+        test:assertFail("Test failed: " + sleepTime.message());
     }
 }
 
@@ -282,9 +292,14 @@ isolated function testCacheEvictionWithTimer1() {
     checkpanic cache.put("B", "2");
     checkpanic cache.put("C", "3");
     string[] keys = [];
-    runtime:sleep(cleanupIntervalInSeconds * 1000 * 2 + 1000);
-    test:assertEquals(cache.size(), keys.length());
-    test:assertEquals(cache.keys(), keys);
+    decimal|error sleepTime = decimal:fromString((cleanupIntervalInSeconds * 2 + 1).toString());
+    if (sleepTime is decimal) {
+        runtime:sleep(sleepTime);
+        test:assertEquals(cache.size(), keys.length());
+        test:assertEquals(cache.keys(), keys);
+    } else {
+        test:assertFail("Test failed: " + sleepTime.message());
+    }
 }
 
 @test:Config {}
@@ -301,9 +316,14 @@ isolated function testCacheEvictionWithTimer2() {
     checkpanic cache.put("B", "2", 3600);
     checkpanic cache.put("C", "3");
     string[] keys = ["B"];
-    runtime:sleep(cleanupIntervalInSeconds * 1000 * 2 + 1000);
-    test:assertEquals(cache.size(), keys.length());
-    test:assertEquals(cache.keys(), keys);
+    decimal|error sleepTime = decimal:fromString((cleanupIntervalInSeconds * 2 + 1).toString());
+    if (sleepTime is decimal) {
+        runtime:sleep(sleepTime);
+        test:assertEquals(cache.size(), keys.length());
+        test:assertEquals(cache.keys(), keys);
+    } else {
+        test:assertFail("Test failed: " + sleepTime.message());
+    }
 }
 
 @test:Config {}

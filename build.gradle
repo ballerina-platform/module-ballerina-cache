@@ -26,7 +26,6 @@ ext.ballerinaLangVersion = project.ballerinaLangVersion
 ext.stdlibTaskVersion = project.stdlibTaskVersion
 ext.stdlibTimeVersion = project.stdlibTimeVersion
 ext.stdlibLogVersion = project.stdlibLogVersion
-ext.stdlibRuntimeVersion = project.stdlibRuntimeVersion
 ext.puppycrawlCheckstyleVersion = project.puppycrawlCheckstyleVersion
 
 allprojects {
@@ -103,7 +102,6 @@ subprojects {
         ballerinaStdLibs "org.ballerinalang:task-ballerina:${stdlibTaskVersion}"
         ballerinaStdLibs "org.ballerinalang:time-ballerina:${stdlibTimeVersion}"
         ballerinaStdLibs "org.ballerinalang:log-ballerina:${stdlibLogVersion}"
-        ballerinaStdLibs "org.ballerinalang:runtime-ballerina:${stdlibRuntimeVersion}"
     }
 }
 
