@@ -112,7 +112,6 @@ public class Cache {
             } else {
                 panic prepareError("Failed to create the cache cleanup task.", cleanupScheduler);
             }
-
         }
     }
 
