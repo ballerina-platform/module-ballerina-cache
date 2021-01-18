@@ -99,14 +99,18 @@ public class Cache {
                 intervalInMillis: cleanupIntervalInSeconds,
                 initialDelayInMillis: cleanupIntervalInSeconds
             };
-            task:Scheduler cleanupScheduler = new(timerConfiguration);
-            task:SchedulerError? result = cleanupScheduler.attach(cleanupService, self, self.evictionPolicy);
-            if (result is task:SchedulerError) {
-                panic prepareError("Failed to create the cache cleanup task.", result);
-            }
-            result = cleanupScheduler.start();
-            if (result is task:SchedulerError) {
-                panic prepareError("Failed to start the cache cleanup task.", result);
+            task:Scheduler|task:SchedulerError cleanupScheduler = new(timerConfiguration);
+            if (cleanupScheduler is task:Scheduler) {
+                task:SchedulerError? result = cleanupScheduler.attach(cleanupService, self, self.evictionPolicy);
+                if (result is task:SchedulerError) {
+                    panic prepareError("Failed to attach the cache cleanup task.", result);
+                }
+                result = cleanupScheduler.start();
+                if (result is task:SchedulerError) {
+                    panic prepareError("Failed to start the cache cleanup task.", result);
+                }
+            } else {
+                panic prepareError("Failed to initialize the cache cleanup task.", cleanupScheduler);
             }
         }
     }
