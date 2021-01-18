@@ -110,7 +110,7 @@ public class Cache {
                     panic prepareError("Failed to start the cache cleanup task.", result);
                 }
             } else {
-                panic prepareError("Failed to create the cache cleanup task.", cleanupScheduler);
+                panic prepareError("Failed to initialize the cache cleanup task.", cleanupScheduler);
             }
         }
     }
