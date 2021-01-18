@@ -103,7 +103,7 @@ public class Cache {
             if (cleanupScheduler is task:Scheduler) {
                 task:SchedulerError? result = cleanupScheduler.attach(cleanupService, self, self.evictionPolicy);
                 if (result is task:SchedulerError) {
-                    panic prepareError("Failed to create the cache cleanup task.", result);
+                    panic prepareError("Failed to attach the cache cleanup task.", result);
                 }
                 result = cleanupScheduler.start();
                 if (result is task:SchedulerError) {
