@@ -3,21 +3,6 @@ org = "ballerina"
 name = "cache"
 version = "@toml.version@"
 
-[[dependency]]
-org = "ballerina"
-name = "time"
-version = "@stdlib.time.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "log"
-version = "@stdlib.log.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "task"
-version = "@stdlib.task.version@"
-
 [[platform.java11.dependency]]
 path = "../cache-native/build/libs/cache-native-@project.version@.jar"
 groupId = "ballerina"
