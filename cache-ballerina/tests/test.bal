@@ -17,7 +17,9 @@
 import ballerina/lang.runtime as runtime;
 import ballerina/test;
 
-@test:Config {}
+@test:Config {
+    groups: ["create"]
+}
 isolated function testCreateCache() {
     LruEvictionPolicy lruEvictionPolicy = new;
     CacheConfig config = {
@@ -34,7 +36,9 @@ isolated function testCreateCache() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "put", "size"]
+}
 isolated function testPutNewEntry() {
     CacheConfig config = {
         capacity: 10,
@@ -45,7 +49,9 @@ isolated function testPutNewEntry() {
     test:assertEquals(cache.size(), 1);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "put", "size", "entry"]
+}
 isolated function testPutExistingEntry() {
     CacheConfig config = {
         capacity: 10,
@@ -64,7 +70,9 @@ isolated function testPutExistingEntry() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "put", "size", "age"]
+}
 isolated function testPutWithMaxAge() {
     int maxAge = 5;
     CacheConfig config = {
@@ -82,7 +90,9 @@ isolated function testPutWithMaxAge() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "get"]
+}
 isolated function testGetExistingEntry() {
     CacheConfig config = {
         capacity: 10,
@@ -103,7 +113,9 @@ isolated function testGetExistingEntry() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "get"]
+}
 isolated function testGetNonExistingEntry() {
     CacheConfig config = {
         capacity: 10,
@@ -119,7 +131,9 @@ isolated function testGetNonExistingEntry() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "put", "size", "expired", "get"]
+}
 isolated function testGetExpiredEntry() {
     CacheConfig config = {
         capacity: 10,
@@ -144,7 +158,9 @@ isolated function testGetExpiredEntry() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "put", "size", "remove", "invalidate"]
+}
 isolated function testRemove() {
     CacheConfig config = {
         capacity: 10,
@@ -158,7 +174,9 @@ isolated function testRemove() {
     test:assertEquals(cache.size(), 0);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "put", "size", "remove", "invalidate"]
+}
 isolated function testRemoveAll() {
     CacheConfig config = {
         capacity: 10,
@@ -175,7 +193,9 @@ isolated function testRemoveAll() {
     test:assertEquals(cache.size(), 0);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "get", "key"]
+}
 isolated function testHasKey() {
     CacheConfig config = {
         capacity: 10,
@@ -188,7 +208,9 @@ isolated function testHasKey() {
     test:assertTrue(cache.hasKey(key));
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "get", "keys"]
+}
 isolated function testKeys() {
     CacheConfig config = {
         capacity: 10,
@@ -205,7 +227,9 @@ isolated function testKeys() {
     test:assertEquals(cache.keys(), keys);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["create", "capacity"]
+}
 isolated function testCapacity() {
     CacheConfig config = {
         capacity: 10,
@@ -215,7 +239,9 @@ isolated function testCapacity() {
     test:assertEquals(cache.capacity(), 10);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "resize"]
+}
 isolated function testSize() {
     CacheConfig config = {
         capacity: 10,
@@ -231,7 +257,9 @@ isolated function testSize() {
     test:assertEquals(cache.size(), 2);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy"]
+}
 isolated function testCacheEvictionWithCapacity1() {
     CacheConfig config = {
         capacity: 10,
@@ -254,7 +282,9 @@ isolated function testCacheEvictionWithCapacity1() {
     test:assertEquals(cache.keys(), keys);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy"]
+}
 isolated function testCacheEvictionWithCapacity2() {
     CacheConfig config = {
         capacity: 10,
@@ -278,7 +308,9 @@ isolated function testCacheEvictionWithCapacity2() {
     test:assertEquals(cache.keys(), keys);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy"]
+}
 isolated function testCacheEvictionWithTimer1() {
     int cleanupIntervalInSeconds = 2;
     CacheConfig config = {
@@ -302,7 +334,9 @@ isolated function testCacheEvictionWithTimer1() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy"]
+}
 isolated function testCacheEvictionWithTimer2() {
     int cleanupIntervalInSeconds = 2;
     CacheConfig config = {
@@ -326,7 +360,9 @@ isolated function testCacheEvictionWithTimer2() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy"]
+}
 isolated function testCreateCacheWithZeroCapacity() {
     CacheConfig config = {
         capacity: 0,
@@ -341,7 +377,9 @@ isolated function testCreateCacheWithZeroCapacity() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy", "negative"]
+}
 isolated function testCreateCacheWithNegativeCapacity() {
     CacheConfig config = {
         capacity: -1,
@@ -356,7 +394,9 @@ isolated function testCreateCacheWithNegativeCapacity() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy", "negative"]
+}
 isolated function testCreateCacheWithZeroEvictionFactor() {
     CacheConfig config = {
         capacity: 10,
@@ -372,7 +412,9 @@ isolated function testCreateCacheWithZeroEvictionFactor() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy", "negative"]
+}
 isolated function testCreateCacheWithNegativeEvictionFactor() {
     CacheConfig config = {
         capacity: 10,
@@ -388,7 +430,9 @@ isolated function testCreateCacheWithNegativeEvictionFactor() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy", "negative"]
+}
 isolated function testCreateCacheWithInvalidEvictionFactor() {
     CacheConfig config = {
         capacity: 10,
@@ -404,7 +448,9 @@ isolated function testCreateCacheWithInvalidEvictionFactor() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "policy", "negative"]
+}
 isolated function testCreateCacheWithZeroDefaultMaxAge() {
     CacheConfig config = {
         capacity: 10,
@@ -421,7 +467,9 @@ isolated function testCreateCacheWithZeroDefaultMaxAge() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["cache", "capacity", "age", "negative"]
+}
 isolated function testCreateCacheWithNegativeDefaultMaxAge() {
     CacheConfig config = {
         capacity: 10,
