@@ -133,6 +133,7 @@ task initializeVariables {
 }
 
 task ballerinaTest {
+    dependsOn(":cache-native:build")
     dependsOn(updateTomlVersions)
     dependsOn(initializeVariables)
     finalizedBy(revertTomlFile)
@@ -265,7 +266,4 @@ ballerinaBuild.dependsOn ":cache-native:build"
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlVersions.dependsOn copyStdlibs
-ballerinaBuild.dependsOn updateTomlVersions
-ballerinaTest.dependsOn ":cache-native:build"
-ballerinaBuild.dependsOn test
 build.dependsOn ballerinaBuild
