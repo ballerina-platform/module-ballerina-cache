@@ -21,7 +21,7 @@ public type CacheError distinct error;
 # Represents Cache related errors.
 public type Error CacheError;
 
-# Prepare the `error` as a `cache:Error` after printing an log with provided log level.
+# Prepare the `error` as a `cache:Error`.
 #
 # + message - Error message
 # + err - `error` instance
