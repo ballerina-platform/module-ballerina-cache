@@ -10,7 +10,7 @@ The cache library is one of the standard library modules of the<a target="_blank
 
 This module provides APIs for handle caching in Ballerina. It consists of a default implementation based on the map data structure. It also provides a default cache eviction policy object, which is based on the LRU eviction algorithm.
 
-For more information on all the operations supported by the `cache`, which include the below, go to [The Cache Module](https://ballerina.io/swan-lake/learn/api-docs/ballerina/cache/).
+For more information on all the operations supported by the `cache`, which include the below, go to [The Cache Module](https://ballerina.io/learn/api-docs/ballerina/cache/).
 
 - put
 - get
@@ -21,7 +21,7 @@ For more information on all the operations supported by the `cache`, which inclu
 - size
 - capacity
 
-For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/swan-lake/learn/by-example/mysql-init-options.html).
+For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/mysql-init-options.html).
 
 ## Issues and Projects 
 
