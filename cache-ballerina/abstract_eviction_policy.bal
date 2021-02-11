@@ -18,33 +18,39 @@
 # Ballerina cache object. Any custom eviction policy implementation should be object-wise similar.
 public type AbstractEvictionPolicy object {
 
-    # Updates the linked list based on the get operation.
+    # Updates the cache based on the get operation.
     #
-    # + node - Node of the linked list, which is retrieved
-    public isolated function get(Node node);
+    # + cache - A `Cache` object
+    # + key - A key, which is retrieved
+    # + return - A cached value associated with the provided key or an `nill`
+    public isolated function get(Cache cache, string key) returns any?;
 
-    # Updates the linked list based on the put operation.
+    # Updates the cache based on the put operation.
     #
-    # + node - Node of the linked list, which is added newly
-    public isolated function put(Node node);
+    # + cache - A `Cache` object
+    # + key - A key, which is insert
+    # + value - A value, which is added newly
+    public isolated function put(Cache cache, string key, any value);
 
-    # Updates the linked list based on the remove operation.
+    # Updates the cache based on the remove operation.
     #
-    # + node - Node of the linked list, which is deleted
-    public isolated function remove(Node node);
+    # + cache - A `Cache` object
+    # + key - A key, which is deleted
+    public isolated function remove(Cache cache, string key);
 
-    # Updates the linked list based on the replace operation.
+    # Updates the cache based on the replace operation.
     #
-    # + newNode - Node of the linked list, which will be replacing the `oldNode`
-    # + oldNode - Node of the linked list, which will be replaced by the `newNode`
-    public isolated function replace(Node newNode, Node oldNode);
+    # + cache - A `Cache` object
+    # + key - A key, which will be replacing in the cache
+    # + newValue - A value, which will be replaced by the `newValue`
+    public isolated function replace(Cache cache, string key, any newValue);
 
     # Updates the linked list based on the clear operation.
-    public isolated function clear();
-
-    # Updates the linked list based on the evict operation.
     #
-    # + return - The Node, which is evicted from the linked list or `()` if nothing to be evicted
-    public isolated function evict() returns Node?;
+    # + cache - A `Cache` object
+    public isolated function clear(Cache cache);
+
+    # Updates the cache based on the evict operation.
+    public isolated function evict();
 
 };
