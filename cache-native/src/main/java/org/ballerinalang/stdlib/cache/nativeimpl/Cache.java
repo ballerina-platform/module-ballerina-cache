@@ -36,18 +36,20 @@ import java.util.Map;
 public class Cache {
 
     private static ConcurrentLinkedHashMap<BString, BMap<BString, Object>> cacheMap;
-
-    public static final String CACHE = "CACHE";
+    private static final String MAX_CAPACITY = "maxCapacity";
+    private static final String EVICTION_FACTOR = "evictionFactor";
+    private static final String EXPIRE_TIME = "expTime";
+    private static final String CACHE = "CACHE";
 
     public static void externInit(BObject cache) {
-        int capacity = (int) cache.getIntValue(StringUtils.fromString("maxCapacity"));
+        int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
         cacheMap = new ConcurrentLinkedHashMap(capacity);
         cache.addNativeData(CACHE, cacheMap);
     }
 
     public static void externPut(BObject cache, BString key, BMap<BString, Object> value) {
-        int capacity = (int) cache.getIntValue(StringUtils.fromString("maxCapacity"));
-        float evictionFactor = (float) cache.getFloatValue(StringUtils.fromString("evictionFactor"));
+        int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
+        float evictionFactor = (float) cache.getFloatValue(StringUtils.fromString(EVICTION_FACTOR));
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         if (cacheMap.size() >= capacity) {
             int evictionKeysCount = (int) (capacity * evictionFactor);
@@ -60,7 +62,7 @@ public class Cache {
     public static BMap<BString, Object> externGet(BObject cache, BString key) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         BMap<BString, Object> value = cacheMap.get(key);
-        Long time = (Long) value.get(StringUtils.fromString("expTime"));
+        Long time = (Long) value.get(StringUtils.fromString(EXPIRE_TIME));
         if (time != -1 && time <= System.nanoTime()) {
             cacheMap.remove(key);
             return null;
@@ -103,7 +105,7 @@ public class Cache {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         for (Map.Entry<BString, BMap<BString, Object>> entry : cacheMap.entrySet()) {
             BMap<BString, Object> value = entry.getValue();
-            Long time = (Long) value.get(StringUtils.fromString("expTime"));
+            Long time = (Long) value.get(StringUtils.fromString(EXPIRE_TIME));
             if (time != -1 && time <= System.nanoTime()) {
                 cacheMap.remove(entry.getKey());
             }

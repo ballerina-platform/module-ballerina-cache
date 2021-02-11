@@ -42,24 +42,7 @@ public class LinkedDeque<E extends Linked<E>> {
      * null)
      */
     E last = null;
-//
-//    /**
-//     * Links the element to the front of the deque so that it becomes the first element.
-//     *
-//     * @param e the unlinked element
-//     */
-//    void linkFirst(final E e) {
-//        final E f = first;
-//        first = e;
-//
-//        if (f == null) {
-//            last = e;
-//        } else {
-//            f.setPrevious(e);
-//            e.setNext(f);
-//        }
-//    }
-//
+
     /**
      * Links the element to the back of the deque so that it becomes the last element.
      *
@@ -92,20 +75,6 @@ public class LinkedDeque<E extends Linked<E>> {
         return f;
     }
 
-//    /** Unlinks the non-null last element. */
-//    E unlinkLast() {
-//        final E l = last;
-//        final E prev = l.getPrevious();
-//        l.setPrevious(null);
-//        last = prev;
-//        if (prev == null) {
-//            first = null;
-//        } else {
-//            prev.setNext(null);
-//        }
-//        return l;
-//    }
-
     /** Unlinks the non-null element. */
     void unlink(E e) {
         final E prev = e.getPrevious();
@@ -126,7 +95,6 @@ public class LinkedDeque<E extends Linked<E>> {
         }
     }
 
-//    @Override
     public boolean isEmpty() {
         return (first == null);
     }
@@ -136,34 +104,7 @@ public class LinkedDeque<E extends Linked<E>> {
             throw new NoSuchElementException();
         }
     }
-//
-//    /**
-//     * {@inheritDoc}
-//     * <p>
-//     * Beware that, unlike in most collections, this method is <em>NOT</em> a
-//     * constant-time operation.
-//     */
-//    @Override
-//    public int size() {
-//        int size = 0;
-//        for (E e = first; e != null; e = e.getNext()) {
-//            size++;
-//        }
-//        return size;
-//    }
-//
-//    @Override
-//    public void clear() {
-//        for (E e = first; e != null;) {
-//            E next = e.getNext();
-//            e.setPrevious(null);
-//            e.setNext(null);
-//            e = next;
-//        }
-//        first = last = null;
-//    }
-//
-//    @Override
+
     public boolean contains(Object o) {
         return (o instanceof Linked<?>) && contains((Linked<?>) o);
     }
@@ -172,19 +113,7 @@ public class LinkedDeque<E extends Linked<E>> {
     boolean contains(Linked<?> e) {
         return (e.getPrevious() != null) || (e.getNext() != null) || (e == first);
     }
-//
-////    /**
-////     * Moves the element to the front of the deque so that it becomes the first element.
-////     *
-////     * @param e the linked element
-////     */
-////    public void moveToFront(E e) {
-////        if (e != first) {
-////            unlink(e);
-////            linkFirst(e);
-////        }
-////    }
-//
+
     /**
      * Moves the element to the back of the deque so that it becomes the last element.
      *
@@ -196,45 +125,7 @@ public class LinkedDeque<E extends Linked<E>> {
             linkLast(e);
         }
     }
-//
-////    public E peek() {
-////        return peekFirst();
-////    }
-//
-//    public E peekFirst() {
-//        return first;
-//    }
-//
-//    public E peekLast() {
-//        return last;
-//    }
-//
-//    public E getFirst() {
-//        checkNotEmpty();
-//        return peekFirst();
-//    }
-//
-//    public E getLast() {
-//        checkNotEmpty();
-//        return peekLast();
-//    }
-//
-//    public E element() {
-//        return getFirst();
-//    }
-//
-//    public boolean offer(E e) {
-//        return offerLast(e);
-//    }
-//
-//    public boolean offerFirst(E e) {
-//        if (contains(e)) {
-//            return false;
-//        }
-//        linkFirst(e);
-//        return true;
-//    }
-//
+
     public boolean offerLast(E e) {
         if (contains(e)) {
             return false;
@@ -243,23 +134,10 @@ public class LinkedDeque<E extends Linked<E>> {
         return true;
     }
 
-//    @Override
     public boolean add(E e) {
         return offerLast(e);
     }
-//
-//    public void addFirst(E e) {
-//        if (!offerFirst(e)) {
-//            throw new IllegalArgumentException();
-//        }
-//    }
-//
-//    public void addLast(E e) {
-//        if (!offerLast(e)) {
-//            throw new IllegalArgumentException();
-//        }
-//    }
-//
+
     public E poll() {
         return pollFirst();
     }
@@ -270,20 +148,8 @@ public class LinkedDeque<E extends Linked<E>> {
         }
         return unlinkFirst();
     }
-//
-//    public E pollLast() {
-//        if (isEmpty()) {
-//            return null;
-//        }
-//        return unlinkLast();
-//    }
-//
-    public E remove() {
-        return removeFirst();
-    }
 
-//    @Override
-//    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public boolean remove(Object o) {
         if (contains(o)) {
             unlink((E) o);
@@ -291,97 +157,4 @@ public class LinkedDeque<E extends Linked<E>> {
         }
         return false;
     }
-
-    public E removeFirst() {
-        checkNotEmpty();
-        return pollFirst();
-    }
-//
-////    public boolean removeFirstOccurrence(Object o) {
-////        return remove(o);
-////    }
-////
-////    public E removeLast() {
-////        checkNotEmpty();
-////        return pollLast();
-////    }
-////
-////    public boolean removeLastOccurrence(Object o) {
-////        return remove(o);
-////    }
-//
-//    @Override
-//    public boolean removeAll(Collection<?> c) {
-//        boolean modified = false;
-//        for (Object o : c) {
-//            modified |= remove(o);
-//        }
-//        return modified;
-//    }
-//
-////    public void push(E e) {
-////        addFirst(e);
-////    }
-////
-////    public E pop() {
-////        return removeFirst();
-////    }
-//
-//    @Override
-//    public Iterator<E> iterator() {
-//        return new AbstractLinkedIterator(first) {
-//
-//            @Override
-//            E computeNext() {
-//                return cursor.getNext();
-//            }
-//        };
-//    }
-////
-////    public Iterator<E> descendingIterator() {
-////        return new AbstractLinkedIterator(last) {
-////
-////            @Override
-////            E computeNext() {
-////                return cursor.getPrevious();
-////            }
-////        };
-////    }
-//
-//    abstract class AbstractLinkedIterator implements Iterator<E> {
-//
-//        E cursor;
-//
-//        /**
-//         * Creates an iterator that can can traverse the deque.
-//         *
-//         * @param start the initial element to begin traversal from
-//         */
-//        AbstractLinkedIterator(E start) {
-//            cursor = start;
-//        }
-//
-//        public boolean hasNext() {
-//            return (cursor != null);
-//        }
-//
-//        public E next() {
-//            if (!hasNext()) {
-//                throw new NoSuchElementException();
-//            }
-//            E e = cursor;
-//            cursor = computeNext();
-//            return e;
-//        }
-//
-//        public void remove() {
-//            throw new UnsupportedOperationException();
-//        }
-//
-//        /**
-//         * Retrieves the next element to traverse to or <tt>null</tt> if there are no more
-//         * elements.
-//         */
-//        abstract E computeNext();
-//    }
 }
