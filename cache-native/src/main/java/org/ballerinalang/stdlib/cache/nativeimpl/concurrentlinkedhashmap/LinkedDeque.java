@@ -17,8 +17,6 @@
  */
 package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 
-import java.util.NoSuchElementException;
-
 /**
  *  This class provides a doubly-linked list that is optimized for the virtual
  *  machine. The first and last elements are manipulated instead of a slightly
@@ -48,7 +46,7 @@ public class LinkedDeque<E extends Linked<E>> {
      *
      * @param e the unlinked element
      */
-    void linkLast(final E e) {
+    private void linkLast(final E e) {
         final E l = last;
         last = e;
 
@@ -61,7 +59,7 @@ public class LinkedDeque<E extends Linked<E>> {
     }
 
     /** Unlinks the non-null first element. */
-    E unlinkFirst() {
+    private E unlinkFirst() {
         final E f = first;
         final E next = f.getNext();
         f.setNext(null);
@@ -76,7 +74,7 @@ public class LinkedDeque<E extends Linked<E>> {
     }
 
     /** Unlinks the non-null element. */
-    void unlink(E e) {
+    private void unlink(E e) {
         final E prev = e.getPrevious();
         final E next = e.getNext();
 
@@ -97,12 +95,6 @@ public class LinkedDeque<E extends Linked<E>> {
 
     public boolean isEmpty() {
         return (first == null);
-    }
-
-    void checkNotEmpty() {
-        if (isEmpty()) {
-            throw new NoSuchElementException();
-        }
     }
 
     public boolean contains(Object o) {

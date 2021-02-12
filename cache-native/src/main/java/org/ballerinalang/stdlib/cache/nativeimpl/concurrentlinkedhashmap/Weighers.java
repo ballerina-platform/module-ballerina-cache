@@ -21,9 +21,6 @@ package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 /**
  * A common set of {@link Weigher} implementations.
  *
- * @author ben.manes@gmail.com (Ben Manes)
- * @see <a href="http://code.google.com/p/concurrentlinkedhashmap/">
- *      http://code.google.com/p/concurrentlinkedhashmap/</a>
  */
 final class Weighers {
 
