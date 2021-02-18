@@ -1,6 +1,6 @@
-## Module Overview
+## Package Overview
 
-This module provides APIs for handle caching in Ballerina. It consists of a default implementation based on the map data structure. It also provides a default cache eviction policy object, which is based on the LRU eviction algorithm.
+This package provides APIs for handle caching in Ballerina. It consists of a default implementation based on the map data structure. It also provides a default cache eviction policy object, which is based on the LRU eviction algorithm.
 
 The `cache:AbstractCache` object has the common APIs for the caching functionalities. Custom implementations of the cache can be done with different data storages like file, database, etc. with the structural equivalency to the `cache:AbstractCacheObject` object.
 
@@ -30,7 +30,7 @@ public type AbstractEvictionPolicy object {
 };
 ```
 
-The Ballerina Cache module provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object. It is not recommended to insert `()` as the value of the cache since it doesn't make sense to cache a nil. Also, it provides the `cache:LruEvictionPolicy` class, which is based on the LRU eviction algorithm.
+The Ballerina Cache package provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object. It is not recommended to insert `()` as the value of the cache since it doesn't make sense to cache a nil. Also, it provides the `cache:LruEvictionPolicy` class, which is based on the LRU eviction algorithm.
 
 While initializing the `cache:Cache`, you need to pass the following parameters as the cache configurations.
 - `capacity` - Maximum number of entries allowed for the cache
@@ -85,4 +85,4 @@ A linked list is used for the eviction of the cache. According to the user-confi
 
 Furthermore, you can implement custom caching implementations based on different cache storage mechanisms (file, database. etc.) and different eviction policies (MRU, FIFO, etc.). Ballerina provides a "map-based cache" as the default cache implementation.
 
-For information on the operations, which you can perform with the cache module, see the below __Functions__. For examples on the usage of the operations, see [Cache Example](https://ballerina.io/swan-lake/learn/by-example/cache.html)
+For information on the operations, which you can perform with the cache package, see the below __Functions__. For examples on the usage of the operations, see [Cache Example](https://ballerina.io/learn/by-example/cache.html)

@@ -6,11 +6,11 @@ Ballerina Cache Library
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/cache.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fcache)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The cache library is one of the standard library modules of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
+The cache library is one of the standard library packages of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
 
-This module provides APIs for handle caching in Ballerina. It consists of a default implementation based on the map data structure. It also provides a default cache eviction policy object, which is based on the LRU eviction algorithm.
+This package provides APIs for handle caching in Ballerina. It consists of a default implementation based on the map data structure. It also provides a default cache eviction policy object, which is based on the LRU eviction algorithm.
 
-For more information on all the operations supported by the `cache`, which include the below, go to [The Cache Module](https://ballerina.io/swan-lake/learn/api-docs/ballerina/cache/).
+For more information on all the operations supported by the `cache`, which include the below, go to [The Cache Package](https://ballerina.io/learn/api-docs/ballerina/cache/).
 
 - put
 - get
@@ -21,13 +21,13 @@ For more information on all the operations supported by the `cache`, which inclu
 - size
 - capacity
 
-For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/swan-lake/learn/by-example/mysql-init-options.html).
+For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/mysql-init-options.html).
 
 ## Issues and Projects 
 
 Issues and Project are disabled for this repository as this is part of the Ballerina Standard Library. To report bugs, request new features, start new discussions, view project boards, etc. please visit Ballerina Standard Library [parent repository](https://github.com/ballerina-platform/ballerina-standard-library). 
 
-This repository only contains the source code for the module.
+This repository only contains the source code for the package.
 
 ## Building from the Source
 
@@ -52,7 +52,7 @@ Execute the commands below to build from source.
 
         ./gradlew clean test
         
-3. To build the module without tests:
+3. To build the package without tests:
 
         ./gradlew clean build -x test
 
@@ -60,11 +60,11 @@ Execute the commands below to build from source.
 
         ./gradlew clean test -Pgroups=<test_group_names>
 
-5. To debug module implementation:
+5. To debug package implementation:
 
         ./gradlew clean build -Pdebug=<port>
         
-6. To debug the module with Ballerina language:
+6. To debug the package with Ballerina language:
 
         ./gradlew clean build -PbalJavaDebug=<port>
 
