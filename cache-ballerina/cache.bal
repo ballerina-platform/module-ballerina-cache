@@ -22,6 +22,7 @@ import ballerina/time;
 #
 # + capacity - Maximum number of entries allowed in the cache
 # + evictionFactor - The factor by which the entries will be evicted once the cache is full
+# + evictionPolicy - The policy which is used to evict entries once the cache is full
 # + defaultMaxAgeInSeconds - The default value in seconds which all the cache entries are valid.
 #                            '-1' means, the entries are valid forever. This will be overwritten by the the
 #                            `maxAgeInSeconds` property set when inserting item to the cache
@@ -29,9 +30,17 @@ import ballerina/time;
 public type CacheConfig record {|
     int capacity = 100;
     float evictionFactor = 0.25;
+    EvictionPolicy evictionPolicy = LRU;
     int defaultMaxAgeInSeconds = -1;
     int cleanupIntervalInSeconds?;
 |};
+
+public const string FIFO = "firstInFirstOut";
+public const string LRU = "leastRecentlyUse";
+public const string MRU = "mostRecentlyUse";
+public const string FILO = "firstInLastOut";
+
+public type EvictionPolicy FIFO|LRU|MRU|FILO;
 
 type CacheEntry record {|
     any data;
@@ -43,11 +52,11 @@ boolean cleanupInProgress = false;
 
 // Cleanup service which cleans the cache entries periodically.
 final service isolated object{} cleanupService = service object {
-    remote function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
+    remote function onTrigger(Cache cache, EvictionPolicy evictionPolicy) {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
             cleanupInProgress = true;
-            evictionPolicy.clear(cache);
+            externCleanUp(cache);
             cleanupInProgress = false;
         }
     }
@@ -60,7 +69,7 @@ public class Cache {
     *AbstractCache;
 
     private int maxCapacity;
-    private AbstractEvictionPolicy evictionPolicy;
+    private EvictionPolicy evictionPolicy;
     private float evictionFactor;
     private int defaultMaxAgeInSeconds;
 
@@ -68,10 +77,9 @@ public class Cache {
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
     # + evictionPolicy - The policy, which defines the cache eviction algorithm
-    public isolated function init(CacheConfig cacheConfig = {},
-                                  AbstractEvictionPolicy evictionPolicy = new LruEvictionPolicy()) {
+    public isolated function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
-        self.evictionPolicy = evictionPolicy;
+        self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAgeInSeconds = cacheConfig.defaultMaxAgeInSeconds;
 
@@ -88,9 +96,7 @@ public class Cache {
         if (self.defaultMaxAgeInSeconds != -1 && self.defaultMaxAgeInSeconds <= 0) {
             panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
-
         externInit(self);
-
         int? cleanupIntervalInSeconds = cacheConfig?.cleanupIntervalInSeconds;
         if (cleanupIntervalInSeconds is int) {
             task:TimerConfiguration timerConfiguration = {
@@ -141,7 +147,7 @@ public class Cache {
             data: value,
             expTime: calculatedExpTime
         };
-        self.evictionPolicy.put(self, key, entry);
+        return externPut(self, key, entry);
     }
 
     # Returns the cached value associated with the provided key.
@@ -153,7 +159,7 @@ public class Cache {
         if (!self.hasKey(key)) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
-        any? entry = self.evictionPolicy.get(self, key);
+        any? entry = externGet(self, key);
         if (entry is CacheEntry) {
             return entry.data;
         } else {
@@ -170,7 +176,7 @@ public class Cache {
         if (!self.hasKey(key)) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
-        self.evictionPolicy.remove(self, key);
+        externRemove(self, key);
     }
 
     # Discards all the cached values from the cache.
@@ -229,5 +235,21 @@ isolated function externKeys(Cache cache) returns string[] = @java:Method {
 } external;
 
 isolated function externSize(Cache cache) returns int = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function externPut(Cache cache, string key, any value) = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function externGet(Cache cache, string key) returns CacheEntry? = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function externRemove(Cache cache, string key) = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function externCleanUp(Cache cache) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;

@@ -38,30 +38,35 @@ public class Cache {
     private static ConcurrentLinkedHashMap<BString, BMap<BString, Object>> cacheMap;
     private static final String MAX_CAPACITY = "maxCapacity";
     private static final String EVICTION_FACTOR = "evictionFactor";
+    private static final String EVICTION_POLICY = "evictionPolicy";
     private static final String EXPIRE_TIME = "expTime";
     private static final String CACHE = "CACHE";
 
     public static void externInit(BObject cache) {
         int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
-        cacheMap = new ConcurrentLinkedHashMap(capacity);
+        cacheMap = new ConcurrentLinkedHashMap<>(capacity);
         cache.addNativeData(CACHE, cacheMap);
     }
 
+    @SuppressWarnings("unchecked")
     public static void externPut(BObject cache, BString key, BMap<BString, Object> value) {
         int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
+        String policy = String.valueOf(cache.getStringValue(StringUtils.fromString(EVICTION_POLICY)));
         float evictionFactor = (float) cache.getFloatValue(StringUtils.fromString(EVICTION_FACTOR));
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         if (cacheMap.size() >= capacity) {
             int evictionKeysCount = (int) (capacity * evictionFactor);
-            cacheMap.setCapacity((capacity - evictionKeysCount));
-            cacheMap.setCapacity(capacity);
+                cacheMap.setCapacity((capacity - evictionKeysCount), policy);
+                cacheMap.setCapacity(capacity, policy);
         }
-        cacheMap.put(key, value);
+        cacheMap.put(key, value, policy);
     }
 
+    @SuppressWarnings("unchecked")
     public static BMap<BString, Object> externGet(BObject cache, BString key) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
-        BMap<BString, Object> value = cacheMap.get(key);
+        String policy = String.valueOf(cache.getStringValue(StringUtils.fromString(EVICTION_POLICY)));
+        BMap<BString, Object> value = cacheMap.get(key, policy);
         Long time = (Long) value.get(StringUtils.fromString(EXPIRE_TIME));
         if (time != -1 && time <= System.nanoTime()) {
             cacheMap.remove(key);
@@ -70,37 +75,45 @@ public class Cache {
         return value;
     }
 
+    @SuppressWarnings("unchecked")
     public static void externRemove(BObject cache, BString key) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         cacheMap.remove(key);
     }
 
+    @SuppressWarnings("unchecked")
     public static void externRemoveAll(BObject cache) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         cacheMap.clear();
     }
 
+    @SuppressWarnings("unchecked")
     public static boolean externHasKey(BObject cache, BString key) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         return cacheMap.containsKey(key);
     }
 
+    @SuppressWarnings("unchecked")
     public static BArray externKeys(BObject cache) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         return ValueCreator.createArrayValue(cacheMap.keySet().toArray(new BString[0]));
     }
 
+    @SuppressWarnings("unchecked")
     public static int externSize(BObject cache) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         return cacheMap.size();
     }
 
+    @SuppressWarnings("unchecked")
     public static void externReplace(BObject cache, BString key, BMap<BString, Object> oldValue,
                                      BMap<BString, Object> newValue) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
-        cacheMap.replace(key, oldValue, newValue);
+        String policy = String.valueOf(cache.getStringValue(StringUtils.fromString(EVICTION_POLICY)));
+        cacheMap.replace(key, oldValue, newValue, policy);
     }
 
+    @SuppressWarnings("unchecked")
     public static void externCleanUp(BObject cache) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         for (Map.Entry<BString, BMap<BString, Object>> entry : cacheMap.entrySet()) {

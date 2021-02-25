@@ -40,6 +40,9 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Implementation of the ConcurrentLinked Hash Map.
@@ -95,8 +98,8 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
     }
 
     // The backing data store holding the key-value associations
-    final ConcurrentMap<K, Node> data;
-    final int concurrencyLevel;
+    final ConcurrentHashMap<K, Node> data;
+    int concurrencyLevel = 16;
 
     // These fields provide support to bound the map by a maximum capacity
     transient LinkedDeque<Node> evictionDeque;
@@ -119,6 +122,9 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
 
     transient Set<K> keySet;
     transient Set<Entry<K, V>> entrySet;
+    private static final String  LRU = "LeastRecentlyUse";
+    private static final String MRU = "MostRecentlyUse";
+    private static final String FILO = "FirstInLastOut";
 
     /**
      * Creates an instance based on the builder's configuration.
@@ -128,7 +134,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
     })
     public ConcurrentLinkedHashMap(int maximumCapacity) {
         // The data store and its maximum capacity
-        concurrencyLevel = 16;
         capacity = maximumCapacity;
         data = new ConcurrentHashMap<>(
                 3,
@@ -166,16 +171,15 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      * @param capacity the maximum weighted capacity of the map
      * @throws IllegalArgumentException if the capacity is negative
      */
-    public void setCapacity(int capacity) {
+    public void setCapacity(int capacity, String policy) {
         if (capacity < 0) {
             throw new IllegalArgumentException();
         }
-
         evictionLock.lock();
         try {
             this.capacity = Math.min(capacity, MAXIMUM_CAPACITY);
             drainBuffers(AMORTIZED_DRAIN_THRESHOLD);
-            evict();
+            evict(policy);
         } finally {
             evictionLock.unlock();
         }
@@ -190,7 +194,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      * Evicts entries from the map while it exceeds the capacity and appends evicted
      * entries to the notification queue for processing.
      */
-    private void evict() {
+    private void evict(String policy) {
         // Attempts to evict entries from the map if it exceeds the maximum
         // capacity. If the eviction fails due to a concurrent removal of the
         // victim, that removal may cancel out the addition that triggered this
@@ -198,7 +202,12 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         // that if an eviction is still required then a new victim will be chosen
         // for removal.
         while (hasOverflowed()) {
-            Node node = evictionDeque.poll();
+            Node node;
+            if (policy.equalsIgnoreCase(MRU) || policy.equalsIgnoreCase(FILO)) {
+                node = evictionDeque.pollLast();
+            } else {
+                node = evictionDeque.pollFirst();
+            }
 
             // If weighted values are used, then the pending operations will adjust
             // the size to reflect the correct weight
@@ -467,7 +476,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
             // ignore out-of-order write operations
             if (node.get().isAlive()) {
                 evictionDeque.add(node);
-                evict();
             }
         }
 
@@ -510,7 +518,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         public void run() {
             super.run();
             weightedSize += weightDifference;
-            evict();
         }
 
         @Override
@@ -580,21 +587,27 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
 
     @Override
     public V get(Object key) {
+        return null;
+    }
+
+    public V get(Object key, String policy) {
         final Node node = data.get(key);
         if (node == null) {
             return null;
         }
-        afterCompletion(new ReadTask(node));
+        if (policy.equalsIgnoreCase(LRU) || policy.equalsIgnoreCase(MRU)) {
+            afterCompletion(new ReadTask(node));
+        }
         return node.getValue();
     }
 
     @Override
     public V put(K key, V value) {
-        return put(key, value, false);
+        return null;
     }
 
     public V putIfAbsent(K key, V value) {
-        return put(key, value, true);
+        return null;
     }
 
     /**
@@ -603,13 +616,10 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      *
      * @param key key with which the specified value is to be associated
      * @param value value to be associated with the specified key
-     * @param onlyIfAbsent a write is performed only if the key is not already associated
-     *            with a value
      * @return the prior value in the data store or null if no mapping was found
      */
-    V put(K key, V value, boolean onlyIfAbsent) {
+    public V put(K key, V value,  String policy) {
         checkNotNull(value);
-
         final int weight = weigher.weightOf(value);
         final WeightedValue<V> weightedValue = new WeightedValue<>(value, weight);
         final Node node = new Node(key, weightedValue);
@@ -619,9 +629,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
             if (prior == null) {
                 afterCompletion(new AddTask(node, weight));
                 return null;
-            } else if (onlyIfAbsent) {
-                afterCompletion(new ReadTask(prior));
-                return prior.getValue();
             }
             for (;;) {
                 final WeightedValue<V> oldWeightedValue = prior.get();
@@ -630,10 +637,12 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
                 }
                 if (prior.compareAndSet(oldWeightedValue, weightedValue)) {
                     final int weightedDifference = weight - oldWeightedValue.weight;
-                    final Task task = (weightedDifference == 0)
-                            ? new ReadTask(prior)
-                            : new UpdateTask(prior, weightedDifference);
-                    afterCompletion(task);
+                    if (policy.equalsIgnoreCase(LRU) || policy.equalsIgnoreCase(MRU)) {
+                        final Task task = (weightedDifference == 0)
+                                ? new ReadTask(prior)
+                                : new UpdateTask(prior, weightedDifference);
+                        afterCompletion(task);
+                    }
                     return oldWeightedValue.value;
                 }
             }
@@ -650,6 +659,16 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         node.makeRetired();
         afterCompletion(new RemovalTask(node));
         return node.getValue();
+    }
+
+    @Override
+    public V getOrDefault(Object key, V defaultValue) {
+        return null;
+    }
+
+    @Override
+    public void forEach(BiConsumer<? super K, ? super V> action) {
+
     }
 
     public boolean remove(Object key, Object value) {
@@ -680,33 +699,41 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         }
     }
 
-    public V replace(K key, V value) {
-        checkNotNull(value);
-
-        final int weight = weigher.weightOf(value);
-        final WeightedValue<V> weightedValue = new WeightedValue<>(value, weight);
-
-        final Node node = data.get(key);
-        if (node == null) {
-            return null;
-        }
-        for (;;) {
-            WeightedValue<V> oldWeightedValue = node.get();
-            if (!oldWeightedValue.isAlive()) {
-                return null;
-            }
-            if (node.compareAndSet(oldWeightedValue, weightedValue)) {
-                int weightedDifference = weight - oldWeightedValue.weight;
-                final Task task = (weightedDifference == 0)
-                        ? new ReadTask(node)
-                        : new UpdateTask(node, weightedDifference);
-                afterCompletion(task);
-                return oldWeightedValue.value;
-            }
-        }
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
+        return false;
     }
 
-    public boolean replace(K key, V oldValue, V newValue) {
+    public V replace(K key, V value) {
+        return null;
+    }
+
+    @Override
+    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+
+    }
+
+    @Override
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+        return null;
+    }
+
+    public boolean replace(K key, V oldValue, V newValue, String policy) {
         checkNotNull(oldValue);
         checkNotNull(newValue);
 
@@ -724,10 +751,12 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
             }
             if (node.compareAndSet(weightedValue, newWeightedValue)) {
                 int weightedDifference = weight - weightedValue.weight;
-                final Task task = (weightedDifference == 0)
-                        ? new ReadTask(node)
-                        : new UpdateTask(node, weightedDifference);
-                afterCompletion(task);
+                if (policy.equalsIgnoreCase(LRU) || policy.equalsIgnoreCase(MRU)) {
+                    final Task task = (weightedDifference == 0)
+                            ? new ReadTask(node)
+                            : new UpdateTask(node, weightedDifference);
+                    afterCompletion(task);
+                }
                 return true;
             }
         }
@@ -975,7 +1004,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
 
         @Override
         public V setValue(V value) {
-            put(getKey(), value);
+            put(getKey(), value, "");
             return super.setValue(value);
         }
 

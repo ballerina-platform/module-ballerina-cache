@@ -17,6 +17,10 @@
  */
 package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 
+import java.util.AbstractCollection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 /**
  *  This class provides a doubly-linked list that is optimized for the virtual
  *  machine. The first and last elements are manipulated instead of a slightly
@@ -27,7 +31,7 @@ package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
  *
  * @param <E> the type of elements held in this collection
  */
-public class LinkedDeque<E extends Linked<E>> {
+public class LinkedDeque<E extends Linked<E>> extends AbstractCollection<E> {
 
     /**
      * Pointer to first node. Invariant: (first == null && last == null) || (first.prev ==
@@ -41,6 +45,36 @@ public class LinkedDeque<E extends Linked<E>> {
      */
     E last = null;
 
+    /**
+     * Links the element to the front of the deque so that it becomes the first element.
+     *
+     * @param e the unlinked element
+     */
+    void linkFirst(final E e) {
+        final E f = first;
+        first = e;
+
+        if (f == null) {
+            last = e;
+        } else {
+            f.setPrevious(e);
+            e.setNext(f);
+        }
+    }
+
+    public void addFirst(E e) {
+        if (!offerFirst(e)) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public boolean offerFirst(E e) {
+        if (contains(e)) {
+            return false;
+        }
+        linkFirst(e);
+        return true;
+    }
     /**
      * Links the element to the back of the deque so that it becomes the last element.
      *
@@ -59,7 +93,7 @@ public class LinkedDeque<E extends Linked<E>> {
     }
 
     /** Unlinks the non-null first element. */
-    private E unlinkFirst() {
+    E unlinkFirst() {
         final E f = first;
         final E next = f.getNext();
         f.setNext(null);
@@ -141,6 +175,27 @@ public class LinkedDeque<E extends Linked<E>> {
         return unlinkFirst();
     }
 
+    public E pollLast() {
+        if (isEmpty()) {
+            return null;
+        }
+        return unlinkLast();
+    }
+
+    /** Unlinks the non-null last element. */
+    E unlinkLast() {
+        final E l = last;
+        final E prev = l.getPrevious();
+        l.setPrevious(null);
+        last = prev;
+        if (prev == null) {
+            first = null;
+        } else {
+            prev.setNext(null);
+        }
+        return l;
+    }
+
     @SuppressWarnings("unchecked")
     public boolean remove(Object o) {
         if (contains(o)) {
@@ -149,4 +204,79 @@ public class LinkedDeque<E extends Linked<E>> {
         }
         return false;
     }
+
+    public E removeLast() {
+        checkNotEmpty();
+        return pollLast();
+    }
+
+    void checkNotEmpty() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return new AbstractLinkedIterator(first) {
+
+            @Override
+            E computeNext() {
+                return cursor.getNext();
+            }
+        };
+    }
+
+    @Override
+    public int size() {
+        return 0;
+    }
+
+    public Iterator<E> descendingIterator() {
+        return new AbstractLinkedIterator(last) {
+
+            @Override
+            E computeNext() {
+                return cursor.getPrevious();
+            }
+        };
+    }
+
+    abstract class AbstractLinkedIterator implements Iterator<E> {
+
+        E cursor;
+
+        /**
+         * Creates an iterator that can can traverse the deque.
+         *
+         * @param start the initial element to begin traversal from
+         */
+        AbstractLinkedIterator(E start) {
+            cursor = start;
+        }
+
+        public boolean hasNext() {
+            return (cursor != null);
+        }
+
+        public E next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            E e = cursor;
+            cursor = computeNext();
+            return e;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Retrieves the next element to traverse to or <tt>null</tt> if there are no more
+         * elements.
+         */
+        abstract E computeNext();
+    }
 }
+
