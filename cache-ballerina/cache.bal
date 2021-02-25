@@ -35,8 +35,9 @@ public type CacheConfig record {|
     int cleanupIntervalInSeconds?;
 |};
 
-public const string LRU = "leastRecentlyUse";
-public type EvictionPolicy LRU;
+public enum EvictionPolicy {
+    LRU
+}
 
 type CacheEntry record {|
     string key;
