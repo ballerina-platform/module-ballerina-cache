@@ -22,6 +22,7 @@ import ballerina/time;
 #
 # + capacity - Maximum number of entries allowed in the cache
 # + evictionFactor - The factor by which the entries will be evicted once the cache is full
+# + evictionPolicy - The policy which is used to evict entries once the cache is full
 # + defaultMaxAgeInSeconds - The default value in seconds which all the cache entries are valid.
 #                            '-1' means, the entries are valid forever. This will be overwritten by the the
 #                            `maxAgeInSeconds` property set when inserting item to the cache
@@ -29,9 +30,13 @@ import ballerina/time;
 public type CacheConfig record {|
     int capacity = 100;
     float evictionFactor = 0.25;
+    EvictionPolicy evictionPolicy = LRU;
     int defaultMaxAgeInSeconds = -1;
     int cleanupIntervalInSeconds?;
 |};
+
+public const string LRU = "leastRecentlyUse";
+public type EvictionPolicy LRU;
 
 type CacheEntry record {|
     string key;
@@ -44,11 +49,11 @@ boolean cleanupInProgress = false;
 
 // Cleanup service which cleans the cache entries periodically.
 final service isolated object{} cleanupService = service object {
-    remote function onTrigger(Cache cache, AbstractEvictionPolicy evictionPolicy) {
+    remote function onTrigger(Cache cache, LinkedList linkedList) {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
             cleanupInProgress = true;
-            cleanup(cache, evictionPolicy);
+            cleanup(cache, linkedList);
             cleanupInProgress = false;
         }
     }
@@ -61,20 +66,21 @@ public class Cache {
     *AbstractCache;
 
     private int maxCapacity;
-    private AbstractEvictionPolicy evictionPolicy;
+    private EvictionPolicy evictionPolicy;
     private float evictionFactor;
     private int defaultMaxAgeInSeconds;
+    private LinkedList linkedList;
 
     # Called when a new `cache:Cache` object is created.
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
     # + evictionPolicy - The policy, which defines the cache eviction algorithm
-    public isolated function init(CacheConfig cacheConfig = {},
-                                  AbstractEvictionPolicy evictionPolicy = new LruEvictionPolicy()) {
+    public isolated function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
-        self.evictionPolicy = evictionPolicy;
+        self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAgeInSeconds = cacheConfig.defaultMaxAgeInSeconds;
+        self.linkedList = new LinkedList();
 
         // Cache capacity must be a positive value.
         if (self.maxCapacity <= 0) {
@@ -101,7 +107,7 @@ public class Cache {
             };
             task:Scheduler|task:SchedulerError cleanupScheduler = new(timerConfiguration);
             if (cleanupScheduler is task:Scheduler) {
-                task:SchedulerError? result = cleanupScheduler.attach(cleanupService, self, self.evictionPolicy);
+                task:SchedulerError? result = cleanupScheduler.attach(cleanupService, self, self.linkedList);
                 if (result is task:SchedulerError) {
                     panic prepareError("Failed to attach the cache cleanup task.", result);
                 }
@@ -129,7 +135,7 @@ public class Cache {
         }
         // If the current cache is full (i.e. size = capacity), evict cache.
         if (self.size() == self.maxCapacity) {
-            evict(self, self.evictionPolicy, self.maxCapacity, self.evictionFactor);
+            evict(self, self.maxCapacity, self.evictionFactor, self.linkedList);
         }
 
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
@@ -152,9 +158,11 @@ public class Cache {
 
         if (self.hasKey(key)) {
             Node oldNode = externGet(self, key);
-            self.evictionPolicy.replace(newNode, oldNode);
+            // Move the node to front
+            self.linkedList.remove(oldNode);
+            self.linkedList.addFirst(newNode);
         } else {
-            self.evictionPolicy.put(newNode);
+            self.linkedList.addFirst(newNode);
         }
         externPut(self, key, newNode);
     }
@@ -176,12 +184,13 @@ public class Cache {
         // and runs in predefined intervals, sometimes the cache entry might not have been removed at this point
         // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
         if (entry.expTime != -1 && entry.expTime < time:nanoTime()) {
-            self.evictionPolicy.remove(node);
+            self.linkedList.remove(node);
             externRemove(self, key);
             return ();
         }
-
-        self.evictionPolicy.get(node);
+        // Move the node to front
+        self.linkedList.remove(node);
+        self.linkedList.addFirst(node);
         return entry.data;
     }
 
@@ -196,7 +205,7 @@ public class Cache {
         }
 
         Node node = externGet(self, key);
-        self.evictionPolicy.remove(node);
+        self.linkedList.remove(node);
         externRemove(self, key);
     }
 
@@ -205,7 +214,7 @@ public class Cache {
     # + return - `()` if successfully discarded all the values from the cache or an `Error` if any error occurred while
     # discarding all the values from the cache.
     public isolated function invalidateAll() returns Error? {
-        self.evictionPolicy.clear();
+        self.linkedList.clear();
         externRemoveAll(self);
     }
 
@@ -240,10 +249,10 @@ public class Cache {
     }
 }
 
-isolated function evict(Cache cache, AbstractEvictionPolicy evictionPolicy, int capacity, float evictionFactor) {
+isolated function evict(Cache cache, int capacity, float evictionFactor, LinkedList linkedList) {
     int evictionKeysCount = <int>(capacity * evictionFactor);
     foreach int i in 1...evictionKeysCount {
-        Node? node = evictionPolicy.evict();
+        Node? node = linkedList.removeLast();
         if (node is Node) {
             CacheEntry entry = <CacheEntry>node.value;
             externRemove(cache, entry.key);
@@ -255,7 +264,7 @@ isolated function evict(Cache cache, AbstractEvictionPolicy evictionPolicy, int 
     }
 }
 
-isolated function cleanup(Cache cache, AbstractEvictionPolicy evictionPolicy) {
+isolated function cleanup(Cache cache, LinkedList linkedList) {
     if (externSize(cache) == 0) {
         return;
     }
@@ -263,7 +272,7 @@ isolated function cleanup(Cache cache, AbstractEvictionPolicy evictionPolicy) {
         Node node = externGet(cache, key);
         CacheEntry entry = <CacheEntry>node.value;
         if (entry.expTime != -1 && entry.expTime < time:nanoTime()) {
-            evictionPolicy.remove(node);
+            linkedList.remove(node);
             externRemove(cache, entry.key);
             // The return result (error which occurred due to unavailability of the key or nil) is ignored
             // since no purpose of handling it.

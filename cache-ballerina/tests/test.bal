@@ -21,14 +21,14 @@ import ballerina/test;
     groups: ["create"]
 }
 isolated function testCreateCache() {
-    LruEvictionPolicy lruEvictionPolicy = new;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
         defaultMaxAgeInSeconds: 3600,
-        cleanupIntervalInSeconds: 5
+        cleanupIntervalInSeconds: 5,
+        evictionPolicy: LRU
     };
-    Cache|error cache = trap new(config, lruEvictionPolicy);
+    Cache|error cache = trap new(config);
     if (cache is Cache) {
        test:assertEquals(cache.size(), 0);
     } else {

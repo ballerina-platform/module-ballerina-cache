@@ -1,6 +1,6 @@
 ## Package Overview
 
-This package provides APIs for handle caching in Ballerina. It consists of a default implementation based on the map data structure. It also provides a default cache eviction policy object, which is based on the LRU eviction algorithm.
+This package provides APIs for handle caching in Ballerina. It consists of a default implementation based on the LRU eviction algorithm.
 
 The `cache:AbstractCache` object has the common APIs for the caching functionalities. Custom implementations of the cache can be done with different data storages like file, database, etc. with the structural equivalency to the `cache:AbstractCacheObject` object.
 
@@ -17,24 +17,12 @@ public type AbstractCache object {
 };
 ```
 
-The `cache:AbstractEvictionPolicy` object has the common APIs for the cache eviction functionalities. Custom implementations of the eviction policy can be done by maintaining the `cache:LinkedList` class according to the eviction algorithm.
-
-```ballerina
-public type AbstractEvictionPolicy object {
-    public function get(Node node);
-    public function put(Node node);
-    public function remove(Node node);
-    public function replace(Node newNode, Node oldNode);
-    public function clear();
-    public function evict() returns Node?;
-};
-```
-
-The Ballerina Cache package provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object. It is not recommended to insert `()` as the value of the cache since it doesn't make sense to cache a nil. Also, it provides the `cache:LruEvictionPolicy` class, which is based on the LRU eviction algorithm.
+The Ballerina Cache package provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object. It is not recommended to insert `()` as the value of the cache since it doesn't make sense to cache a nil.
 
 While initializing the `cache:Cache`, you need to pass the following parameters as the cache configurations.
 - `capacity` - Maximum number of entries allowed for the cache
 - `evictionFactor` - The factor by which the entries will be evicted once the cache is full
+- `evictionPolicy` - The policy which is used to evict entries once the cache is full
 - `defaultMaxAgeInSeconds` - Freshness time of all the cache entries in seconds. This value can be overwritten by the
 `maxAgeInSeconds` property when inserting an entry to the cache. '-1' means the entries are valid forever.
 - `cleanupIntervalInSeconds` - The interval time of the timer task, which cleans the cache entries
@@ -46,6 +34,7 @@ For a better user experience, the above-mentioned configuration is initialized w
 public type CacheConfig record {|
     int capacity = 100;
     float evictionFactor = 0.25;
+    EvictionPolicy evictionPolicy = LRU;
     int defaultMaxAgeInSeconds = -1;
     int cleanupIntervalInSeconds?;
 |};
@@ -58,31 +47,5 @@ There are 2 mandatory scenarios and 1 optional scenario in which a cache entry g
 3. If `cleanupIntervalInSeconds` (optional property) is configured, the timer task will remove the expired cache entries based on the configured interval.
 
 The main benefit of using the `cleanupIntervalInSeconds` (optional) property is that the developer can optimize the memory usage while adding some additional CPU costs and vice versa. The default behaviour is the CPU-optimized method.
-
-The concept of the default `cache:Cache` class is based on the Ballerina `map` data structure and the `cache:LinkedList` class. The key of the map entry would be a string and the value of the map entry would be a node of the linked list.
-
-```ballerina
-public type Node record {|
-    any value;
-    Node? prev = ();
-    Node? next = ();
-|};
-```
-
-While using the cache, a `cache:CacheEntry` record will be created and added as the value of the `cache:Node` record. The `cache:Node` record will be inserted into the map data structure with the provided string key.
-
-```ballerina
-type CacheEntry record {|
-    string key;
-    any data;
-    int expTime;
-|};
-```
-
-A linked list is used for the eviction of the cache. According to the user-configured eviction policy, when inserting / updating / retrieving cache entries, the linked list will be updated. Therefore, when an eviction happens, cache entries can be removed efficiently without iterating the complete map data structure.
-
-**Example:** If the eviction policy is LRU, the MRU item will always be the head of the linked list. When an eviction happens, nodes from the tail will be deleted without iterating the map.
-
-Furthermore, you can implement custom caching implementations based on different cache storage mechanisms (file, database. etc.) and different eviction policies (MRU, FIFO, etc.). Ballerina provides a "map-based cache" as the default cache implementation.
 
 For information on the operations, which you can perform with the cache package, see the below __Functions__. For examples on the usage of the operations, see [Cache Example](https://ballerina.io/learn/by-example/cache.html)

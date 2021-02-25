@@ -42,7 +42,7 @@ public class LinkedList {
     # Adds a node to the end of the provided linked list.
     #
     # + node - The node, which should be added to the provided linked list
-    public isolated function addLast(Node node) {
+    isolated function addLast(Node node) {
         if (tryLock()) {
             if (self.tail is ()) {
                 self.head = node;
@@ -62,7 +62,7 @@ public class LinkedList {
     # Adds a node to the start of the provided linked list.
     #
     # + node - The node, which should be added to the provided linked list
-    public isolated function addFirst(Node node) {
+    isolated function addFirst(Node node) {
         if (tryLock()) {
             if (self.head is ()) {
                 self.head = node;
@@ -82,7 +82,7 @@ public class LinkedList {
     # Removes a node from the provided linked list.
     #
     # + node - The node, which should be removed from the provided linked list
-    public isolated function remove(Node node) {
+    isolated function remove(Node node) {
         if (tryLock()) {
             if (node.prev is ()) {
                 self.head = node.next;
@@ -105,7 +105,7 @@ public class LinkedList {
     # Removes the last node from the provided linked list.
     #
     # + return - Last node of the provided linked list or `()` if the last node is empty
-    public isolated function removeLast() returns Node? {
+    isolated function removeLast() returns Node? {
         if (self.tail is ()) {
             return ();
         }
@@ -115,7 +115,7 @@ public class LinkedList {
     }
 
     # Clears the provided linked list.
-    public isolated function clear() {
+    isolated function clear() {
         if (tryLock()) {
             self.head = ();
             self.tail = ();
