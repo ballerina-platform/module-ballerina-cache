@@ -1,0 +1,9 @@
+fixes:
+  - "ballerina/cache/*/::cache-ballerina/"
+
+ignore:
+  - "**/tests"
+
+codecov:
+  require_ci_to_pass: no
+  
