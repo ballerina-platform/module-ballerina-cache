@@ -35,6 +35,7 @@ public type CacheConfig record {|
     int cleanupIntervalInSeconds?;
 |};
 
+# Possible types of eviction policy that can be passed into the `EvictionPolicy`
 public enum EvictionPolicy {
     LRU
 }
@@ -75,7 +76,6 @@ public class Cache {
     # Called when a new `cache:Cache` object is created.
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    # + evictionPolicy - The policy, which defines the cache eviction algorithm
     public isolated function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
