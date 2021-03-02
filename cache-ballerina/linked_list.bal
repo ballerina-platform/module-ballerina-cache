@@ -14,10 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/jballerina.java;
-
-// This is a linked list data structure implementation, which is used for the eviction algorithm of the cache.
-
 # Represents a structure to keep data and references to the adjacent nodes of the linked list.
 #
 # + value - Value to be stored in the linked list node
@@ -43,63 +39,52 @@ public class LinkedList {
     #
     # + node - The node, which should be added to the provided linked list
     isolated function addLast(Node node) {
-        if (tryLock()) {
-            if (self.tail is ()) {
-                self.head = node;
-                self.tail = self.head;
-                releaseLock();
-                return;
-            }
-            Node tempNode = node;
-            Node tailNode = <Node>self.tail;
-            tempNode.prev = tailNode;
-            tailNode.next = tempNode;
-            self.tail = tempNode;
-            releaseLock();
+        if (self.tail is ()) {
+            self.head = node;
+            self.tail = self.head;
+            return;
         }
+        Node tempNode = node;
+        Node tailNode = <Node>self.tail;
+        tempNode.prev = tailNode;
+        tailNode.next = tempNode;
+        self.tail = tempNode;
     }
 
     # Adds a node to the start of the provided linked list.
     #
     # + node - The node, which should be added to the provided linked list
     isolated function addFirst(Node node) {
-        if (tryLock()) {
-            if (self.head is ()) {
-                self.head = node;
-                self.tail = self.head;
-                releaseLock();
-                return;
-            }
-            Node tempNode = node;
-            Node headNode = <Node>self.head;
-            tempNode.next = headNode;
-            headNode.prev = tempNode;
-            self.head = tempNode;
-            releaseLock();
+        if (self.head is ()) {
+            self.head = node;
+            self.tail = self.head;
+            return;
         }
+        Node tempNode = node;
+        Node headNode = <Node>self.head;
+        tempNode.next = headNode;
+        headNode.prev = tempNode;
+        self.head = tempNode;
     }
 
     # Removes a node from the provided linked list.
     #
     # + node - The node, which should be removed from the provided linked list
     isolated function remove(Node node) {
-        if (tryLock()) {
-            if (node.prev is ()) {
-                self.head = node.next;
-            } else {
-                Node prev = <Node>node.prev;
-                prev.next = node.next;
-            }
-            if (node.next is ()) {
-                self.tail = node.prev;
-            } else {
-                Node next = <Node>node.next;
-                next.prev = node.prev;
-            }
-            node.next = ();
-            node.prev = ();
-            releaseLock();
+        if (node.prev is ()) {
+            self.head = node.next;
+        } else {
+            Node prev = <Node>node.prev;
+            prev.next = node.next;
         }
+        if (node.next is ()) {
+            self.tail = node.prev;
+        } else {
+            Node next = <Node>node.next;
+            next.prev = node.prev;
+        }
+        node.next = ();
+        node.prev = ();
     }
 
     # Removes the last node from the provided linked list.
@@ -116,23 +101,7 @@ public class LinkedList {
 
     # Clears the provided linked list.
     isolated function clear() {
-        if (tryLock()) {
-            self.head = ();
-            self.tail = ();
-            releaseLock();
-        }
+        self.head = ();
+        self.tail = ();
     }
 }
-
-isolated function externLockInit() = @java:Method {
-    name: "init",
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
-} external;
-
-isolated function tryLock() returns boolean = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
-} external;
-
-isolated function releaseLock() = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Lock"
-} external;

@@ -25,6 +25,7 @@ plugins {
 ext.ballerinaLangVersion = project.ballerinaLangVersion
 ext.stdlibTaskVersion = project.stdlibTaskVersion
 ext.stdlibTimeVersion = project.stdlibTimeVersion
+ext.stdlibIoVersion = project.stdlibIoVersion
 ext.puppycrawlCheckstyleVersion = project.puppycrawlCheckstyleVersion
 
 allprojects {
@@ -71,6 +72,14 @@ allprojects {
                 password System.getenv("packagePAT")
             }
         }
+
+        maven {
+            url "https://maven.pkg.github.com/ballerina-platform/module-ballerina-io"
+            credentials {
+                username System.getenv("packageUser")
+                password System.getenv("packagePAT")
+            }
+        }
     }
 }
 
@@ -84,6 +93,7 @@ subprojects {
         /* Standard libraries */
         ballerinaStdLibs "org.ballerinalang:task-ballerina:${stdlibTaskVersion}"
         ballerinaStdLibs "org.ballerinalang:time-ballerina:${stdlibTimeVersion}"
+        ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
     }
 }
 

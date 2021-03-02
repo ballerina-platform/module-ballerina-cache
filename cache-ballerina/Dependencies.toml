@@ -1,9 +1,14 @@
 [[dependency]]
 org = "ballerina"
 name = "time"
-version = "@stdlib.time.version@"
+version = "1.1.0-alpha5"
 
 [[dependency]]
 org = "ballerina"
 name = "task"
-version = "@stdlib.task.version@"
+version = "1.2.0-alpha5"
+
+[[dependency]]
+org = "ballerina"
+name = "io"
+version = "0.6.0-alpha5"

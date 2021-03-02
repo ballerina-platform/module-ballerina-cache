@@ -94,12 +94,14 @@ task updateTomlVersions {
     doLast {
         def stdlibDependentTaskVersion = project.stdlibTaskVersion.replace("-SNAPSHOT", "")
         def stdlibDependentTimeVersion = project.stdlibTimeVersion.replace("-SNAPSHOT", "")
+        def stdlibDependentIoVersion = project.stdlibIoVersion.replace("-SNAPSHOT", "")
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
         ballerinaConfigFile.text = newConfig
 
         def newDependencyConfig = ballerinaDependencyFile.text.replace("@stdlib.task.version@", stdlibDependentTaskVersion)
         newDependencyConfig = newDependencyConfig.replace("@stdlib.time.version@", stdlibDependentTimeVersion)
+        newDependencyConfig = newDependencyConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
         ballerinaDependencyFile.text = newDependencyConfig
     }
 }
