@@ -21,14 +21,14 @@ import ballerina/test;
     groups: ["create"]
 }
 isolated function testCreateCache() {
-    LruEvictionPolicy lruEvictionPolicy = new;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
         defaultMaxAgeInSeconds: 3600,
-        cleanupIntervalInSeconds: 5
+        cleanupIntervalInSeconds: 5,
+        evictionPolicy: LRU
     };
-    Cache|error cache = trap new(config, lruEvictionPolicy);
+    Cache|error cache = trap new(config);
     if (cache is Cache) {
        test:assertEquals(cache.size(), 0);
     } else {
@@ -39,28 +39,28 @@ isolated function testCreateCache() {
 @test:Config {
     groups: ["create", "put", "size"]
 }
-isolated function testPutNewEntry() {
+isolated function testPutNewEntry() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     Cache cache = new(config);
-    checkpanic cache.put("Hello", "Ballerina");
+    check cache.put("Hello", "Ballerina");
     test:assertEquals(cache.size(), 1);
 }
 
 @test:Config {
     groups: ["create", "put", "size", "entry"]
 }
-isolated function testPutExistingEntry() {
+isolated function testPutExistingEntry() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     string key = "Hello";
     Cache cache = new(config);
-    checkpanic cache.put(key, "Random value");
-    checkpanic cache.put(key, "Ballerina");
+    check cache.put(key, "Random value");
+    check cache.put(key, "Ballerina");
     test:assertEquals(cache.size(), 1);
     any|error results = cache.get(key);
     if (results is any) {
@@ -73,14 +73,14 @@ isolated function testPutExistingEntry() {
 @test:Config {
     groups: ["create", "put", "size", "age"]
 }
-isolated function testPutWithMaxAge() {
+isolated function testPutWithMaxAge() returns error? {
     int maxAge = 5;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     Cache cache = new(config);
-    checkpanic cache.put("Hello", "Ballerina", maxAge);
+    check cache.put("Hello", "Ballerina", maxAge);
     decimal|error sleepTime = decimal:fromString((maxAge * 2 + 1).toString());
     if (sleepTime is decimal) {
         runtime:sleep(sleepTime);
@@ -134,7 +134,7 @@ isolated function testGetNonExistingEntry() {
 @test:Config {
     groups: ["create", "put", "size", "expired", "get"]
 }
-isolated function testGetExpiredEntry() {
+isolated function testGetExpiredEntry() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -143,7 +143,7 @@ isolated function testGetExpiredEntry() {
     string value = "Ballerina";
     Cache cache = new(config);
     int maxAgeInSeconds = 1;
-    checkpanic cache.put(key, value, maxAgeInSeconds);
+    check cache.put(key, value, maxAgeInSeconds);
     decimal|error sleepTime = decimal:fromString((maxAgeInSeconds * 2 + 1).toString());
     if (sleepTime is decimal) {
         runtime:sleep(sleepTime);
@@ -161,7 +161,7 @@ isolated function testGetExpiredEntry() {
 @test:Config {
     groups: ["create", "put", "size", "remove", "invalidate"]
 }
-isolated function testRemove() {
+isolated function testRemove() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -169,15 +169,15 @@ isolated function testRemove() {
     Cache cache = new(config);
     string key = "Hello";
     string value = "Ballerina";
-    checkpanic cache.put(key, value);
-    checkpanic cache.invalidate(key);
+    check cache.put(key, value);
+    check cache.invalidate(key);
     test:assertEquals(cache.size(), 0);
 }
 
 @test:Config {
     groups: ["create", "put", "size", "remove", "invalidate"]
 }
-isolated function testRemoveAll() {
+isolated function testRemoveAll() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -185,18 +185,18 @@ isolated function testRemoveAll() {
     Cache cache = new(config);
     string key1 = "Hello";
     string value1 = "Ballerina";
-    checkpanic cache.put(key1, value1);
+    check cache.put(key1, value1);
     string key2 = "Ballerina";
     string value2 = "Language";
-    checkpanic cache.put(key2, value2);
-    checkpanic cache.invalidateAll();
+    check cache.put(key2, value2);
+    check cache.invalidateAll();
     test:assertEquals(cache.size(), 0);
 }
 
 @test:Config {
     groups: ["create", "get", "key"]
 }
-isolated function testHasKey() {
+isolated function testHasKey() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -204,14 +204,14 @@ isolated function testHasKey() {
     Cache cache = new(config);
     string key = "Hello";
     string value = "Ballerina";
-    checkpanic cache.put(key, value);
+    check cache.put(key, value);
     test:assertTrue(cache.hasKey(key));
 }
 
 @test:Config {
     groups: ["create", "get", "keys"]
 }
-isolated function testKeys() {
+isolated function testKeys() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -222,8 +222,8 @@ isolated function testKeys() {
     string key2 = "Ballerina";
     string value2 = "Language";
     string[] keys = [key1, key2];
-    checkpanic cache.put(key1, value1);
-    checkpanic cache.put(key2, value2);
+    check cache.put(key1, value1);
+    check cache.put(key2, value2);
     test:assertEquals(cache.keys(), keys);
 }
 
@@ -242,7 +242,7 @@ isolated function testCapacity() {
 @test:Config {
     groups: ["cache", "resize"]
 }
-isolated function testSize() {
+isolated function testSize() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -252,32 +252,32 @@ isolated function testSize() {
     string value1 = "Ballerina";
     string key2 = "Ballerina";
     string value2 = "Language";
-    checkpanic cache.put(key1, value1);
-    checkpanic cache.put(key2, value2);
+    check cache.put(key1, value1);
+    check cache.put(key2, value2);
     test:assertEquals(cache.size(), 2);
 }
 
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
-isolated function testCacheEvictionWithCapacity1() {
+isolated function testCacheEvictionWithCapacity1() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     string[] keys = ["C", "D", "E", "F", "G", "H", "I", "J", "K"];
     Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    checkpanic cache.put("D", "4");
-    checkpanic cache.put("E", "5");
-    checkpanic cache.put("F", "6");
-    checkpanic cache.put("G", "7");
-    checkpanic cache.put("H", "8");
-    checkpanic cache.put("I", "9");
-    checkpanic cache.put("J", "10");
-    checkpanic cache.put("K", "11");
+    check cache.put("A", "1");
+    check cache.put("B", "2");
+    check cache.put("C", "3");
+    check cache.put("D", "4");
+    check cache.put("E", "5");
+    check cache.put("F", "6");
+    check cache.put("G", "7");
+    check cache.put("H", "8");
+    check cache.put("I", "9");
+    check cache.put("J", "10");
+    check cache.put("K", "11");
     test:assertEquals(cache.size(), keys.length());
     test:assertEquals(cache.keys(), keys);
 }
@@ -285,25 +285,25 @@ isolated function testCacheEvictionWithCapacity1() {
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
-isolated function testCacheEvictionWithCapacity2() {
+isolated function testCacheEvictionWithCapacity2() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     string[] keys = ["A", "D", "E", "F", "G", "H", "I", "J", "K"];
     Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    checkpanic cache.put("D", "4");
-    checkpanic cache.put("E", "5");
-    checkpanic cache.put("F", "6");
-    checkpanic cache.put("G", "7");
-    checkpanic cache.put("H", "8");
-    checkpanic cache.put("I", "9");
-    checkpanic cache.put("J", "10");
+    check cache.put("A", "1");
+    check cache.put("B", "2");
+    check cache.put("C", "3");
+    check cache.put("D", "4");
+    check cache.put("E", "5");
+    check cache.put("F", "6");
+    check cache.put("G", "7");
+    check cache.put("H", "8");
+    check cache.put("I", "9");
+    check cache.put("J", "10");
     any|Error x = cache.get("A");
-    checkpanic cache.put("K", "11");
+    check cache.put("K", "11");
     test:assertEquals(cache.size(), keys.length());
     test:assertEquals(cache.keys(), keys);
 }
@@ -311,7 +311,7 @@ isolated function testCacheEvictionWithCapacity2() {
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
-isolated function testCacheEvictionWithTimer1() {
+isolated function testCacheEvictionWithTimer1() returns error? {
     int cleanupIntervalInSeconds = 2;
     CacheConfig config = {
         capacity: 10,
@@ -320,9 +320,9 @@ isolated function testCacheEvictionWithTimer1() {
         cleanupIntervalInSeconds: cleanupIntervalInSeconds
     };
     Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
+    check cache.put("A", "1");
+    check cache.put("B", "2");
+    check cache.put("C", "3");
     string[] keys = [];
     decimal|error sleepTime = decimal:fromString((cleanupIntervalInSeconds * 2 + 1).toString());
     if (sleepTime is decimal) {
@@ -337,7 +337,7 @@ isolated function testCacheEvictionWithTimer1() {
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
-isolated function testCacheEvictionWithTimer2() {
+isolated function testCacheEvictionWithTimer2() returns error? {
     int cleanupIntervalInSeconds = 2;
     CacheConfig config = {
         capacity: 10,
@@ -346,9 +346,9 @@ isolated function testCacheEvictionWithTimer2() {
         cleanupIntervalInSeconds: cleanupIntervalInSeconds
     };
     Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2", 3600);
-    checkpanic cache.put("C", "3");
+    check cache.put("A", "1");
+    check cache.put("B", "2", 3600);
+    check cache.put("C", "3");
     string[] keys = ["B"];
     decimal|error sleepTime = decimal:fromString((cleanupIntervalInSeconds * 2 + 1).toString());
     if (sleepTime is decimal) {

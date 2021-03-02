@@ -8,7 +8,7 @@ Ballerina Cache Library
 
 The cache library is one of the standard library packages of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
 
-This package provides APIs for handle caching in Ballerina. It consists of a default implementation based on the map data structure. It also provides a default cache eviction policy object, which is based on the LRU eviction algorithm.
+This package provides APIs for handle caching in Ballerina. It consists of a default implementation based on the LRU eviction algorithm.
 
 For more information on all the operations supported by the `cache`, which include the below, go to [The Cache Package](https://ballerina.io/learn/api-docs/ballerina/cache/).
 
