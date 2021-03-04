@@ -27,7 +27,7 @@ public type AbstractCache object {
     #                     forever
     # + return - `()` if successfully added to the cache or `Error` if any error occurred while inserting the entry
     #            to the cache
-    public isolated function put(string key, any value, decimal maxAge = -1) returns Error?;
+    public isolated function put(string key, any value, int maxAge = -1) returns Error?;
 
     # Returns the cached value associated with the provided key.
     #

@@ -32,7 +32,7 @@ public type CacheConfig record {|
     float evictionFactor = 0.25;
     EvictionPolicy evictionPolicy = LRU;
     decimal defaultMaxAge = -1;
-    int cleanupInterval?;
+    decimal cleanupInterval?;
 |};
 
 # Possible types of eviction policy that can be passed into the `EvictionPolicy`
@@ -100,11 +100,11 @@ public class Cache {
         externLockInit();
         externInit(self, self.maxCapacity);
 
-        int? cleanupInterval = <int> cacheConfig?.cleanupInterval;
-        if (cleanupInterval is int) {
+        decimal? interval = cacheConfig?.cleanupInterval;
+        if (interval is decimal) {
             task:TimerConfiguration timerConfiguration = {
-                intervalInMillis: cleanupInterval,
-                initialDelayInMillis: cleanupInterval
+                intervalInMillis: <int> interval,
+                initialDelayInMillis: <int> interval
             };
             task:Scheduler|task:SchedulerError cleanupScheduler = new(timerConfiguration);
             if (cleanupScheduler is task:Scheduler) {
@@ -130,7 +130,7 @@ public class Cache {
     # + maxAge - The time in seconds for which the cache entry is valid. If the value is '-1', the entry is
     #                     valid forever.
     # + return - `()` if successfully added to the cache or `Error` if a `()` value is inserted to the cache.
-    public isolated function put(string key, any value, decimal maxAge = -1) returns Error? {
+    public isolated function put(string key, any value, int maxAge = -1) returns Error? {
         if (value is ()) {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
         }
@@ -142,9 +142,8 @@ public class Cache {
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
         int calculatedExpTime = -1;
-        int age = <int> maxAge;
-        if (age != -1 && age > 0) {
-            calculatedExpTime = time:nanoTime() + (age * 1000 * 1000 * 1000);
+        if (maxAge != -1 && maxAge > 0) {
+            calculatedExpTime = time:nanoTime() + (maxAge * 1000 * 1000 * 1000);
         } else {
             if (self.defaultMaxAge != -1) {
                 calculatedExpTime = time:nanoTime() + (self.defaultMaxAge * 1000 * 1000 * 1000);

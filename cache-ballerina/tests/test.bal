@@ -74,14 +74,14 @@ isolated function testPutExistingEntry() returns error? {
     groups: ["create", "put", "size", "age"]
 }
 isolated function testPutWithMaxAge() returns error? {
-    decimal maxAge = 5;
+    int maxAge = 5;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     Cache cache = new(config);
-    check cache.put("Hello", "Ballerina", maxAge);
-    decimal|error sleepTime = decimal:fromString(((<int> maxAge) * 2 + 1).toString());
+    checkpanic cache.put("Hello", "Ballerina", maxAge);
+    decimal|error sleepTime = decimal:fromString((maxAge * 2 + 1).toString());
     if (sleepTime is decimal) {
         runtime:sleep(sleepTime);
         test:assertEquals(cache.size(), 1);
@@ -134,7 +134,7 @@ isolated function testGetNonExistingEntry() {
 @test:Config {
     groups: ["create", "put", "size", "expired", "get"]
 }
-isolated function testGetExpiredEntry() returns error? {
+isolated function testGetExpiredEntry() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -142,15 +142,19 @@ isolated function testGetExpiredEntry() returns error? {
     string key = "Hello";
     string value = "Ballerina";
     Cache cache = new(config);
-    decimal maxAge = 1;
-    check cache.put(key, value, maxAge);
-    decimal sleepTime = maxAge * 2 + 1;
-    runtime:sleep(sleepTime);
-    any|error expected = cache.get(key);
-    if (expected is any) {
-        test:assertEquals(expected.toString(), "");
+    int maxAgeInSeconds = 1;
+    checkpanic cache.put(key, value, maxAgeInSeconds);
+    decimal|error sleepTime = decimal:fromString((maxAgeInSeconds * 2 + 1).toString());
+    if (sleepTime is decimal) {
+        runtime:sleep(sleepTime);
+        any|error expected = cache.get(key);
+        if (expected is any) {
+            test:assertEquals(expected.toString(), "");
+        } else {
+             test:assertFail("Output mismatched");
+        }
     } else {
-         test:assertFail("Output mismatched");
+        test:assertFail("Test failed: " + sleepTime.message());
     }
 }
 
@@ -308,7 +312,7 @@ isolated function testCacheEvictionWithCapacity2() returns error? {
     groups: ["cache", "capacity", "policy"]
 }
 isolated function testCacheEvictionWithTimer1() returns error? {
-    int cleanupInterval = 2;
+    decimal cleanupInterval = 2;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
@@ -320,21 +324,17 @@ isolated function testCacheEvictionWithTimer1() returns error? {
     check cache.put("B", "2");
     check cache.put("C", "3");
     string[] keys = [];
-    decimal|error sleepTime = decimal:fromString((cleanupInterval * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), keys.length());
-        test:assertEquals(cache.keys(), keys);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
+    decimal sleepTime = cleanupInterval * 2 + 1;
+    runtime:sleep(sleepTime);
+    test:assertEquals(cache.size(), keys.length());
+    test:assertEquals(cache.keys(), keys);
 }
 
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
 isolated function testCacheEvictionWithTimer2() returns error? {
-    int cleanupInterval = 2;
+    decimal cleanupInterval = 2;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
@@ -346,14 +346,10 @@ isolated function testCacheEvictionWithTimer2() returns error? {
     check cache.put("B", "2", 3600);
     check cache.put("C", "3");
     string[] keys = ["B"];
-    decimal|error sleepTime = decimal:fromString((cleanupInterval * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), keys.length());
-        test:assertEquals(cache.keys(), keys);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
+    decimal sleepTime = cleanupInterval * 2 + 1;
+    runtime:sleep(sleepTime);
+    test:assertEquals(cache.size(), keys.length());
+    test:assertEquals(cache.keys(), keys);
 }
 
 @test:Config {
