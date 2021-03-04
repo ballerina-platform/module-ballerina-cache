@@ -80,7 +80,7 @@ isolated function testPutWithMaxAge() returns error? {
         evictionFactor: 0.2
     };
     Cache cache = new(config);
-    checkpanic cache.put("Hello", "Ballerina", maxAge);
+    check cache.put("Hello", "Ballerina", maxAge);
     decimal|error sleepTime = decimal:fromString((maxAge * 2 + 1).toString());
     if (sleepTime is decimal) {
         runtime:sleep(sleepTime);
@@ -134,7 +134,7 @@ isolated function testGetNonExistingEntry() {
 @test:Config {
     groups: ["create", "put", "size", "expired", "get"]
 }
-isolated function testGetExpiredEntry() {
+isolated function testGetExpiredEntry() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -143,7 +143,7 @@ isolated function testGetExpiredEntry() {
     string value = "Ballerina";
     Cache cache = new(config);
     int maxAgeInSeconds = 1;
-    checkpanic cache.put(key, value, maxAgeInSeconds);
+    check cache.put(key, value, maxAgeInSeconds);
     decimal|error sleepTime = decimal:fromString((maxAgeInSeconds * 2 + 1).toString());
     if (sleepTime is decimal) {
         runtime:sleep(sleepTime);
