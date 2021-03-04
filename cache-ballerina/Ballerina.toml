@@ -1,10 +1,10 @@
 [package]
 org = "ballerina"
 name = "cache"
-version = "2.1.0-alpha5"
+version = "@toml.version@"
 
 [[platform.java11.dependency]]
-path = "../cache-native/build/libs/cache-native-2.1.0-alpha5-SNAPSHOT.jar"
+path = "../cache-native/build/libs/cache-native-@project.version@.jar"
 groupId = "ballerina"
 artifactId = "cache"
-version = "2.1.0-alpha5-SNAPSHOT"
+version = "@project.version@"
