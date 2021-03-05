@@ -23,16 +23,16 @@ import ballerina/time;
 # + capacity - Maximum number of entries allowed in the cache
 # + evictionFactor - The factor by which the entries will be evicted once the cache is full
 # + evictionPolicy - The policy which is used to evict entries once the cache is full
-# + defaultMaxAgeInSeconds - The default value in seconds which all the cache entries are valid.
-#                            '-1' means, the entries are valid forever. This will be overwritten by the the
-#                            `maxAgeInSeconds` property set when inserting item to the cache
-# + cleanupIntervalInSeconds - Interval of the timer task, which will clean up the cache
+# + defaultMaxAge - The default value in seconds which all the cache entries are valid. '-1' means, the entries are
+#                   valid forever. This will be overwritten by the the `maxAge` property set when inserting item to
+#                   the cache
+# + cleanupInterval - Interval (in seconds) of the timer task, which will clean up the cache
 public type CacheConfig record {|
     int capacity = 100;
     float evictionFactor = 0.25;
     EvictionPolicy evictionPolicy = LRU;
-    int defaultMaxAgeInSeconds = -1;
-    int cleanupIntervalInSeconds?;
+    decimal defaultMaxAge = -1;
+    decimal cleanupInterval?;
 |};
 
 # Possible types of eviction policy that can be passed into the `EvictionPolicy`
@@ -70,7 +70,7 @@ public class Cache {
     private int maxCapacity;
     private EvictionPolicy evictionPolicy;
     private float evictionFactor;
-    private int defaultMaxAgeInSeconds;
+    private int defaultMaxAge;
     private LinkedList linkedList;
 
     # Called when a new `cache:Cache` object is created.
@@ -80,7 +80,7 @@ public class Cache {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
-        self.defaultMaxAgeInSeconds = cacheConfig.defaultMaxAgeInSeconds;
+        self.defaultMaxAge = <int> cacheConfig.defaultMaxAge;
         self.linkedList = new LinkedList();
 
         // Cache capacity must be a positive value.
@@ -93,18 +93,18 @@ public class Cache {
         }
 
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if (self.defaultMaxAgeInSeconds != -1 && self.defaultMaxAgeInSeconds <= 0) {
+        if (self.defaultMaxAge != -1 && self.defaultMaxAge <= 0) {
             panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
 
         externLockInit();
         externInit(self, self.maxCapacity);
 
-        int? cleanupIntervalInSeconds = cacheConfig?.cleanupIntervalInSeconds;
-        if (cleanupIntervalInSeconds is int) {
+        decimal? interval = cacheConfig?.cleanupInterval;
+        if (interval is decimal) {
             task:TimerConfiguration timerConfiguration = {
-                intervalInMillis: cleanupIntervalInSeconds,
-                initialDelayInMillis: cleanupIntervalInSeconds
+                intervalInMillis: <int> interval,
+                initialDelayInMillis: <int> interval
             };
             task:Scheduler|task:SchedulerError cleanupScheduler = new(timerConfiguration);
             if (cleanupScheduler is task:Scheduler) {
@@ -127,10 +127,10 @@ public class Cache {
     #
     # + key - Key of the value to be cached
     # + value - Value to be cached. Value should not be `()`
-    # + maxAgeInSeconds - The time in seconds for which the cache entry is valid. If the value is '-1', the entry is
+    # + maxAge - The time in seconds for which the cache entry is valid. If the value is '-1', the entry is
     #                     valid forever.
     # + return - `()` if successfully added to the cache or `Error` if a `()` value is inserted to the cache.
-    public isolated function put(string key, any value, int maxAgeInSeconds = -1) returns Error? {
+    public isolated function put(string key, any value, int maxAge = -1) returns Error? {
         if (value is ()) {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
         }
@@ -140,13 +140,13 @@ public class Cache {
         }
 
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
-        // `defaultMaxAgeInSeconds` property.
+        // `defaultMaxAge` property.
         int calculatedExpTime = -1;
-        if (maxAgeInSeconds != -1 && maxAgeInSeconds > 0) {
-            calculatedExpTime = time:nanoTime() + (maxAgeInSeconds * 1000 * 1000 * 1000);
+        if (maxAge != -1 && maxAge > 0) {
+            calculatedExpTime = time:nanoTime() + (maxAge * 1000 * 1000 * 1000);
         } else {
-            if (self.defaultMaxAgeInSeconds != -1) {
-                calculatedExpTime = time:nanoTime() + (self.defaultMaxAgeInSeconds * 1000 * 1000 * 1000);
+            if (self.defaultMaxAge != -1) {
+                calculatedExpTime = time:nanoTime() + (self.defaultMaxAge * 1000 * 1000 * 1000);
             }
         }
 
