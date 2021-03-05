@@ -23,8 +23,7 @@ public type AbstractCache object {
     #
     # + key - Key of the value to be cached
     # + value - Value to be cached
-    # + maxAge - The time in seconds during which the cache entry is valid. '-1' means, the entry is valid
-    #                     forever
+    # + maxAge - The time in seconds during which the cache entry is valid. '-1' means, the entry is valid forever
     # + return - `()` if successfully added to the cache or `Error` if any error occurred while inserting the entry
     #            to the cache
     public isolated function put(string key, any value, int maxAge = -1) returns Error?;
