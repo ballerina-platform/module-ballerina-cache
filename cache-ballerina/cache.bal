@@ -49,17 +49,26 @@ type CacheEntry record {|
 // Cleanup service which cleans the cache entries periodically.
 boolean cleanupInProgress = false;
 
-// Cleanup service which cleans the cache entries periodically.
-final service isolated object{} cleanupService = service object {
-    remote function onTrigger(Cache cache, LinkedList linkedList) {
+class Cleanup {
+
+    *task:Job;
+    private LinkedList linkedList;
+    private Cache cache;
+
+    public function execute() {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
             cleanupInProgress = true;
-            cleanup(cache, linkedList);
+            cleanup(self.cache, self.linkedList);
             cleanupInProgress = false;
         }
     }
-};
+
+    public isolated function init(Cache cache, LinkedList linkedList) {
+        self.linkedList = linkedList;
+        self.cache = cache;
+    }
+}
 
 # The `cache:Cache` object, which is used for all the cache-related operations. It is not recommended to insert `()`
 # as the value of the cache since it doesn't make any sense to cache a nil.
@@ -102,22 +111,16 @@ public class Cache {
 
         decimal? interval = cacheConfig?.cleanupInterval;
         if (interval is decimal) {
-            task:TimerConfiguration timerConfiguration = {
-                intervalInMillis: <int> interval,
-                initialDelayInMillis: <int> interval
-            };
-            task:Scheduler|task:SchedulerError cleanupScheduler = new(timerConfiguration);
-            if (cleanupScheduler is task:Scheduler) {
-                task:SchedulerError? result = cleanupScheduler.attach(cleanupService, self, self.linkedList);
-                if (result is task:SchedulerError) {
-                    panic prepareError("Failed to attach the cache cleanup task.", result);
-                }
-                result = cleanupScheduler.start();
-                if (result is task:SchedulerError) {
-                    panic prepareError("Failed to start the cache cleanup task.", result);
-                }
-            } else {
-                panic prepareError("Failed to initialize the cache cleanup task.", cleanupScheduler);
+            time:ZoneOffset zoneOffset = {hours: 5, minutes: 30};
+            time:Utc currentUtc = time:utcNow();
+            time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
+            time:Civil time = time:utcToCivil(newTime);
+            time.utcOffset = zoneOffset;
+            var result = task:scheduleJobRecurByFrequency(new Cleanup(self, self.linkedList), interval,
+                                        startTime = time);
+            if (result is task:Error) {
+                string message = string `Failed to schedule the cleanup task: ${result.message()}`;
+                panic prepareError(message);
             }
         }
     }
@@ -138,15 +141,17 @@ public class Cache {
         if (self.size() == self.maxCapacity) {
             evict(self, self.maxCapacity, self.evictionFactor, self.linkedList);
         }
-
+        time:Utc currentUtc = time:utcNow();
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
         int calculatedExpTime = -1;
         if (maxAge != -1 && maxAge > 0) {
-            calculatedExpTime = time:nanoTime() + (maxAge * 1000 * 1000 * 1000);
+            time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal>maxAge);
+            calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
         } else {
             if (self.defaultMaxAge != -1) {
-                calculatedExpTime = time:nanoTime() + (self.defaultMaxAge * 1000 * 1000 * 1000);
+                time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal>self.defaultMaxAge);
+                calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
             }
         }
 
@@ -181,10 +186,12 @@ public class Cache {
         Node node = externGet(self, key);
         CacheEntry entry = <CacheEntry>node.value;
 
+        time:Utc currentUtc = time:utcNow();
+        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
         // Check whether the cache entry is already expired. Even though the cache cleaning task is configured
         // and runs in predefined intervals, sometimes the cache entry might not have been removed at this point
         // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
-        if (entry.expTime != -1 && entry.expTime < time:nanoTime()) {
+        if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
             self.linkedList.remove(node);
             externRemove(self, key);
             return ();
@@ -266,13 +273,17 @@ isolated function evict(Cache cache, int capacity, float evictionFactor, LinkedL
 }
 
 isolated function cleanup(Cache cache, LinkedList linkedList) {
-    if (externSize(cache) == 0) {
+    string[] keys = cache.keys();
+    if (keys.length() == 0) {
         return;
     }
-    foreach string key in externKeys(cache) {
+    foreach string key in keys {
         Node node = externGet(cache, key);
         CacheEntry entry = <CacheEntry>node.value;
-        if (entry.expTime != -1 && entry.expTime < time:nanoTime()) {
+        time:Utc currentUtc = time:utcNow();
+        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
+        if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
+
             linkedList.remove(node);
             externRemove(cache, entry.key);
             // The return result (error which occurred due to unavailability of the key or nil) is ignored
