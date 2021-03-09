@@ -283,7 +283,6 @@ isolated function cleanup(Cache cache, LinkedList linkedList) {
         time:Utc currentUtc = time:utcNow();
         int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
         if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
-
             linkedList.remove(node);
             externRemove(cache, entry.key);
             // The return result (error which occurred due to unavailability of the key or nil) is ignored
