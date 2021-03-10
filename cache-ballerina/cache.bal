@@ -138,15 +138,17 @@ public class Cache {
         if (self.size() == self.maxCapacity) {
             evict(self, self.maxCapacity, self.evictionFactor, self.linkedList);
         }
-
+        time:Utc currentUtc = time:utcNow();
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
         int calculatedExpTime = -1;
         if (maxAge != -1 && maxAge > 0) {
-            calculatedExpTime = time:nanoTime() + (maxAge * 1000 * 1000 * 1000);
+            time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> maxAge);
+            calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
         } else {
             if (self.defaultMaxAge != -1) {
-                calculatedExpTime = time:nanoTime() + (self.defaultMaxAge * 1000 * 1000 * 1000);
+                time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> self.defaultMaxAge);
+                calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
             }
         }
 
@@ -184,7 +186,9 @@ public class Cache {
         // Check whether the cache entry is already expired. Even though the cache cleaning task is configured
         // and runs in predefined intervals, sometimes the cache entry might not have been removed at this point
         // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
-        if (entry.expTime != -1 && entry.expTime < time:nanoTime()) {
+        time:Utc currentUtc = time:utcNow();
+        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
+        if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
             self.linkedList.remove(node);
             externRemove(self, key);
             return ();
@@ -272,7 +276,9 @@ isolated function cleanup(Cache cache, LinkedList linkedList) {
     foreach string key in externKeys(cache) {
         Node node = externGet(cache, key);
         CacheEntry entry = <CacheEntry>node.value;
-        if (entry.expTime != -1 && entry.expTime < time:nanoTime()) {
+        time:Utc currentUtc = time:utcNow();
+        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
+        if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
             linkedList.remove(node);
             externRemove(cache, entry.key);
             // The return result (error which occurred due to unavailability of the key or nil) is ignored
