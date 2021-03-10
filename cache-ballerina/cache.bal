@@ -146,11 +146,11 @@ public class Cache {
         // `defaultMaxAge` property.
         int calculatedExpTime = -1;
         if (maxAge != -1 && maxAge > 0) {
-            time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal>maxAge);
+            time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> maxAge);
             calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
         } else {
             if (self.defaultMaxAge != -1) {
-                time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal>self.defaultMaxAge);
+                time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> self.defaultMaxAge)
                 calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
             }
         }
@@ -186,11 +186,12 @@ public class Cache {
         Node node = externGet(self, key);
         CacheEntry entry = <CacheEntry>node.value;
 
-        time:Utc currentUtc = time:utcNow();
         int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
         // Check whether the cache entry is already expired. Even though the cache cleaning task is configured
         // and runs in predefined intervals, sometimes the cache entry might not have been removed at this point
         // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
+        time:Utc currentUtc = time:utcNow();
+        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
         if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
             self.linkedList.remove(node);
             externRemove(self, key);
