@@ -43,7 +43,7 @@ public enum EvictionPolicy {
 type CacheEntry record {|
     string key;
     any data;
-    int expTime;       // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
+    decimal expTime;       // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
 |};
 
 // Cleanup service which cleans the cache entries periodically.
@@ -81,6 +81,7 @@ public class Cache {
     private float evictionFactor;
     private int defaultMaxAge;
     private LinkedList linkedList;
+    private decimal value = -1;
 
     # Called when a new `cache:Cache` object is created.
     #
@@ -111,11 +112,9 @@ public class Cache {
 
         decimal? interval = cacheConfig?.cleanupInterval;
         if (interval is decimal) {
-            time:ZoneOffset zoneOffset = {hours: 0, minutes: 0};
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
             time:Civil time = time:utcToCivil(newTime);
-            time.utcOffset = zoneOffset;
             var result = task:scheduleJobRecurByFrequency(new Cleanup(self, self.linkedList), interval,
                                         startTime = time);
             if (result is task:Error) {
@@ -144,14 +143,14 @@ public class Cache {
         time:Utc currentUtc = time:utcNow();
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
-        int calculatedExpTime = -1;
+        decimal calculatedExpTime = -1;
         if (maxAge != -1 && maxAge > 0) {
             time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> maxAge);
-            calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
+            calculatedExpTime = <decimal>newTime[0] + newTime[1];
         } else {
             if (self.defaultMaxAge != -1) {
-                time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> self.defaultMaxAge)
-                calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
+                time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> self.defaultMaxAge);
+                calculatedExpTime = <decimal>newTime[0] + newTime[1];
             }
         }
 
@@ -186,13 +185,11 @@ public class Cache {
         Node node = externGet(self, key);
         CacheEntry entry = <CacheEntry>node.value;
 
-        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
         // Check whether the cache entry is already expired. Even though the cache cleaning task is configured
         // and runs in predefined intervals, sometimes the cache entry might not have been removed at this point
         // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
         time:Utc currentUtc = time:utcNow();
-        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
-        if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
+        if (entry.expTime != self.value && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
             self.linkedList.remove(node);
             externRemove(self, key);
             return ();
@@ -282,8 +279,7 @@ isolated function cleanup(Cache cache, LinkedList linkedList) {
         Node node = externGet(cache, key);
         CacheEntry entry = <CacheEntry>node.value;
         time:Utc currentUtc = time:utcNow();
-        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
-        if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
+        if (entry.expTime != <decimal> -1 && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
             linkedList.remove(node);
             externRemove(cache, entry.key);
             // The return result (error which occurred due to unavailability of the key or nil) is ignored
