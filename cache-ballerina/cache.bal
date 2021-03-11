@@ -111,7 +111,7 @@ public class Cache {
 
         decimal? interval = cacheConfig?.cleanupInterval;
         if (interval is decimal) {
-            time:ZoneOffset zoneOffset = {hours: 5, minutes: 30};
+            time:ZoneOffset zoneOffset = {hours: 0, minutes: 0};
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
             time:Civil time = time:utcToCivil(newTime);
