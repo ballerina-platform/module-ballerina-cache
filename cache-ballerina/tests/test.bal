@@ -74,20 +74,16 @@ isolated function testPutExistingEntry() returns error? {
     groups: ["create", "put", "size", "age"]
 }
 isolated function testPutWithMaxAge() returns error? {
-    int maxAge = 5;
+    decimal maxAge = 5;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     Cache cache = new(config);
     check cache.put("Hello", "Ballerina", maxAge);
-    decimal|error sleepTime = decimal:fromString((maxAge * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), 1);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
+    decimal sleepTime = maxAge * 2 + 1;
+    runtime:sleep(sleepTime);
+    test:assertEquals(cache.size(), 1);
 }
 
 @test:Config {
@@ -142,19 +138,15 @@ isolated function testGetExpiredEntry() returns error? {
     string key = "Hello";
     string value = "Ballerina";
     Cache cache = new(config);
-    int maxAgeInSeconds = 1;
+    decimal maxAgeInSeconds = 1;
     check cache.put(key, value, maxAgeInSeconds);
-    decimal|error sleepTime = decimal:fromString((maxAgeInSeconds * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        any|error expected = cache.get(key);
-        if (expected is any) {
-            test:assertEquals(expected.toString(), "");
-        } else {
-             test:assertFail("Output mismatched");
-        }
+    decimal sleepTime = maxAgeInSeconds * 2 + 1;
+    runtime:sleep(sleepTime);
+    any|error expected = cache.get(key);
+    if (expected is any) {
+        test:assertEquals(expected.toString(), "");
     } else {
-        test:assertFail("Test failed: " + sleepTime.message());
+         test:assertFail("Output mismatched");
     }
 }
 

@@ -79,7 +79,7 @@ public class Cache {
     private int maxCapacity;
     private EvictionPolicy evictionPolicy;
     private float evictionFactor;
-    private int defaultMaxAge;
+    private decimal defaultMaxAge;
     private LinkedList linkedList;
     private decimal value = -1;
 
@@ -90,7 +90,7 @@ public class Cache {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
-        self.defaultMaxAge = <int> cacheConfig.defaultMaxAge;
+        self.defaultMaxAge =  cacheConfig.defaultMaxAge;
         self.linkedList = new LinkedList();
 
         // Cache capacity must be a positive value.
@@ -103,7 +103,7 @@ public class Cache {
         }
 
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if (self.defaultMaxAge != -1 && self.defaultMaxAge <= 0) {
+        if (self.defaultMaxAge != self.value && self.defaultMaxAge <= 0) {
             panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
 
@@ -132,7 +132,7 @@ public class Cache {
     # + maxAge - The time in seconds for which the cache entry is valid. If the value is '-1', the entry is
     #                     valid forever.
     # + return - `()` if successfully added to the cache or `Error` if a `()` value is inserted to the cache.
-    public isolated function put(string key, any value, int maxAge = -1) returns Error? {
+    public isolated function put(string key, any value, decimal maxAge = -1) returns Error? {
         if (value is ()) {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
         }
@@ -144,11 +144,11 @@ public class Cache {
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
         decimal calculatedExpTime = -1;
-        if (maxAge != -1 && maxAge > 0) {
+        if (maxAge != self.value && maxAge > 0) {
             time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> maxAge);
             calculatedExpTime = <decimal>newTime[0] + newTime[1];
         } else {
-            if (self.defaultMaxAge != -1) {
+            if (self.defaultMaxAge != self.value) {
                 time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> self.defaultMaxAge);
                 calculatedExpTime = <decimal>newTime[0] + newTime[1];
             }
