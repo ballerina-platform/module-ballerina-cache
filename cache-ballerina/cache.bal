@@ -43,7 +43,7 @@ public enum EvictionPolicy {
 type CacheEntry record {|
     string key;
     any data;
-    decimal expTime;       // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
+    decimal expTime;  // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
 |};
 
 // Cleanup service which cleans the cache entries periodically.
