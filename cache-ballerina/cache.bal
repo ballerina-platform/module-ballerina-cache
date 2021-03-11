@@ -43,7 +43,7 @@ public enum EvictionPolicy {
 type CacheEntry record {|
     string key;
     any data;
-    int expTime;       // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
+    decimal expTime;  // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
 |};
 
 // Cleanup service which cleans the cache entries periodically.
@@ -70,8 +70,9 @@ public class Cache {
     private int maxCapacity;
     private EvictionPolicy evictionPolicy;
     private float evictionFactor;
-    private int defaultMaxAge;
+    private decimal defaultMaxAge;
     private LinkedList linkedList;
+    private decimal value = -1;
 
     # Called when a new `cache:Cache` object is created.
     #
@@ -80,7 +81,7 @@ public class Cache {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
-        self.defaultMaxAge = <int> cacheConfig.defaultMaxAge;
+        self.defaultMaxAge =  cacheConfig.defaultMaxAge;
         self.linkedList = new LinkedList();
 
         // Cache capacity must be a positive value.
@@ -93,7 +94,7 @@ public class Cache {
         }
 
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if (self.defaultMaxAge != -1 && self.defaultMaxAge <= 0) {
+        if (self.defaultMaxAge != self.value && self.defaultMaxAge <= 0) {
             panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
 
@@ -130,7 +131,7 @@ public class Cache {
     # + maxAge - The time in seconds for which the cache entry is valid. If the value is '-1', the entry is
     #                     valid forever.
     # + return - `()` if successfully added to the cache or `Error` if a `()` value is inserted to the cache.
-    public isolated function put(string key, any value, int maxAge = -1) returns Error? {
+    public isolated function put(string key, any value, decimal maxAge = -1) returns Error? {
         if (value is ()) {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
         }
@@ -141,14 +142,14 @@ public class Cache {
         time:Utc currentUtc = time:utcNow();
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
-        int calculatedExpTime = -1;
-        if (maxAge != -1 && maxAge > 0) {
+        decimal calculatedExpTime = -1;
+        if (maxAge != self.value && maxAge > 0) {
             time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> maxAge);
-            calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
+            calculatedExpTime = (<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0;
         } else {
-            if (self.defaultMaxAge != -1) {
+            if (self.defaultMaxAge != self.value) {
                 time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> self.defaultMaxAge);
-                calculatedExpTime = <int>((<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0);
+                calculatedExpTime = (<decimal>newTime[0] + newTime[1]) * 1000.0 * 1000.0 * 1000.0;
             }
         }
 
@@ -188,7 +189,7 @@ public class Cache {
         // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
         time:Utc currentUtc = time:utcNow();
         int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
-        if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
+        if (entry.expTime != self.value && entry.expTime < currentTimeInNano) {
             self.linkedList.remove(node);
             externRemove(self, key);
             return ();
@@ -277,8 +278,8 @@ isolated function cleanup(Cache cache, LinkedList linkedList) {
         Node node = externGet(cache, key);
         CacheEntry entry = <CacheEntry>node.value;
         time:Utc currentUtc = time:utcNow();
-        int currentTimeInNano = <int>((<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0);
-        if (entry.expTime != -1 && entry.expTime < currentTimeInNano) {
+        decimal currentTimeInNano = (<decimal>currentUtc[0] + currentUtc[1]) * 1000.0 * 1000.0 * 1000.0;
+        if (entry.expTime != <decimal> -1 && entry.expTime < currentTimeInNano) {
             linkedList.remove(node);
             externRemove(cache, entry.key);
             // The return result (error which occurred due to unavailability of the key or nil) is ignored
