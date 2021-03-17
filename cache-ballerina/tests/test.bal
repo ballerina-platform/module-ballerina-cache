@@ -120,7 +120,7 @@ isolated function testGetNonExistingEntry() {
     Cache cache = new(config);
     any|error expected = cache.get("Hello");
     if (expected is error) {
-        test:assertEquals(expected.toString(), "error CacheError (\"Cache entry from the given key: " +
+        test:assertEquals(expected.toString(), "error Error (\"Cache entry from the given key: " +
                               "Hello, is not available.\")");
     } else {
          test:assertFail("Output mismatched");
@@ -355,7 +355,7 @@ isolated function testCreateCacheWithZeroCapacity() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
+        test:assertEquals(cache.toString(), "error Error (\"Capacity must be greater than 0.\")");
     } else {
          test:assertFail("Output mismatched");
     }
@@ -372,7 +372,7 @@ isolated function testCreateCacheWithNegativeCapacity() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
+        test:assertEquals(cache.toString(), "error Error (\"Capacity must be greater than 0.\")");
     } else {
          test:assertFail("Output mismatched");
     }
@@ -389,7 +389,7 @@ isolated function testCreateCacheWithZeroEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 (exclusive)" +
+        test:assertEquals(cache.toString(), "error Error (\"Cache eviction factor must be between 0.0 (exclusive)" +
                               " and 1.0 (inclusive).\")");
     } else {
          test:assertFail("Output mismatched");
@@ -407,7 +407,7 @@ isolated function testCreateCacheWithNegativeEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
+        test:assertEquals(cache.toString(), "error Error (\"Cache eviction factor must be between 0.0 " +
                               "(exclusive) and 1.0 (inclusive).\")");
     } else {
          test:assertFail("Output mismatched");
@@ -425,7 +425,7 @@ isolated function testCreateCacheWithInvalidEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
+        test:assertEquals(cache.toString(), "error Error (\"Cache eviction factor must be between 0.0 " +
                               "(exclusive) and 1.0 (inclusive).\")");
     } else {
          test:assertFail("Output mismatched");
@@ -444,7 +444,7 @@ isolated function testCreateCacheWithZeroDefaultMaxAge() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Default max age should be greater " +
+        test:assertEquals(cache.toString(), "error Error (\"Default max age should be greater " +
                               "than 0 or -1 for indicate forever valid.\")");
     } else {
          test:assertFail("Output mismatched");
@@ -463,7 +463,7 @@ isolated function testCreateCacheWithNegativeDefaultMaxAge() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Default max age should be greater than 0 or -1 " +
+        test:assertEquals(cache.toString(), "error Error (\"Default max age should be greater than 0 or -1 " +
                               "for indicate forever valid.\")");
     } else {
          test:assertFail("Output mismatched");
