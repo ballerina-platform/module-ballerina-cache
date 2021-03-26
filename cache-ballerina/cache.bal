@@ -81,8 +81,6 @@ public class Cache {
     private float evictionFactor;
     private decimal defaultMaxAge;
     private LinkedList linkedList;
-    private decimal value = -1;
-    private decimal zero = 0;
 
     # Called when a new `cache:Cache` object is created.
     #
@@ -104,7 +102,7 @@ public class Cache {
         }
 
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if (self.defaultMaxAge != self.value && self.defaultMaxAge <= self.zero) {
+        if (self.defaultMaxAge != -1d && self.defaultMaxAge <= 0d) {
             panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
 
@@ -145,11 +143,11 @@ public class Cache {
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
         decimal calculatedExpTime = -1;
-        if (maxAge != self.value && maxAge > self.zero) {
+        if (maxAge != -1d && maxAge > 0d) {
             time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> maxAge);
             calculatedExpTime = <decimal>newTime[0] + newTime[1];
         } else {
-            if (self.defaultMaxAge != self.value) {
+            if (self.defaultMaxAge != -1d) {
                 time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> self.defaultMaxAge);
                 calculatedExpTime = <decimal>newTime[0] + newTime[1];
             }
@@ -190,7 +188,7 @@ public class Cache {
         // and runs in predefined intervals, sometimes the cache entry might not have been removed at this point
         // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
         time:Utc currentUtc = time:utcNow();
-        if (entry.expTime != self.value && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
+        if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
             self.linkedList.remove(node);
             externRemove(self, key);
             return ();
@@ -280,7 +278,7 @@ isolated function cleanup(Cache cache, LinkedList linkedList) {
         Node node = externGet(cache, key);
         CacheEntry entry = <CacheEntry>node.value;
         time:Utc currentUtc = time:utcNow();
-        if (entry.expTime != <decimal> -1 && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
+        if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
             linkedList.remove(node);
             externRemove(cache, entry.key);
             // The return result (error which occurred due to unavailability of the key or nil) is ignored
