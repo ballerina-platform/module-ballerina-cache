@@ -82,6 +82,7 @@ public class Cache {
     private decimal defaultMaxAge;
     private LinkedList linkedList;
     private decimal value = -1;
+    private decimal zero = 0;
 
     # Called when a new `cache:Cache` object is created.
     #
@@ -98,12 +99,12 @@ public class Cache {
             panic prepareError("Capacity must be greater than 0.");
         }
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if (self.evictionFactor <= 0 || self.evictionFactor > 1) {
+        if (self.evictionFactor <= 0.0 || self.evictionFactor > 1.0) {
             panic prepareError("Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
         }
 
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if (self.defaultMaxAge != self.value && self.defaultMaxAge <= 0) {
+        if (self.defaultMaxAge != self.value && self.defaultMaxAge <= self.zero) {
             panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
 
@@ -144,7 +145,7 @@ public class Cache {
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
         decimal calculatedExpTime = -1;
-        if (maxAge != self.value && maxAge > 0) {
+        if (maxAge != self.value && maxAge > self.zero) {
             time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> maxAge);
             calculatedExpTime = <decimal>newTime[0] + newTime[1];
         } else {
