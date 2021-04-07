@@ -83,9 +83,12 @@ public class Cache {
     private LinkedList linkedList;
 
     # Called when a new `cache:Cache` object is created.
+    # ```ballerina
+    # cache:Cache cache = new({capacity: 10, evictionFactor: 0.2});
+    # ```
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    public isolated function init(CacheConfig cacheConfig = {}) {
+    public isolated function init(CacheConfig cacheConfig = {}) returns Error? {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
@@ -94,16 +97,16 @@ public class Cache {
 
         // Cache capacity must be a positive value.
         if (self.maxCapacity <= 0) {
-            panic prepareError("Capacity must be greater than 0.");
+            return prepareError("Capacity must be greater than 0.");
         }
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
         if (self.evictionFactor <= 0.0 || self.evictionFactor > 1.0) {
-            panic prepareError("Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
+            return prepareError("Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
         }
 
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
         if (self.defaultMaxAge != -1d && self.defaultMaxAge <= 0d) {
-            panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
+            return prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
 
         externLockInit();
@@ -118,13 +121,16 @@ public class Cache {
                                         startTime = time);
             if (result is task:Error) {
                 string message = string `Failed to schedule the cleanup task: ${result.message()}`;
-                panic prepareError(message);
+                return prepareError(message);
             }
         }
     }
 
     # Adds the given key value pair to the cache. If the cache previously contained a value associated with the
     # provided key, the old value wil be replaced by the newly-provided value.
+    # ```ballerina
+    # cache:Error? result = cache.put("Hello", "Ballerina");
+    # ```
     #
     # + key - Key of the value to be cached
     # + value - Value to be cached. Value should not be `()`
@@ -172,6 +178,9 @@ public class Cache {
     }
 
     # Returns the cached value associated with the provided key.
+    # ```ballerina
+    # any|cache:Error value = cache.get(key);
+    # ```
     #
     # + key - Key of the cached value, which should be retrieved
     # + return - The cached value associated with the provided key or an `Error` if the provided cache key is not
@@ -200,6 +209,9 @@ public class Cache {
     }
 
     # Discards a cached value from the cache.
+    # ```ballerina
+    # cache:Error? result = cache.invalidate(key);
+    # ```
     #
     # + key - Key of the cache value, which needs to be discarded from the cache
     # + return - `()` if successfully discarded the value or an `Error` if the provided cache key is not present in the
@@ -215,6 +227,9 @@ public class Cache {
     }
 
     # Discards all the cached values from the cache.
+    # ```ballerina
+    # cache:Error? result = cache.invalidateAll();
+    # ```
     #
     # + return - `()` if successfully discarded all the values from the cache or an `Error` if any error occurred while
     # discarding all the values from the cache.
@@ -224,6 +239,9 @@ public class Cache {
     }
 
     # Checks whether the given key has an associated cached value.
+    # ```ballerina
+    # boolean result = cache.hasKey(key);
+    # ```
     #
     # + key - The key to be checked in the cache
     # + return - `true` if a cached value is available for the provided key or `false` if there is no cached value
@@ -233,6 +251,9 @@ public class Cache {
     }
 
     # Returns a list of all the keys from the cache.
+    # ```ballerina
+    # string[] keys = cache.keys();
+    # ```
     #
     # + return - Array of all the keys from the cache
     public isolated function keys() returns string[] {
@@ -240,6 +261,9 @@ public class Cache {
     }
 
     # Returns the size of the cache.
+    # ```ballerina
+    # int result = cache.size();
+    # ```
     #
     # + return - The size of the cache
     public isolated function size() returns int {
@@ -247,6 +271,9 @@ public class Cache {
     }
 
     # Returns the capacity of the cache.
+    # ```ballerina
+    # int result = cache.capacity();
+    # ```
     #
     # + return - The capacity of the cache
     public isolated function capacity() returns int {
