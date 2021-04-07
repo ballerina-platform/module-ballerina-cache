@@ -88,7 +88,7 @@ public class Cache {
     # ```
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    public isolated function init(CacheConfig cacheConfig = {}) returns Error? {
+    public isolated function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
@@ -97,16 +97,16 @@ public class Cache {
 
         // Cache capacity must be a positive value.
         if (self.maxCapacity <= 0) {
-            return prepareError("Capacity must be greater than 0.");
+            panic prepareError("Capacity must be greater than 0.");
         }
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
         if (self.evictionFactor <= 0.0 || self.evictionFactor > 1.0) {
-            return prepareError("Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
+            panic prepareError("Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
         }
 
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
         if (self.defaultMaxAge != -1d && self.defaultMaxAge <= 0d) {
-            return prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
+            panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
 
         externLockInit();
@@ -121,7 +121,7 @@ public class Cache {
                                         startTime = time);
             if (result is task:Error) {
                 string message = string `Failed to schedule the cleanup task: ${result.message()}`;
-                return prepareError(message);
+                panic prepareError(message);
             }
         }
     }
