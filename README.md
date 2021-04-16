@@ -78,6 +78,10 @@ Execute the commands below to build from source.
 8. Publish the generated artifacts to the local Ballerina central repository:
 
         ./gradlew clean build -PpublishToLocalCentral=true
+        
+9. Publish the generated artifacts to the Ballerina central repository:
+
+        ./gradlew clean build -PpublishToCentral=true
 
 ## Contributing to Ballerina
 
