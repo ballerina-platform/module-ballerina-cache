@@ -91,7 +91,6 @@ task copyStdlibs(type: Copy) {
 }
 
 task updateTomlVersions {
-    inputs.dir file(project.projectDir)
     doLast {
         def stdlibDependentTaskVersion = project.stdlibTaskVersion.replace("-SNAPSHOT", "")
         def stdlibDependentTimeVersion = project.stdlibTimeVersion.replace("-SNAPSHOT", "")
@@ -160,7 +159,7 @@ task initializeVariables {
 }
 
 task ballerinaBuild {
-
+    inputs.dir file(project.projectDir)
     doLast {
         if (needSeparateTest) {
             exec {
