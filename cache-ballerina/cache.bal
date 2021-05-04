@@ -282,7 +282,7 @@ public class Cache {
 }
 
 isolated function evict(Cache cache, int capacity, float evictionFactor, LinkedList linkedList) {
-    int evictionKeysCount = <int>(capacity * evictionFactor);
+    int evictionKeysCount = <int>(<float> capacity * evictionFactor);
     foreach int i in 1...evictionKeysCount {
         Node? node = linkedList.removeLast();
         if (node is Node) {
