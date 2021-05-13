@@ -129,14 +129,14 @@ public class Cache {
     # Adds the given key value pair to the cache. If the cache previously contained a value associated with the
     # provided key, the old value wil be replaced by the newly-provided value.
     # ```ballerina
-    # cache:Error? result = cache.put("Hello", "Ballerina");
+    # check cache.put("Hello", "Ballerina");
     # ```
     #
     # + key - Key of the value to be cached
     # + value - Value to be cached. Value should not be `()`
     # + maxAge - The time in seconds for which the cache entry is valid. If the value is '-1', the entry is
     #                     valid forever.
-    # + return - `()` if successfully added to the cache or `Error` if a `()` value is inserted to the cache.
+    # + return - `()` if successfully added to the cache or `cache:Error` if a `()` value is inserted to the cache.
     public isolated function put(string key, any value, decimal maxAge = -1) returns Error? {
         if (value is ()) {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
@@ -179,11 +179,11 @@ public class Cache {
 
     # Returns the cached value associated with the provided key.
     # ```ballerina
-    # any|cache:Error value = cache.get(key);
+    # any value = check cache.get(key);
     # ```
     #
     # + key - Key of the cached value, which should be retrieved
-    # + return - The cached value associated with the provided key or an `Error` if the provided cache key is not
+    # + return - The cached value associated with the provided key or an `cache:Error` if the provided cache key is not
     #            exisiting in the cache or any error occurred while retrieving the value from the cache.
     public isolated function get(string key) returns any|Error {
         if (!self.hasKey(key)) {
@@ -210,12 +210,12 @@ public class Cache {
 
     # Discards a cached value from the cache.
     # ```ballerina
-    # cache:Error? result = cache.invalidate(key);
+    # check cache.invalidate(key);
     # ```
     #
     # + key - Key of the cache value, which needs to be discarded from the cache
-    # + return - `()` if successfully discarded the value or an `Error` if the provided cache key is not present in the
-    #            cache
+    # + return - `()` if successfully discarded the value or an `cache:Error` if the provided cache key is not present
+    #            in the cache
     public isolated function invalidate(string key) returns Error? {
         if (!self.hasKey(key)) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
@@ -228,11 +228,11 @@ public class Cache {
 
     # Discards all the cached values from the cache.
     # ```ballerina
-    # cache:Error? result = cache.invalidateAll();
+    # check cache.invalidateAll();
     # ```
     #
-    # + return - `()` if successfully discarded all the values from the cache or an `Error` if any error occurred while
-    # discarding all the values from the cache.
+    # + return - `()` if successfully discarded all the values from the cache or an `cache:Error` if any error
+    #            occurred while discarding all the values from the cache.
     public isolated function invalidateAll() returns Error? {
         self.linkedList.clear();
         externRemoveAll(self);
