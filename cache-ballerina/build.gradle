@@ -61,7 +61,7 @@ apply plugin: 'io.ballerina.plugin'
 ballerina{
     module = packageName
     langVersion = ballerinaLangVersion
-    testCoverageParam = "--code-coverage --includes=*"
+    testCoverageParam = "--code-coverage --jacoco-xml --includes=*"
 }
 
 task updateTomlVersions {
