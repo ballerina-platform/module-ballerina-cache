@@ -32,4 +32,4 @@ public type AbstractCache object {
 ```
 The Ballerina Cache package provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object.
 
-For information on the operations, which you can perform with the cache package, see the below __Functions__.
+For information on the operations, which you can perform with the cache module, see the below **Functions**.
