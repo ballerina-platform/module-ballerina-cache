@@ -1,13 +1,13 @@
-## Module Overview
+## Overview
 
-This module provides APIs for in-memory caching by using a semi-persistent mapping from keys to values. Cache entries are manually added by the cache, and are stored in the cache until either evicted or manually invalidated.
+This module provides APIs for in-memory caching by using a semi-persistent mapping from keys to values. Cache entries are manually added to the cache, and are stored in the cache until either evicted or manually invalidated.
 
-The existing implementation is based on the LRU eviction algorithm and using a `map` data structure. It is not recommended to insert `()` as the 
+The existing implementation is based on the Least Recently Used (LRU) eviction algorithm and using a `map` data structure. It is not recommended to insert `()` as the 
 value of the cache since it doesn't make sense to cache a nil. 
 
-You can be safely accessed this by multiple concurrent threads as it is thread-safe. 
+The cache entries can be safely accessed by multiple concurrent threads as it is thread-safe.
 
-The Cache will be evicted the entries in the following scenario:
+The Cache entries will be evicted in case of the following scenarios:
 
 - When using the `get` API, if the returning cache entry has expired, it gets removed.
 - When using the `put` API, if the cache size has reached its capacity, the number of entries get removed based on 
@@ -30,5 +30,6 @@ public type AbstractCache object {
     public function capacity() returns int;
 };
 ```
+The Ballerina Cache package provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object.
 
 For information on the operations, which you can perform with the cache package, see the below __Functions__.
