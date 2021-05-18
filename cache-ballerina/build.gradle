@@ -56,12 +56,13 @@ def stripBallerinaExtensionVersion(String extVersion) {
 apply plugin: 'io.ballerina.plugin'
 
 ballerina {
+    packageOrganization = packageOrg
     module = packageName
     langVersion = ballerinaLangVersion
     testCoverageParam = "--code-coverage --jacoco-xml --includes=*"
 }
 
-task updateTomlVersions {
+task updateTomlFiles {
     doLast {
         def stdlibDependentTaskVersion = stripBallerinaExtensionVersion(project.stdlibTaskVersion)
         def stdlibDependentTimeVersion = stripBallerinaExtensionVersion(project.stdlibTimeVersion)
@@ -75,7 +76,7 @@ task updateTomlVersions {
     }
 }
 
-task revertTomlFile {
+task revertTomlFiles {
     doLast {
         ballerinaConfigFile.text = originalConfig
         ballerinaDependencyFile.text = originalDependencies
@@ -101,7 +102,7 @@ publishing {
     }
 }
 
-updateTomlVersions.dependsOn copyStdlibs
+updateTomlFiles.dependsOn copyStdlibs
 
 build.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-native:build"
