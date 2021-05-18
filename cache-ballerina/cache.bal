@@ -136,7 +136,7 @@ public class Cache {
     # + value - Value to be cached. Value should not be `()`
     # + maxAge - The time in seconds for which the cache entry is valid. If the value is '-1', the entry is
     #                     valid forever.
-    # + return - `()` if successfully added to the cache or `cache:Error` if a `()` value is inserted to the cache.
+    # + return - `()` if successfully added to the cache or a `cache:Error` if a `()` value is inserted to the cache.
     public isolated function put(string key, any value, decimal maxAge = -1) returns Error? {
         if (value is ()) {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
@@ -183,7 +183,7 @@ public class Cache {
     # ```
     #
     # + key - Key of the cached value, which should be retrieved
-    # + return - The cached value associated with the provided key or an `cache:Error` if the provided cache key is not
+    # + return - The cached value associated with the provided key or a `cache:Error` if the provided cache key is not
     #            exisiting in the cache or any error occurred while retrieving the value from the cache.
     public isolated function get(string key) returns any|Error {
         if (!self.hasKey(key)) {
@@ -214,7 +214,7 @@ public class Cache {
     # ```
     #
     # + key - Key of the cache value, which needs to be discarded from the cache
-    # + return - `()` if successfully discarded the value or an `cache:Error` if the provided cache key is not present
+    # + return - `()` if successfully discarded the value or a `cache:Error` if the provided cache key is not present
     #            in the cache
     public isolated function invalidate(string key) returns Error? {
         if (!self.hasKey(key)) {
@@ -231,7 +231,7 @@ public class Cache {
     # check cache.invalidateAll();
     # ```
     #
-    # + return - `()` if successfully discarded all the values from the cache or an `cache:Error` if any error
+    # + return - `()` if successfully discarded all the values from the cache or a `cache:Error` if any error
     #            occurred while discarding all the values from the cache.
     public isolated function invalidateAll() returns Error? {
         self.linkedList.clear();
