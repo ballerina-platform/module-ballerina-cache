@@ -302,7 +302,7 @@ public isolated class Cache {
     }
 
     isolated function evict(int capacity, float evictionFactor) {
-        int evictionKeysCount = <int>(capacity * evictionFactor);
+        int evictionKeysCount = capacity * <int>evictionFactor;
         lock {
             foreach int i in 1...evictionKeysCount {
                 Node? node = self.linkedList.removeLast();
