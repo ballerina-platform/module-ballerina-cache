@@ -58,7 +58,7 @@ class Cleanup {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
             cleanupInProgress = true;
-            executeFunctionPointer(self.func);
+            self.executeFunctionPointer(self.func);
             cleanupInProgress = false;
         }
     }
@@ -92,7 +92,7 @@ public isolated class Cache {
     # + cacheConfig - Configurations for the `cache:Cache` object
     public isolated function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
-        self.evictionPolicy = cacheConfig.evictionPolicy.cloneReadOnly();
+        self.evictionPolicy = cacheConfig.evictionPolicy.clone();
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAge =  cacheConfig.defaultMaxAge;
         self.linkedList = new LinkedList();
@@ -119,7 +119,7 @@ public isolated class Cache {
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
             time:Civil time = time:utcToCivil(newTime);
-            var result = task:scheduleJobRecurByFrequency(new Cleanup(self.cleanup()), interval,
+            var result = task:scheduleJobRecurByFrequency(new Cleanup(self.cleanup), interval,
                                         startTime = time);
             if (result is task:Error) {
                 string message = string `Failed to schedule the cleanup task: ${result.message()}`;
@@ -144,8 +144,10 @@ public isolated class Cache {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
         }
         // If the current cache is full (i.e. size = capacity), evict cache.
-        if (self.size() == self.maxCapacity) {
-            self.evict(self.maxCapacity, self.evictionFactor);
+        lock {
+            if (self.size() == self.maxCapacity) {
+                self.evict(self.maxCapacity, self.evictionFactor);
+            }
         }
         time:Utc currentUtc = time:utcNow();
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
@@ -167,16 +169,17 @@ public isolated class Cache {
             expTime: calculatedExpTime
         };
         Node newNode = { value: entry };
-
-        if (self.hasKey(key)) {
-            Node oldNode = self.externGet(key);
-            // Move the node to front
-            self.linkedList.remove(oldNode);
-            self.linkedList.addFirst(newNode);
-        } else {
-            self.linkedList.addFirst(newNode);
+        lock {
+            if (self.hasKey(key)) {
+                Node oldNode = self.externGet(key);
+                // Move the node to front
+                self.linkedList.remove(oldNode);
+                self.linkedList.addFirst(newNode);
+            } else {
+                self.linkedList.addFirst(newNode);
+            }
+            self.externPut(key, newNode);
         }
-        self.externPut(key, newNode);
     }
 
     # Returns the cached value associated with the provided key.
@@ -188,11 +191,14 @@ public isolated class Cache {
     # + return - The cached value associated with the provided key or a `cache:Error` if the provided cache key is not
     #            exisiting in the cache or any error occurred while retrieving the value from the cache.
     public isolated function get(string key) returns any|Error {
-        if (!self.hasKey(key)) {
-            return prepareError("Cache entry from the given key: " + key + ", is not available.");
+        Node node;
+        lock {
+            if (!self.hasKey(key)) {
+                return prepareError("Cache entry from the given key: " + key + ", is not available.");
+            }
+            node = self.externGet(key);
         }
 
-        Node node = self.externGet(key);
         CacheEntry entry = <CacheEntry>node.value;
 
         // Check whether the cache entry is already expired. Even though the cache cleaning task is configured
@@ -200,13 +206,18 @@ public isolated class Cache {
         // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
         time:Utc currentUtc = time:utcNow();
         if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
-            self.linkedList.remove(node);
-            self.externRemove(key);
+            lock {
+                self.linkedList.remove(node);
+                self.externRemove(key);
+            }
             return ();
         }
-        // Move the node to front
-        self.linkedList.remove(node);
-        self.linkedList.addFirst(node);
+        lock {
+            // Move the node to front
+            self.linkedList.remove(node);
+            self.linkedList.addFirst(node);
+        }
+
         return entry.data;
     }
 
@@ -219,13 +230,15 @@ public isolated class Cache {
     # + return - `()` if successfully discarded the value or a `cache:Error` if the provided cache key is not present
     #            in the cache
     public isolated function invalidate(string key) returns Error? {
-        if (!self.hasKey(key)) {
-            return prepareError("Cache entry from the given key: " + key + ", is not available.");
-        }
+        lock {
+            if (!self.hasKey(key)) {
+                return prepareError("Cache entry from the given key: " + key + ", is not available.");
+            }
 
-        Node node = self.externGet(key);
-        self.linkedList.remove(node);
-        self.externRemove(key);
+            Node node = self.externGet(key);
+            self.linkedList.remove(node);
+            self.externRemove(key);
+        }
     }
 
     # Discards all the cached values from the cache.
@@ -236,8 +249,10 @@ public isolated class Cache {
     # + return - `()` if successfully discarded all the values from the cache or a `cache:Error` if any error
     #            occurred while discarding all the values from the cache.
     public isolated function invalidateAll() returns Error? {
-        self.linkedList.clear();
-        self.externRemoveAll();
+        lock {
+            self.linkedList.clear();
+            self.externRemoveAll();
+        }
     }
 
     # Checks whether the given key has an associated cached value.
@@ -249,7 +264,9 @@ public isolated class Cache {
     # + return - `true` if a cached value is available for the provided key or `false` if there is no cached value
     #            associated for the given key
     public isolated function hasKey(string key) returns boolean {
-        return self.externHasKey(key);
+        lock {
+            return self.externHasKey(key);
+        }
     }
 
     # Returns a list of all the keys from the cache.
@@ -259,7 +276,9 @@ public isolated class Cache {
     #
     # + return - Array of all the keys from the cache
     public isolated function keys() returns string[] {
-        return self.externKeys();
+        lock {
+            return self.externKeys();
+        }
     }
 
     # Returns the size of the cache.
@@ -284,34 +303,38 @@ public isolated class Cache {
 
     isolated function evict(int capacity, float evictionFactor) {
         int evictionKeysCount = <int>(capacity * evictionFactor);
-        foreach int i in 1...evictionKeysCount {
-            Node? node = self.linkedList.removeLast();
-            if (node is Node) {
-                CacheEntry entry = <CacheEntry>node.value;
-                self.externRemove(entry.key);
-                // The return result (error which occurred due to unavailability of the key or nil) is ignored
-                // since no purpose of handling it.
-            } else {
-                break;
+        lock {
+            foreach int i in 1...evictionKeysCount {
+                Node? node = self.linkedList.removeLast();
+                if (node is Node) {
+                    CacheEntry entry = <CacheEntry>node.value;
+                    self.externRemove(entry.key);
+                    // The return result (error which occurred due to unavailability of the key or nil) is ignored
+                    // since no purpose of handling it.
+                } else {
+                    break;
+                }
             }
         }
     }
 
     isolated function cleanup() {
-        string[] keys = self.keys();
-        if (keys.length() == 0) {
-            return;
-        }
-        foreach string key in keys {
-            Node node = self.externGet(key);
-            CacheEntry entry = <CacheEntry>node.value;
-            time:Utc currentUtc = time:utcNow();
-            if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
-                self.linkedList.remove(node);
-                self.externRemove(entry.key);
-                // The return result (error which occurred due to unavailability of the key or nil) is ignored
-                // since no purpose of handling it.
+        lock {
+            string[] keys = self.keys();
+            if (keys.length() == 0) {
                 return;
+            }
+            foreach string key in keys {
+                Node node = self.externGet(key);
+                CacheEntry entry = <CacheEntry>node.value;
+                time:Utc currentUtc = time:utcNow();
+                if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
+                    self.linkedList.remove(node);
+                    self.externRemove(entry.key);
+                    // The return result (error which occurred due to unavailability of the key or nil) is ignored
+                    // since no purpose of handling it.
+                    return;
+                }
             }
         }
     }

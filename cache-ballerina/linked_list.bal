@@ -34,7 +34,7 @@ public type Node record {|
 #
 # + head - The first node of the linked list
 # + tail - The last node of the linked list
-public isolated class LinkedList {
+public class LinkedList {
 
     Node? head = ();
     Node? tail = ();
