@@ -1,7 +1,7 @@
 Ballerina Cache Library
 ===================
 
-  [![Build](https://github.com/ballerina-platform/module-ballerina-cache/workflows/Build/badge.svg)](https://github.com/ballerina-platform/module-ballerina-cache/actions?query=workflow%3ABuild)
+  [![Build](https://github.com/ballerina-platform/module-ballerina-cache/actions/workflows/build-timestamped-master.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-cache/actions/workflows/build-timestamped-master.yml)
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-cache.svg)](https://github.com/ballerina-platform/module-ballerina-cache/commits/master)
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/cache.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fcache)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -69,6 +69,19 @@ Execute the commands below to build from source.
 6. To debug the package with Ballerina language:
 
         ./gradlew clean build -PbalJavaDebug=<port>
+
+7. Publish ZIP artifact to the local `.m2` repository:
+
+        ./gradlew clean build publishToMavenLocal
+
+   
+8. Publish the generated artifacts to the local Ballerina central repository:
+
+        ./gradlew clean build -PpublishToLocalCentral=true
+        
+9. Publish the generated artifacts to the Ballerina central repository:
+
+        ./gradlew clean build -PpublishToCentral=true
 
 ## Contributing to Ballerina
 
