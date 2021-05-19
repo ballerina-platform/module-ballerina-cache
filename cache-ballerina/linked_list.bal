@@ -34,28 +34,30 @@ public type Node record {|
 #
 # + head - The first node of the linked list
 # + tail - The last node of the linked list
-public class LinkedList {
+public isolated class LinkedList {
 
-    Node? head = ();
-    Node? tail = ();
+    private Node? head = ();
+    private Node? tail = ();
 
     # Adds a node to the end of the provided linked list.
     #
     # + node - The node, which should be added to the provided linked list
     isolated function addLast(Node node) {
-        if (tryLock()) {
-            if (self.tail is ()) {
-                self.head = node;
-                self.tail = self.head;
+        lock {
+            if (tryLock()) {
+                if (self.tail is ()) {
+                    self.head = node;
+                    self.tail = self.head;
+                    releaseLock();
+                    return;
+                }
+                Node tempNode = node;
+                Node tailNode = <Node>self.tail;
+                tempNode.prev = tailNode;
+                tailNode.next = tempNode;
+                self.tail = tempNode;
                 releaseLock();
-                return;
             }
-            Node tempNode = node;
-            Node tailNode = <Node>self.tail;
-            tempNode.prev = tailNode;
-            tailNode.next = tempNode;
-            self.tail = tempNode;
-            releaseLock();
         }
     }
 
