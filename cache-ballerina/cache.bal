@@ -52,34 +52,36 @@ boolean cleanupInProgress = false;
 class Cleanup {
 
     *task:Job;
-    private LinkedList linkedList;
-    private Cache cache;
+    private function () func;
 
     public function execute() {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
             cleanupInProgress = true;
-            cleanup(self.cache, self.linkedList);
+            executeFunctionPointer(self.func);
             cleanupInProgress = false;
         }
     }
 
-    public isolated function init(Cache cache, LinkedList linkedList) {
-        self.linkedList = linkedList;
-        self.cache = cache;
+    public function executeFunctionPointer(function () func) {
+        var a = func();
+    }
+
+    public isolated function init(function () func) {
+        self.func = func;
     }
 }
 
 # The `cache:Cache` object, which is used for all the cache-related operations. It is not recommended to insert `()`
 # as the value of the cache since it doesn't make any sense to cache a nil.
-public class Cache {
+public isolated class Cache {
 
     *AbstractCache;
 
-    private int maxCapacity;
-    private EvictionPolicy evictionPolicy;
-    private float evictionFactor;
-    private decimal defaultMaxAge;
+    private final int maxCapacity;
+    private final EvictionPolicy & readonly evictionPolicy;
+    private final float evictionFactor;
+    private final decimal defaultMaxAge;
     private LinkedList linkedList;
 
     # Called when a new `cache:Cache` object is created.
@@ -90,7 +92,7 @@ public class Cache {
     # + cacheConfig - Configurations for the `cache:Cache` object
     public isolated function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
-        self.evictionPolicy = cacheConfig.evictionPolicy;
+        self.evictionPolicy = cacheConfig.evictionPolicy.cloneReadOnly();
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAge =  cacheConfig.defaultMaxAge;
         self.linkedList = new LinkedList();
@@ -110,14 +112,14 @@ public class Cache {
         }
 
         externLockInit();
-        externInit(self, self.maxCapacity);
+        self.externInit(self.maxCapacity);
 
         decimal? interval = cacheConfig?.cleanupInterval;
         if (interval is decimal) {
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
             time:Civil time = time:utcToCivil(newTime);
-            var result = task:scheduleJobRecurByFrequency(new Cleanup(self, self.linkedList), interval,
+            var result = task:scheduleJobRecurByFrequency(new Cleanup(self.cleanup()), interval,
                                         startTime = time);
             if (result is task:Error) {
                 string message = string `Failed to schedule the cleanup task: ${result.message()}`;
@@ -143,7 +145,7 @@ public class Cache {
         }
         // If the current cache is full (i.e. size = capacity), evict cache.
         if (self.size() == self.maxCapacity) {
-            evict(self, self.maxCapacity, self.evictionFactor, self.linkedList);
+            self.evict(self.maxCapacity, self.evictionFactor);
         }
         time:Utc currentUtc = time:utcNow();
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
@@ -167,14 +169,14 @@ public class Cache {
         Node newNode = { value: entry };
 
         if (self.hasKey(key)) {
-            Node oldNode = externGet(self, key);
+            Node oldNode = self.externGet(key);
             // Move the node to front
             self.linkedList.remove(oldNode);
             self.linkedList.addFirst(newNode);
         } else {
             self.linkedList.addFirst(newNode);
         }
-        externPut(self, key, newNode);
+        self.externPut(key, newNode);
     }
 
     # Returns the cached value associated with the provided key.
@@ -190,7 +192,7 @@ public class Cache {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
 
-        Node node = externGet(self, key);
+        Node node = self.externGet(key);
         CacheEntry entry = <CacheEntry>node.value;
 
         // Check whether the cache entry is already expired. Even though the cache cleaning task is configured
@@ -199,7 +201,7 @@ public class Cache {
         time:Utc currentUtc = time:utcNow();
         if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
             self.linkedList.remove(node);
-            externRemove(self, key);
+            self.externRemove(key);
             return ();
         }
         // Move the node to front
@@ -221,9 +223,9 @@ public class Cache {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
 
-        Node node = externGet(self, key);
+        Node node = self.externGet(key);
         self.linkedList.remove(node);
-        externRemove(self, key);
+        self.externRemove(key);
     }
 
     # Discards all the cached values from the cache.
@@ -235,7 +237,7 @@ public class Cache {
     #            occurred while discarding all the values from the cache.
     public isolated function invalidateAll() returns Error? {
         self.linkedList.clear();
-        externRemoveAll(self);
+        self.externRemoveAll();
     }
 
     # Checks whether the given key has an associated cached value.
@@ -247,7 +249,7 @@ public class Cache {
     # + return - `true` if a cached value is available for the provided key or `false` if there is no cached value
     #            associated for the given key
     public isolated function hasKey(string key) returns boolean {
-        return externHasKey(self, key);
+        return self.externHasKey(key);
     }
 
     # Returns a list of all the keys from the cache.
@@ -257,7 +259,7 @@ public class Cache {
     #
     # + return - Array of all the keys from the cache
     public isolated function keys() returns string[] {
-        return externKeys(self);
+        return self.externKeys();
     }
 
     # Returns the size of the cache.
@@ -266,9 +268,9 @@ public class Cache {
     # ```
     #
     # + return - The size of the cache
-    public isolated function size() returns int {
-        return externSize(self);
-    }
+    public isolated function size() returns int = @java:Method {
+        'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    } external;
 
     # Returns the capacity of the cache.
     # ```ballerina
@@ -279,70 +281,67 @@ public class Cache {
     public isolated function capacity() returns int {
         return self.maxCapacity;
     }
-}
 
-isolated function evict(Cache cache, int capacity, float evictionFactor, LinkedList linkedList) {
-    int evictionKeysCount = <int>(capacity * evictionFactor);
-    foreach int i in 1...evictionKeysCount {
-        Node? node = linkedList.removeLast();
-        if (node is Node) {
-            CacheEntry entry = <CacheEntry>node.value;
-            externRemove(cache, entry.key);
-            // The return result (error which occurred due to unavailability of the key or nil) is ignored
-            // since no purpose of handling it.
-        } else {
-            break;
+    isolated function evict(int capacity, float evictionFactor) {
+        int evictionKeysCount = <int>(capacity * evictionFactor);
+        foreach int i in 1...evictionKeysCount {
+            Node? node = self.linkedList.removeLast();
+            if (node is Node) {
+                CacheEntry entry = <CacheEntry>node.value;
+                self.externRemove(entry.key);
+                // The return result (error which occurred due to unavailability of the key or nil) is ignored
+                // since no purpose of handling it.
+            } else {
+                break;
+            }
         }
     }
-}
 
-isolated function cleanup(Cache cache, LinkedList linkedList) {
-    string[] keys = cache.keys();
-    if (keys.length() == 0) {
-        return;
-    }
-    foreach string key in keys {
-        Node node = externGet(cache, key);
-        CacheEntry entry = <CacheEntry>node.value;
-        time:Utc currentUtc = time:utcNow();
-        if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
-            linkedList.remove(node);
-            externRemove(cache, entry.key);
-            // The return result (error which occurred due to unavailability of the key or nil) is ignored
-            // since no purpose of handling it.
+    isolated function cleanup() {
+        string[] keys = self.keys();
+        if (keys.length() == 0) {
             return;
         }
+        foreach string key in keys {
+            Node node = self.externGet(key);
+            CacheEntry entry = <CacheEntry>node.value;
+            time:Utc currentUtc = time:utcNow();
+            if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
+                self.linkedList.remove(node);
+                self.externRemove(entry.key);
+                // The return result (error which occurred due to unavailability of the key or nil) is ignored
+                // since no purpose of handling it.
+                return;
+            }
+        }
     }
+
+    isolated function externInit(int capacity) = @java:Method {
+        'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    } external;
+
+    isolated function externPut(string key, Node value) = @java:Method {
+        'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    } external;
+
+    isolated function externGet(string key) returns Node = @java:Method {
+        'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    } external;
+
+    isolated function externRemove(string key) = @java:Method {
+        'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    } external;
+
+    isolated function externRemoveAll() = @java:Method {
+        'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    } external;
+
+    isolated function externHasKey(string key) returns boolean = @java:Method {
+        'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    } external;
+
+    isolated function externKeys() returns string[] = @java:Method {
+        'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    } external;
+
 }
-
-isolated function externInit(Cache cache, int capacity) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externPut(Cache cache, string key, Node value) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externGet(Cache cache, string key) returns Node = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externRemove(Cache cache, string key) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externRemoveAll(Cache cache) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externHasKey(Cache cache, string key) returns boolean = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externKeys(Cache cache) returns string[] = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externSize(Cache cache) returns int = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;

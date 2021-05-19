@@ -35,6 +35,8 @@ public class Cache {
 
     public static final String CACHE_MAP = "CACHE_MAP";
 
+    private Cache() {}
+
     public static void externInit(BObject cache, int capacity) {
         ConcurrentHashMap<BString, BMap<BString, Object>> map = new ConcurrentHashMap<>(capacity);
         cache.addNativeData(CACHE_MAP, map);
@@ -76,7 +78,7 @@ public class Cache {
         return ValueCreator.createArrayValue(map.keySet().toArray(new BString[0]));
     }
 
-    public static int externSize(BObject cache) {
+    public static int size(BObject cache) {
         ConcurrentHashMap<BString, BMap<BString, Object>> map =
                 (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
         return map.size();
