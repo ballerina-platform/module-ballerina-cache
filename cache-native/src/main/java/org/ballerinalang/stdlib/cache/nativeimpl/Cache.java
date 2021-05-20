@@ -62,11 +62,11 @@ public class Cache {
     }
 
     @SuppressWarnings("unchecked")
-    public static BMap<BString, Object> externGet(BObject cache, BString key) {
+    public static BMap<BString, Object> externGet(BObject cache, BString key, BDecimal currentTime) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         BMap<BString, Object> value = cacheMap.get(key);
         Long time = ((BDecimal) value.get(StringUtils.fromString(EXPIRE_TIME))).decimalValue().longValue();
-        if (time != -1 && time <= System.nanoTime()) {
+        if (time != -1 && time <= currentTime.decimalValue().longValue()) {
             cacheMap.remove(key);
             return null;
         }

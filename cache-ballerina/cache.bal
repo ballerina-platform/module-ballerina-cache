@@ -164,7 +164,8 @@ public isolated class Cache {
         if (!self.hasKey(key)) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
-        any? entry = externGet(self, key);
+        time:Utc currentUtc = time:utcNow();
+        any? entry = externGet(self, key, <decimal>currentUtc[0] + currentUtc[1]);
         if (entry is CacheEntry) {
             return entry.data;
         } else {
@@ -187,13 +188,13 @@ public isolated class Cache {
         externRemove(self, key);
     }
 
-   # Discards all the cached values from the cache.
-   # ```ballerina
-   # check cache.invalidateAll();
-   # ```
-   #
-   # + return - `()` if successfully discarded all the values from the cache or a `cache:Error` if any error
-   #            occurred while discarding all the values from the cache.
+    # Discards all the cached values from the cache.
+    # ```ballerina
+    # check cache.invalidateAll();
+    # ```
+    #
+    # + return - `()` if successfully discarded all the values from the cache or a `cache:Error` if any error
+    #            occurred while discarding all the values from the cache.
     public isolated function invalidateAll() returns Error? {
         externRemoveAll(self);
     }
@@ -265,7 +266,7 @@ isolated function externPut(Cache cache, string key, any value) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
-isolated function externGet(Cache cache, string key) returns CacheEntry? = @java:Method {
+isolated function externGet(Cache cache, string key, decimal currentTime) returns CacheEntry? = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
