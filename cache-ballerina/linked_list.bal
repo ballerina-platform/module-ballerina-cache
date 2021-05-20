@@ -24,7 +24,7 @@ import ballerina/jballerina.java;
 # + prev - Previous node of the linked list
 # + next - Next node of the linked list
 public type Node record {|
-    any value;
+    CacheEntry value;
     Node? prev = ();
     Node? next = ();
 |};
@@ -46,12 +46,14 @@ public isolated class LinkedList {
         lock {
             if (tryLock()) {
                 if (self.tail is ()) {
-                    self.head = node;
-                    self.tail = self.head;
+                    //value:Cloneable cloneableValue = node.clone();
+                    //anydata node1 = node.cloneReadOnly();
+                    self.head = node.clone();
+                    self.tail = self.head.clone();
                     releaseLock();
                     return;
                 }
-                Node tempNode = node;
+                Node tempNode = node.clone();
                 Node tailNode = <Node>self.tail;
                 tempNode.prev = tailNode;
                 tailNode.next = tempNode;
@@ -65,19 +67,21 @@ public isolated class LinkedList {
     #
     # + node - The node, which should be added to the provided linked list
     isolated function addFirst(Node node) {
-        if (tryLock()) {
-            if (self.head is ()) {
-                self.head = node;
-                self.tail = self.head;
+        lock {
+            if (tryLock()) {
+                if (self.head is ()) {
+                    self.head = node.clone();
+                    self.tail = self.head.clone();
+                    releaseLock();
+                    return;
+                }
+                Node tempNode = node.clone();
+                Node headNode = <Node>self.head;
+                tempNode.next = headNode;
+                headNode.prev = tempNode;
+                self.head = tempNode;
                 releaseLock();
-                return;
             }
-            Node tempNode = node;
-            Node headNode = <Node>self.head;
-            tempNode.next = headNode;
-            headNode.prev = tempNode;
-            self.head = tempNode;
-            releaseLock();
         }
     }
 
@@ -87,15 +91,23 @@ public isolated class LinkedList {
     isolated function remove(Node node) {
         if (tryLock()) {
             if (node.prev is ()) {
-                self.head = node.next;
+                lock {
+                    self.head = node.next.clone();
+                }
             } else {
-                Node prev = <Node>node.prev;
+                Node prev;
+                lock {
+                    prev = <Node>node.prev.clone();
+                }
                 prev.next = node.next;
             }
             if (node.next is ()) {
-                self.tail = node.prev;
+                lock {
+                    self.tail = node.prev.clone();
+                }
+
             } else {
-                Node next = <Node>node.next;
+                Node next = <Node>node.next.clone();
                 next.prev = node.prev;
             }
             node.next = ();
@@ -108,20 +120,29 @@ public isolated class LinkedList {
     #
     # + return - Last node of the provided linked list or `()` if the last node is empty
     isolated function removeLast() returns Node? {
-        if (self.tail is ()) {
-            return ();
+        lock{
+            if (self.tail is ()) {
+                return ();
+            }
         }
-        Node tail = <Node>self.tail;
-        self.remove(tail);
+        Node tail;
+        lock {
+            tail = <Node>self.tail.clone();
+        }
+        lock {
+            self.remove(tail);
+        }
         return tail;
     }
 
     # Clears the provided linked list.
     isolated function clear() {
-        if (tryLock()) {
-            self.head = ();
-            self.tail = ();
-            releaseLock();
+        lock{
+            if (tryLock()) {
+                self.head = ().clone();
+                self.tail = ().clone();
+                releaseLock();
+            }
         }
     }
 }

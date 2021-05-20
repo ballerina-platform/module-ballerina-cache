@@ -40,9 +40,9 @@ public enum EvictionPolicy {
     LRU
 }
 
-type CacheEntry record {|
+public type CacheEntry record {|
     string key;
-    any data;
+    anydata data;
     decimal expTime;  // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
 |};
 
@@ -165,7 +165,7 @@ public isolated class Cache {
 
         CacheEntry entry = {
             key: key,
-            data: value,
+            data: <anydata>value,
             expTime: calculatedExpTime
         };
         Node newNode = { value: entry };
