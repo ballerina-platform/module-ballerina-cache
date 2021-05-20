@@ -279,4 +279,3 @@ public class LinkedDeque<E extends Linked<E>> extends AbstractCollection<E> {
         abstract E computeNext();
     }
 }
-

@@ -39,7 +39,6 @@ public class Cache {
     private static ConcurrentLinkedHashMap<BString, BMap<BString, Object>> cacheMap;
     private static final String MAX_CAPACITY = "maxCapacity";
     private static final String EVICTION_FACTOR = "evictionFactor";
-    private static final String EVICTION_POLICY = "evictionPolicy";
     private static final String EXPIRE_TIME = "expTime";
     private static final String CACHE = "CACHE";
 
@@ -52,15 +51,14 @@ public class Cache {
     @SuppressWarnings("unchecked")
     public static void externPut(BObject cache, BString key, BMap<BString, Object> value) {
         int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
-        String policy = String.valueOf(cache.getStringValue(StringUtils.fromString(EVICTION_POLICY)));
         float evictionFactor = (float) cache.getFloatValue(StringUtils.fromString(EVICTION_FACTOR));
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         if (cacheMap.size() >= capacity) {
             int evictionKeysCount = (int) (capacity * evictionFactor);
-                cacheMap.setCapacity((capacity - evictionKeysCount), policy);
-                cacheMap.setCapacity(capacity, policy);
+                cacheMap.setCapacity((capacity - evictionKeysCount));
+                cacheMap.setCapacity(capacity);
         }
-        cacheMap.put(key, value, policy);
+        cacheMap.put(key, value);
     }
 
     @SuppressWarnings("unchecked")
@@ -109,8 +107,7 @@ public class Cache {
     public static void externReplace(BObject cache, BString key, BMap<BString, Object> oldValue,
                                      BMap<BString, Object> newValue) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
-        String policy = String.valueOf(cache.getStringValue(StringUtils.fromString(EVICTION_POLICY)));
-        cacheMap.replace(key, oldValue, newValue, policy);
+        cacheMap.replace(key, oldValue, newValue);
     }
 
     @SuppressWarnings("unchecked")

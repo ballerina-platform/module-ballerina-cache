@@ -155,7 +155,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
     /** Asserts that the object is not null. */
     private static void checkNotNull(Object o) {
         if (o == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Node can't be null");
         }
     }
 
@@ -168,15 +168,15 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      * @param capacity the maximum weighted capacity of the map
      * @throws IllegalArgumentException if the capacity is negative
      */
-    public void setCapacity(int capacity, String policy) {
+    public void setCapacity(int capacity) {
         if (capacity < 0) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Capacity must be a positive value.");
         }
         evictionLock.lock();
         try {
             this.capacity = Math.min(capacity, MAXIMUM_CAPACITY);
             drainBuffers(AMORTIZED_DRAIN_THRESHOLD);
-            evict(policy);
+            evict();
         } finally {
             evictionLock.unlock();
         }
@@ -191,7 +191,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      * Evicts entries from the map while it exceeds the capacity and appends evicted
      * entries to the notification queue for processing.
      */
-    private void evict(String policy) {
+    private void evict() {
         // Attempts to evict entries from the map if it exceeds the maximum
         // capacity. If the eviction fails due to a concurrent removal of the
         // victim, that removal may cancel out the addition that triggered this
@@ -587,11 +587,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         return node.getValue();
     }
 
-    @Override
-    public V put(K key, V value) {
-        return null;
-    }
-
     public V putIfAbsent(K key, V value) {
         return null;
     }
@@ -604,7 +599,8 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      * @param value value to be associated with the specified key
      * @return the prior value in the data store or null if no mapping was found
      */
-    public V put(K key, V value,  String policy) {
+    @Override
+    public V put(K key, V value) {
         checkNotNull(value);
         final int weight = weigher.weightOf(value);
         final WeightedValue<V> weightedValue = new WeightedValue<>(value, weight);
@@ -683,11 +679,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         }
     }
 
-    @Override
-    public boolean replace(K key, V oldValue, V newValue) {
-        return false;
-    }
-
     public V replace(K key, V value) {
         return null;
     }
@@ -717,7 +708,8 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         return null;
     }
 
-    public boolean replace(K key, V oldValue, V newValue, String policy) {
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
         checkNotNull(oldValue);
         checkNotNull(newValue);
 
@@ -968,7 +960,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
 
         public void remove() {
             if (current == null) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("Node can't be null");
             }
             ConcurrentLinkedHashMap.this.remove(current.key);
             current = null;
@@ -986,7 +978,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
 
         @Override
         public V setValue(V value) {
-            put(getKey(), value, "");
+            put(getKey(), value);
             return super.setValue(value);
         }
 
@@ -1018,7 +1010,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         }
 
         public void execute(Runnable command) {
-            throw new RejectedExecutionException();
+            throw new RejectedExecutionException("The task rejected by the executor");
         }
     }
 

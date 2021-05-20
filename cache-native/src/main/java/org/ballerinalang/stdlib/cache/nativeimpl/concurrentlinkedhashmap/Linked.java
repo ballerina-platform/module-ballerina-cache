@@ -40,4 +40,3 @@ interface Linked<T extends Linked<T>> {
     /** Sets the next element or <tt>null</tt> if there is no link. */
     void setNext(T next);
 }
-

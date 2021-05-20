@@ -79,10 +79,9 @@ public isolated class Cache {
     private final float & readonly evictionFactor;
     private final decimal & readonly defaultMaxAge;
 
-    # Called when a new `cache:Cache` object is created.
+    # Initializes new `cache:Cache` instance.
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    # + evictionPolicy - The policy, which defines the cache eviction algorithm
     public isolated function init(CacheConfig cacheConfig = {}) {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
@@ -108,8 +107,7 @@ public isolated class Cache {
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
             time:Civil time = time:utcToCivil(newTime);
-            var result = task:scheduleJobRecurByFrequency(new Cleanup(self), interval,
-                                        startTime = time);
+            var result = task:scheduleJobRecurByFrequency(new Cleanup(self), interval, startTime = time);
             if (result is task:Error) {
                 string message = string `Failed to schedule the cleanup task: ${result.message()}`;
                 panic prepareError(message);
