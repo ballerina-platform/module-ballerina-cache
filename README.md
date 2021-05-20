@@ -1,16 +1,18 @@
 Ballerina Cache Library
 ===================
 
-  [![Build](https://github.com/ballerina-platform/module-ballerina-cache/workflows/Build/badge.svg)](https://github.com/ballerina-platform/module-ballerina-cache/actions?query=workflow%3ABuild)
+  [![Build](https://github.com/ballerina-platform/module-ballerina-cache/actions/workflows/build-timestamped-master.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-cache/actions/workflows/build-timestamped-master.yml)
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-cache.svg)](https://github.com/ballerina-platform/module-ballerina-cache/commits/master)
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/cache.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fcache)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+  [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-cache/branch/master/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-cache)
 
-The cache library is one of the standard library packages of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
 
-This package provides APIs for handle caching in Ballerina. It consists of a default implementation based on the map data structure. It also provides a default cache eviction policy object, which is based on the LRU eviction algorithm.
+The `cache` library is one of the standard library packages of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
 
-For more information on all the operations supported by the `cache`, which include the below, go to [The Cache Package](https://ballerina.io/learn/api-docs/ballerina/cache/).
+This package provides APIs for in-memory caching by using a semi-persistent mapping from keys to values. It consists of a default implementation based on the LRU eviction algorithm.
+
+For more information on all the operations supported by this package including the below, go to the [`cache` package](https://ballerina.io/learn/api-docs/ballerina/cache/).
 
 - put
 - get
@@ -21,7 +23,7 @@ For more information on all the operations supported by the `cache`, which inclu
 - size
 - capacity
 
-For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/mysql-init-options.html).
+For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example).
 
 ## Issues and Projects 
 
@@ -67,6 +69,19 @@ Execute the commands below to build from source.
 6. To debug the package with Ballerina language:
 
         ./gradlew clean build -PbalJavaDebug=<port>
+
+7. Publish ZIP artifact to the local `.m2` repository:
+
+        ./gradlew clean build publishToMavenLocal
+
+   
+8. Publish the generated artifacts to the local Ballerina central repository:
+
+        ./gradlew clean build -PpublishToLocalCentral=true
+        
+9. Publish the generated artifacts to the Ballerina central repository:
+
+        ./gradlew clean build -PpublishToCentral=true
 
 ## Contributing to Ballerina
 

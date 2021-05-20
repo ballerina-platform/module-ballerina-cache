@@ -21,6 +21,7 @@ package org.ballerinalang.stdlib.cache.nativeimpl;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
@@ -65,9 +66,8 @@ public class Cache {
     @SuppressWarnings("unchecked")
     public static BMap<BString, Object> externGet(BObject cache, BString key) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
-        String policy = String.valueOf(cache.getStringValue(StringUtils.fromString(EVICTION_POLICY)));
-        BMap<BString, Object> value = cacheMap.get(key, policy);
-        Long time = (Long) value.get(StringUtils.fromString(EXPIRE_TIME));
+        BMap<BString, Object> value = cacheMap.get(key);
+        Long time = ((BDecimal) value.get(StringUtils.fromString(EXPIRE_TIME))).decimalValue().longValue();
         if (time != -1 && time <= System.nanoTime()) {
             cacheMap.remove(key);
             return null;
@@ -114,12 +114,12 @@ public class Cache {
     }
 
     @SuppressWarnings("unchecked")
-    public static void externCleanUp(BObject cache) {
+    public static void externCleanUp(BObject cache, BDecimal currentTime) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         for (Map.Entry<BString, BMap<BString, Object>> entry : cacheMap.entrySet()) {
             BMap<BString, Object> value = entry.getValue();
-            Long time = (Long) value.get(StringUtils.fromString(EXPIRE_TIME));
-            if (time != -1 && time <= System.nanoTime()) {
+            Long time = ((BDecimal) value.get(StringUtils.fromString(EXPIRE_TIME))).decimalValue().longValue();
+            if (time != -1 && time <= currentTime.decimalValue().longValue()) {
                 cacheMap.remove(entry.getKey());
             }
         }

@@ -18,14 +18,15 @@ import ballerina/lang.runtime as runtime;
 import ballerina/test;
 
 @test:Config {
-    groups: ["create", "LRU"]
+    groups: ["create"]
 }
 isolated function testCreateCache() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
-        defaultMaxAgeInSeconds: 3600,
-        cleanupIntervalInSeconds: 5
+        defaultMaxAge: 3600,
+        cleanupInterval: 5,
+        evictionPolicy: LRU
     };
     Cache|error cache = trap new(config);
     if (cache is Cache) {
@@ -34,88 +35,32 @@ isolated function testCreateCache() {
        test:assertFail(cache.toString());
     }
 }
-
-@test:Config {
-    groups: ["create", "FIFO"]
-}
-isolated function testCreateFIFOCache() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        defaultMaxAgeInSeconds: 3600,
-        cleanupIntervalInSeconds: 5,
-        evictionPolicy: FIFO
-    };
-    Cache|error cache = trap new(config);
-    if (cache is Cache) {
-       test:assertEquals(cache.size(), 0);
-    } else {
-       test:assertFail(cache.toString());
-    }
-}
-
 
 @test:Config {
     groups: ["create", "put", "size"]
 }
-isolated function testPutNewEntry() {
+isolated function testPutNewEntry() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     Cache cache = new(config);
-    checkpanic cache.put("Hello", "Ballerina");
-    test:assertEquals(cache.size(), 1);
-}
-
-@test:Config {
-    groups: ["create", "put", "size", "FIFO"]
-}
-isolated function testFIFOPutNewEntry() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    checkpanic cache.put("Hello", "Ballerina");
+    check cache.put("Hello", "Ballerina");
     test:assertEquals(cache.size(), 1);
 }
 
 @test:Config {
     groups: ["create", "put", "size", "entry"]
 }
-isolated function testPutExistingEntry() {
+isolated function testPutExistingEntry() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     string key = "Hello";
     Cache cache = new(config);
-    checkpanic cache.put(key, "Random value");
-    checkpanic cache.put(key, "Ballerina");
-    test:assertEquals(cache.size(), 1);
-    any|error results = cache.get(key);
-    if (results is any) {
-        test:assertEquals(results.toString(), "Ballerina");
-    } else {
-         test:assertFail("Output mismatched");
-    }
-}
-
-@test:Config {
-    groups: ["create", "put", "size", "entry", "FIFO"]
-}
-isolated function testFIFOPutExistingEntry() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    string key = "Hello";
-    Cache cache = new(config);
-    checkpanic cache.put(key, "Random value");
-    checkpanic cache.put(key, "Ballerina");
+    check cache.put(key, "Random value");
+    check cache.put(key, "Ballerina");
     test:assertEquals(cache.size(), 1);
     any|error results = cache.get(key);
     if (results is any) {
@@ -128,42 +73,17 @@ isolated function testFIFOPutExistingEntry() {
 @test:Config {
     groups: ["create", "put", "size", "age"]
 }
-isolated function testPutWithMaxAge() {
-    int maxAge = 5;
+isolated function testPutWithMaxAge() returns error? {
+    decimal maxAge = 5;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     Cache cache = new(config);
-    checkpanic cache.put("Hello", "Ballerina", maxAge);
-    decimal|error sleepTime = decimal:fromString((maxAge * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), 1);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
-}
-
-@test:Config {
-    groups: ["create", "put", "size", "age", "FIFO"]
-}
-isolated function testFIFOPutWithMaxAge() {
-    int maxAge = 5;
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    checkpanic cache.put("Hello", "Ballerina", maxAge);
-    decimal|error sleepTime = decimal:fromString((maxAge * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), 1);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
+    check cache.put("Hello", "Ballerina", maxAge);
+    decimal sleepTime = maxAge * 2 + 1;
+    runtime:sleep(sleepTime);
+    test:assertEquals(cache.size(), 1);
 }
 
 @test:Config {
@@ -173,30 +93,6 @@ isolated function testGetExistingEntry() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
-    };
-    string key = "Hello";
-    string value = "Ballerina";
-    Cache cache = new(config);
-    any|error results = cache.put(key, value);
-    if (results is error) {
-        test:assertFail("Test failed");
-    }
-    any|error expected = cache.get(key);
-    if (expected is any) {
-        test:assertEquals(expected.toString(), value);
-    } else {
-         test:assertFail("Output mismatched");
-    }
-}
-
-@test:Config {
-    groups: ["create", "get", "FIFO"]
-}
-isolated function testFIFOGetExistingEntry() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
     };
     string key = "Hello";
     string value = "Ballerina";
@@ -224,26 +120,7 @@ isolated function testGetNonExistingEntry() {
     Cache cache = new(config);
     any|error expected = cache.get("Hello");
     if (expected is error) {
-        test:assertEquals(expected.toString(), "error CacheError (\"Cache entry from the given key: " +
-                              "Hello, is not available.\")");
-    } else {
-         test:assertFail("Output mismatched");
-    }
-}
-
-@test:Config {
-    groups: ["create", "get", "FIFO"]
-}
-isolated function testFIFOGetNonExistingEntry() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    any|error expected = cache.get("Hello");
-    if (expected is error) {
-        test:assertEquals(expected.toString(), "error CacheError (\"Cache entry from the given key: " +
+        test:assertEquals(expected.toString(), "error Error (\"Cache entry from the given key: " +
                               "Hello, is not available.\")");
     } else {
          test:assertFail("Output mismatched");
@@ -253,7 +130,7 @@ isolated function testFIFOGetNonExistingEntry() {
 @test:Config {
     groups: ["create", "put", "size", "expired", "get"]
 }
-isolated function testGetExpiredEntry() {
+isolated function testGetExpiredEntry() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -261,54 +138,22 @@ isolated function testGetExpiredEntry() {
     string key = "Hello";
     string value = "Ballerina";
     Cache cache = new(config);
-    int maxAgeInSeconds = 1;
-    checkpanic cache.put(key, value, maxAgeInSeconds);
-    decimal|error sleepTime = decimal:fromString((maxAgeInSeconds * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        any|error expected = cache.get(key);
-        if (expected is any) {
-            test:assertEquals(expected.toString(), "");
-        } else {
-             test:assertFail("Output mismatched");
-        }
+    decimal maxAgeInSeconds = 1;
+    check cache.put(key, value, maxAgeInSeconds);
+    decimal sleepTime = maxAgeInSeconds * 2 + 1;
+    runtime:sleep(sleepTime);
+    any|error expected = cache.get(key);
+    if (expected is any) {
+        test:assertEquals(expected.toString(), "");
     } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
-}
-
-@test:Config {
-    groups: ["create", "put", "size", "expired", "get", "FIFO"]
-}
-isolated function testFIFOGetExpiredEntry() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    string key = "Hello";
-    string value = "Ballerina";
-    Cache cache = new(config);
-    int maxAgeInSeconds = 1;
-    checkpanic cache.put(key, value, maxAgeInSeconds);
-    decimal|error sleepTime = decimal:fromString((maxAgeInSeconds * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        any|error expected = cache.get(key);
-        if (expected is any) {
-            test:assertEquals(expected.toString(), "");
-        } else {
-             test:assertFail("Output mismatched");
-        }
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
+         test:assertFail("Output mismatched");
     }
 }
 
 @test:Config {
     groups: ["create", "put", "size", "remove", "invalidate"]
 }
-isolated function testRemove() {
+isolated function testRemove() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -316,32 +161,15 @@ isolated function testRemove() {
     Cache cache = new(config);
     string key = "Hello";
     string value = "Ballerina";
-    checkpanic cache.put(key, value);
-    checkpanic cache.invalidate(key);
-    test:assertEquals(cache.size(), 0);
-}
-
-@test:Config {
-    groups: ["create", "put", "size", "remove", "invalidate", "FIFO"]
-}
-isolated function testFIFORemove() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    string key = "Hello";
-    string value = "Ballerina";
-    checkpanic cache.put(key, value);
-    checkpanic cache.invalidate(key);
+    check cache.put(key, value);
+    check cache.invalidate(key);
     test:assertEquals(cache.size(), 0);
 }
 
 @test:Config {
     groups: ["create", "put", "size", "remove", "invalidate"]
 }
-isolated function testRemoveAll() {
+isolated function testRemoveAll() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -349,38 +177,18 @@ isolated function testRemoveAll() {
     Cache cache = new(config);
     string key1 = "Hello";
     string value1 = "Ballerina";
-    checkpanic cache.put(key1, value1);
+    check cache.put(key1, value1);
     string key2 = "Ballerina";
     string value2 = "Language";
-    checkpanic cache.put(key2, value2);
-    checkpanic cache.invalidateAll();
-    test:assertEquals(cache.size(), 0);
-}
-
-@test:Config {
-    groups: ["create", "put", "size", "remove", "invalidate", "FIFO"]
-}
-isolated function testFIFORemoveAll() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    string key1 = "Hello";
-    string value1 = "Ballerina";
-    checkpanic cache.put(key1, value1);
-    string key2 = "Ballerina";
-    string value2 = "Language";
-    checkpanic cache.put(key2, value2);
-    checkpanic cache.invalidateAll();
+    check cache.put(key2, value2);
+    check cache.invalidateAll();
     test:assertEquals(cache.size(), 0);
 }
 
 @test:Config {
     groups: ["create", "get", "key"]
 }
-isolated function testHasKey() {
+isolated function testHasKey() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -388,30 +196,14 @@ isolated function testHasKey() {
     Cache cache = new(config);
     string key = "Hello";
     string value = "Ballerina";
-    checkpanic cache.put(key, value);
-    test:assertTrue(cache.hasKey(key));
-}
-
-@test:Config {
-    groups: ["create", "get", "key", "FIFO"]
-}
-isolated function testFIFOHasKey() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    string key = "Hello";
-    string value = "Ballerina";
-    checkpanic cache.put(key, value);
+    check cache.put(key, value);
     test:assertTrue(cache.hasKey(key));
 }
 
 @test:Config {
     groups: ["create", "get", "keys"]
 }
-isolated function testKeys() {
+isolated function testKeys() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -422,28 +214,8 @@ isolated function testKeys() {
     string key2 = "Ballerina";
     string value2 = "Language";
     string[] keys = [key1, key2];
-    checkpanic cache.put(key1, value1);
-    checkpanic cache.put(key2, value2);
-    test:assertEquals(cache.keys(), keys);
-}
-
-@test:Config {
-    groups: ["create", "get", "keys", "FIFO"]
-}
-isolated function testFIFOKeys() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    string key1 = "Hello";
-    string value1 = "Ballerina";
-    string key2 = "Ballerina";
-    string value2 = "Language";
-    string[] keys = [key1, key2];
-    checkpanic cache.put(key1, value1);
-    checkpanic cache.put(key2, value2);
+    check cache.put(key1, value1);
+    check cache.put(key2, value2);
     test:assertEquals(cache.keys(), keys);
 }
 
@@ -460,22 +232,9 @@ isolated function testCapacity() {
 }
 
 @test:Config {
-    groups: ["create", "capacity", "FIFO"]
-}
-isolated function testFIFOCapacity() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    test:assertEquals(cache.capacity(), 10);
-}
-
-@test:Config {
     groups: ["cache", "resize"]
 }
-isolated function testSize() {
+isolated function testSize() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -485,77 +244,32 @@ isolated function testSize() {
     string value1 = "Ballerina";
     string key2 = "Ballerina";
     string value2 = "Language";
-    checkpanic cache.put(key1, value1);
-    checkpanic cache.put(key2, value2);
-    test:assertEquals(cache.size(), 2);
-}
-
-@test:Config {
-    groups: ["cache", "resize", "FIFO"]
-}
-isolated function testFIFOSize() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    string key1 = "Hello";
-    string value1 = "Ballerina";
-    string key2 = "Ballerina";
-    string value2 = "Language";
-    checkpanic cache.put(key1, value1);
-    checkpanic cache.put(key2, value2);
+    check cache.put(key1, value1);
+    check cache.put(key2, value2);
     test:assertEquals(cache.size(), 2);
 }
 
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
-isolated function testCacheEvictionWithCapacity1() {
+isolated function testCacheEvictionWithCapacity1() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     string[] keys = ["C", "D", "E", "F", "G", "H", "I", "J", "K"];
     Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    checkpanic cache.put("D", "4");
-    checkpanic cache.put("E", "5");
-    checkpanic cache.put("F", "6");
-    checkpanic cache.put("G", "7");
-    checkpanic cache.put("H", "8");
-    checkpanic cache.put("I", "9");
-    checkpanic cache.put("J", "10");
-    checkpanic cache.put("K", "11");
-    test:assertEquals(cache.size(), keys.length());
-    test:assertEquals(cache.keys(), keys);
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy", "FIFO"]
-}
-isolated function testCacheFIFOEvictionWithCapacity1() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    string[] keys = ["C", "D", "E", "F", "G", "H", "I", "J", "K"];
-    Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    checkpanic cache.put("D", "4");
-    checkpanic cache.put("E", "5");
-    checkpanic cache.put("F", "6");
-    checkpanic cache.put("G", "7");
-    checkpanic cache.put("H", "8");
-    checkpanic cache.put("I", "9");
-    checkpanic cache.put("J", "10");
-    checkpanic cache.put("K", "11");
+    check cache.put("A", "1");
+    check cache.put("B", "2");
+    check cache.put("C", "3");
+    check cache.put("D", "4");
+    check cache.put("E", "5");
+    check cache.put("F", "6");
+    check cache.put("G", "7");
+    check cache.put("H", "8");
+    check cache.put("I", "9");
+    check cache.put("J", "10");
+    check cache.put("K", "11");
     test:assertEquals(cache.size(), keys.length());
     test:assertEquals(cache.keys(), keys);
 }
@@ -563,106 +277,25 @@ isolated function testCacheFIFOEvictionWithCapacity1() {
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
-isolated function testCacheEvictionWithCapacity2() {
+isolated function testCacheEvictionWithCapacity2() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
     };
     string[] keys = ["A", "D", "E", "F", "G", "H", "I", "J", "K"];
     Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    checkpanic cache.put("D", "4");
-    checkpanic cache.put("E", "5");
-    checkpanic cache.put("F", "6");
-    checkpanic cache.put("G", "7");
-    checkpanic cache.put("H", "8");
-    checkpanic cache.put("I", "9");
-    checkpanic cache.put("J", "10");
+    check cache.put("A", "1");
+    check cache.put("B", "2");
+    check cache.put("C", "3");
+    check cache.put("D", "4");
+    check cache.put("E", "5");
+    check cache.put("F", "6");
+    check cache.put("G", "7");
+    check cache.put("H", "8");
+    check cache.put("I", "9");
+    check cache.put("J", "10");
     any|Error x = cache.get("A");
-    checkpanic cache.put("K", "11");
-    test:assertEquals(cache.size(), keys.length());
-    test:assertEquals(cache.keys(), keys);
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy", "MRU"]
-}
-isolated function testMRUCacheEvictionWithCapacity2() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: MRU
-    };
-    string[] keys = ["B", "C", "D", "E", "F", "G", "H", "I", "K"];
-    Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    checkpanic cache.put("D", "4");
-    checkpanic cache.put("E", "5");
-    checkpanic cache.put("F", "6");
-    checkpanic cache.put("G", "7");
-    checkpanic cache.put("H", "8");
-    checkpanic cache.put("I", "9");
-    checkpanic cache.put("J", "10");
-    any|Error x = cache.get("A");
-    checkpanic cache.put("K", "11");
-    test:assertEquals(cache.size(), keys.length());
-    test:assertEquals(cache.keys(), keys);
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy","FIFO"]
-}
-isolated function testCacheFIFOEvictionWithCapacity2() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    string[] keys = ["C", "D", "E", "F", "G", "H", "I", "J", "K"];
-    Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    checkpanic cache.put("D", "4");
-    checkpanic cache.put("E", "5");
-    checkpanic cache.put("F", "6");
-    checkpanic cache.put("G", "7");
-    checkpanic cache.put("H", "8");
-    checkpanic cache.put("I", "9");
-    checkpanic cache.put("J", "10");
-    any|Error x = cache.get("A");
-    checkpanic cache.put("K", "11");
-    test:assertEquals(cache.size(), keys.length());
-    test:assertEquals(cache.keys(), keys);
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy","FILO"]
-}
-isolated function testCacheFILOEvictionWithCapacity2() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        evictionPolicy: FILO
-    };
-    string[] keys = ["A", "B", "C", "D", "E", "F", "G", "H", "K"];
-    Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    checkpanic cache.put("D", "4");
-    checkpanic cache.put("E", "5");
-    checkpanic cache.put("F", "6");
-    checkpanic cache.put("G", "7");
-    checkpanic cache.put("H", "8");
-    checkpanic cache.put("I", "9");
-    checkpanic cache.put("J", "10");
-    any|Error x = cache.get("A");
-    checkpanic cache.put("K", "11");
+    check cache.put("K", "11");
     test:assertEquals(cache.size(), keys.length());
     test:assertEquals(cache.keys(), keys);
 }
@@ -670,107 +303,45 @@ isolated function testCacheFILOEvictionWithCapacity2() {
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
-isolated function testCacheEvictionWithTimer1() {
-    int cleanupIntervalInSeconds = 2;
+isolated function testCacheEvictionWithTimer1() returns error? {
+    decimal cleanupInterval = 2;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
-        defaultMaxAgeInSeconds: 1,
-        cleanupIntervalInSeconds: cleanupIntervalInSeconds
+        defaultMaxAge: 1,
+        cleanupInterval: cleanupInterval
     };
     Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
+    check cache.put("A", "1");
+    check cache.put("B", "2");
+    check cache.put("C", "3");
     string[] keys = [];
-    decimal|error sleepTime = decimal:fromString((cleanupIntervalInSeconds * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), keys.length());
-        test:assertEquals(cache.keys(), keys);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy", "FIFO"]
-}
-isolated function testFIFOCacheEvictionWithTimer1() {
-    int cleanupIntervalInSeconds = 2;
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        defaultMaxAgeInSeconds: 1,
-        cleanupIntervalInSeconds: cleanupIntervalInSeconds,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2");
-    checkpanic cache.put("C", "3");
-    string[] keys = [];
-    decimal|error sleepTime = decimal:fromString((cleanupIntervalInSeconds * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), keys.length());
-        test:assertEquals(cache.keys(), keys);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
+    decimal sleepTime = cleanupInterval * 2 + 2;
+    runtime:sleep(sleepTime);
+    test:assertEquals(cache.size(), keys.length());
+    test:assertEquals(cache.keys(), keys);
 }
 
 @test:Config {
     groups: ["cache", "capacity", "policy"]
 }
-isolated function testCacheEvictionWithTimer2() {
-    int cleanupIntervalInSeconds = 2;
+isolated function testCacheEvictionWithTimer2() returns error? {
+    decimal cleanupInterval = 2;
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
-        defaultMaxAgeInSeconds: 1,
-        cleanupIntervalInSeconds: cleanupIntervalInSeconds
+        defaultMaxAge: 1,
+        cleanupInterval: cleanupInterval
     };
     Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2", 3600);
-    checkpanic cache.put("C", "3");
+    check cache.put("A", "1");
+    check cache.put("B", "2", 3600);
+    check cache.put("C", "3");
     string[] keys = ["B"];
-    decimal|error sleepTime = decimal:fromString((cleanupIntervalInSeconds * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), keys.length());
-        test:assertEquals(cache.keys(), keys);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy", "FIFO"]
-}
-isolated function testFIFOCacheEvictionWithTimer2() {
-    int cleanupIntervalInSeconds = 2;
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0.2,
-        defaultMaxAgeInSeconds: 1,
-        cleanupIntervalInSeconds: cleanupIntervalInSeconds,
-        evictionPolicy: FIFO
-    };
-    Cache cache = new(config);
-    checkpanic cache.put("A", "1");
-    checkpanic cache.put("B", "2", 3600);
-    checkpanic cache.put("C", "3");
-    string[] keys = ["B"];
-    decimal|error sleepTime = decimal:fromString((cleanupIntervalInSeconds * 2 + 1).toString());
-    if (sleepTime is decimal) {
-        runtime:sleep(sleepTime);
-        test:assertEquals(cache.size(), keys.length());
-        test:assertEquals(cache.keys(), keys);
-    } else {
-        test:assertFail("Test failed: " + sleepTime.message());
-    }
+    decimal sleepTime = cleanupInterval * 2;
+    runtime:sleep(sleepTime);
+    test:assertEquals(cache.size(), keys.length());
+    test:assertEquals(cache.keys(), keys);
 }
 
 @test:Config {
@@ -784,25 +355,7 @@ isolated function testCreateCacheWithZeroCapacity() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
-    } else {
-         test:assertFail("Output mismatched");
-    }
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy", "FIFO"]
-}
-isolated function testFIFOCreateCacheWithZeroCapacity() {
-    CacheConfig config = {
-        capacity: 0,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache|error cache = trap new(config);
-    test:assertTrue(cache is error);
-    if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
+        test:assertEquals(cache.toString(), "error Error (\"Capacity must be greater than 0.\")");
     } else {
          test:assertFail("Output mismatched");
     }
@@ -819,25 +372,7 @@ isolated function testCreateCacheWithNegativeCapacity() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
-    } else {
-         test:assertFail("Output mismatched");
-    }
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy", "negative", "FIFO"]
-}
-isolated function testFIFOCreateCacheWithNegativeCapacity() {
-    CacheConfig config = {
-        capacity: -1,
-        evictionFactor: 0.2,
-        evictionPolicy: FIFO
-    };
-    Cache|error cache = trap new(config);
-    test:assertTrue(cache is error);
-    if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Capacity must be greater than 0.\")");
+        test:assertEquals(cache.toString(), "error Error (\"Capacity must be greater than 0.\")");
     } else {
          test:assertFail("Output mismatched");
     }
@@ -854,26 +389,7 @@ isolated function testCreateCacheWithZeroEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 (exclusive)" +
-                              " and 1.0 (inclusive).\")");
-    } else {
-         test:assertFail("Output mismatched");
-    }
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy", "negative", "FIFO"]
-}
-isolated function testFIFOCreateCacheWithZeroEvictionFactor() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: 0,
-        evictionPolicy: FIFO
-    };
-    Cache|error cache = trap new(config);
-    test:assertTrue(cache is error);
-    if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 (exclusive)" +
+        test:assertEquals(cache.toString(), "error Error (\"Cache eviction factor must be between 0.0 (exclusive)" +
                               " and 1.0 (inclusive).\")");
     } else {
          test:assertFail("Output mismatched");
@@ -891,26 +407,7 @@ isolated function testCreateCacheWithNegativeEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
-                              "(exclusive) and 1.0 (inclusive).\")");
-    } else {
-         test:assertFail("Output mismatched");
-    }
-}
-
-@test:Config {
-    groups: ["cache", "capacity", "policy", "negative", "FIFO"]
-}
-isolated function testFIFOCreateCacheWithNegativeEvictionFactor() {
-    CacheConfig config = {
-        capacity: 10,
-        evictionFactor: -1,
-        evictionPolicy: FIFO
-    };
-    Cache|error cache = trap new(config);
-    test:assertTrue(cache is error);
-    if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
+        test:assertEquals(cache.toString(), "error Error (\"Cache eviction factor must be between 0.0 " +
                               "(exclusive) and 1.0 (inclusive).\")");
     } else {
          test:assertFail("Output mismatched");
@@ -928,7 +425,7 @@ isolated function testCreateCacheWithInvalidEvictionFactor() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Cache eviction factor must be between 0.0 " +
+        test:assertEquals(cache.toString(), "error Error (\"Cache eviction factor must be between 0.0 " +
                               "(exclusive) and 1.0 (inclusive).\")");
     } else {
          test:assertFail("Output mismatched");
@@ -942,12 +439,12 @@ isolated function testCreateCacheWithZeroDefaultMaxAge() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
-        defaultMaxAgeInSeconds: 0
+        defaultMaxAge: 0
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Default max age should be greater " +
+        test:assertEquals(cache.toString(), "error Error (\"Default max age should be greater " +
                               "than 0 or -1 for indicate forever valid.\")");
     } else {
          test:assertFail("Output mismatched");
@@ -961,12 +458,12 @@ isolated function testCreateCacheWithNegativeDefaultMaxAge() {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2,
-        defaultMaxAgeInSeconds: -10
+        defaultMaxAge: -10
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error CacheError (\"Default max age should be greater than 0 or -1 " +
+        test:assertEquals(cache.toString(), "error Error (\"Default max age should be greater than 0 or -1 " +
                               "for indicate forever valid.\")");
     } else {
          test:assertFail("Output mismatched");

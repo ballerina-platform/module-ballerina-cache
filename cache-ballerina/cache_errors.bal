@@ -14,12 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents the Cache error type with details. This will be returned if an error occurred while doing any of the cache
-# operations.
-public type CacheError distinct error;
-
-# Represents Cache related errors.
-public type Error CacheError;
+# Represents Cache related errors. This will be returned if an error occurred while doing any of the cache operations.
+public type Error distinct error;
 
 # Prepare the `error` as a `cache:Error`.
 #
@@ -29,9 +25,9 @@ public type Error CacheError;
 isolated function prepareError(string message, error? err = ()) returns Error {
     Error cacheError;
     if (err is error) {
-        cacheError = error CacheError(message, err);
+        cacheError = error Error(message, err);
     } else {
-        cacheError = error CacheError(message);
+        cacheError = error Error(message);
     }
     return cacheError;
 }

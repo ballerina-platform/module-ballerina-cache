@@ -72,10 +72,14 @@ allprojects {
             }
         }
     }
+
+    ext {
+        snapshotVersion= '-SNAPSHOT'
+        timestampedVersionRegex = '.*-\\d{8}-\\d{6}-\\w.*\$'
+    }
 }
 
 subprojects {
-    apply plugin: 'java'
 
     configurations {
         ballerinaStdLibs
@@ -93,6 +97,7 @@ release {
     failOnPublishNeeded = false
 
     buildTasks = ["build"]
+    failOnSnapshotDependencies = true
     versionPropertyFile = 'gradle.properties'
     tagTemplate = 'v$version'
 
