@@ -338,7 +338,7 @@ isolated function testCacheEvictionWithTimer2() returns error? {
     check cache.put("B", "2", 3600);
     check cache.put("C", "3");
     string[] keys = ["B"];
-    decimal sleepTime = cleanupInterval * 2;
+    decimal sleepTime = cleanupInterval * 2 + 1;
     runtime:sleep(sleepTime);
     test:assertEquals(cache.size(), keys.length());
     test:assertEquals(cache.keys(), keys);
