@@ -80,9 +80,12 @@ public isolated class Cache {
     private final decimal & readonly defaultMaxAge;
 
     # Initializes new `cache:Cache` instance.
+    # ```ballerina
+    # cache:Cache cache = new(capacity: 10, evictionFactor: 0.2);
+    # ```
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    public isolated function init(CacheConfig cacheConfig = {}) {
+    public isolated function init(*CacheConfig cacheConfig) {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
