@@ -19,66 +19,101 @@
 package org.ballerinalang.stdlib.cache.nativeimpl;
 
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /**
- * Ballerina function to cache with java.util.concurrent.ConcurrentHashMap.
+ * Class to handle ballerina external functions in Cache library.
  *
  * @since 2.0.0
  */
 public class Cache {
 
-    public static final String CACHE_MAP = "CACHE_MAP";
+    private static ConcurrentLinkedHashMap<BString, BMap<BString, Object>> cacheMap;
+    private static final String MAX_CAPACITY = "maxCapacity";
+    private static final String EVICTION_FACTOR = "evictionFactor";
+    private static final String EXPIRE_TIME = "expTime";
+    private static final String CACHE = "CACHE";
 
-    public static void externInit(BObject cache, int capacity) {
-        ConcurrentHashMap<BString, BMap<BString, Object>> map = new ConcurrentHashMap<>(capacity);
-        cache.addNativeData(CACHE_MAP, map);
+    private Cache() {}
+
+    public static void externInit(BObject cache) {
+        int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
+        cacheMap = new ConcurrentLinkedHashMap<>(capacity);
+        cache.addNativeData(CACHE, cacheMap);
     }
 
+    @SuppressWarnings("unchecked")
     public static void externPut(BObject cache, BString key, BMap<BString, Object> value) {
-        ConcurrentHashMap<BString, BMap<BString, Object>> map =
-                (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
-        map.put(key, value);
+        int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
+        float evictionFactor = (float) cache.getFloatValue(StringUtils.fromString(EVICTION_FACTOR));
+        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
+        if (cacheMap.size() >= capacity) {
+            int evictionKeysCount = (int) (capacity * evictionFactor);
+                cacheMap.setCapacity((capacity - evictionKeysCount));
+                cacheMap.setCapacity(capacity);
+        }
+        cacheMap.put(key, value);
     }
 
-    public static BMap<BString, Object> externGet(BObject cache, BString key) {
-        ConcurrentHashMap<BString, BMap<BString, Object>> map =
-                (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
-        return map.get(key);
+    @SuppressWarnings("unchecked")
+    public static BMap<BString, Object> externGet(BObject cache, BString key, BDecimal currentTime) {
+        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
+        BMap<BString, Object> value = cacheMap.get(key);
+        Long time = ((BDecimal) value.get(StringUtils.fromString(EXPIRE_TIME))).decimalValue().longValue();
+        if (time != -1 && time <= currentTime.decimalValue().longValue()) {
+            cacheMap.remove(key);
+            return null;
+        }
+        return value;
     }
 
+    @SuppressWarnings("unchecked")
     public static void externRemove(BObject cache, BString key) {
-        ConcurrentHashMap<BString, BMap<BString, Object>> map =
-                (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
-        map.remove(key);
+        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
+        cacheMap.remove(key);
     }
 
+    @SuppressWarnings("unchecked")
     public static void externRemoveAll(BObject cache) {
-        ConcurrentHashMap<BString, BMap<BString, Object>> map =
-                (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
-        map.clear();
+        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
+        cacheMap.clear();
     }
 
+    @SuppressWarnings("unchecked")
     public static boolean externHasKey(BObject cache, BString key) {
-        ConcurrentHashMap<BString, BMap<BString, Object>> map =
-                (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
-        return map.containsKey(key);
+        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
+        return cacheMap.containsKey(key);
     }
 
+    @SuppressWarnings("unchecked")
     public static BArray externKeys(BObject cache) {
-        ConcurrentHashMap<BString, BMap<BString, Object>> map =
-                (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
-        return ValueCreator.createArrayValue(map.keySet().toArray(new BString[0]));
+        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
+        return ValueCreator.createArrayValue(cacheMap.keySet().toArray(new BString[0]));
     }
 
+    @SuppressWarnings("unchecked")
     public static int externSize(BObject cache) {
-        ConcurrentHashMap<BString, BMap<BString, Object>> map =
-                (ConcurrentHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE_MAP);
-        return map.size();
+        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
+        return cacheMap.size();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void externCleanUp(BObject cache, BDecimal currentTime) {
+        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
+        for (Map.Entry<BString, BMap<BString, Object>> entry : cacheMap.entrySet()) {
+            BMap<BString, Object> value = entry.getValue();
+            Long time = ((BDecimal) value.get(StringUtils.fromString(EXPIRE_TIME))).decimalValue().longValue();
+            if (time != -1 && time <= currentTime.decimalValue().longValue()) {
+                cacheMap.remove(entry.getKey());
+            }
+        }
     }
 }

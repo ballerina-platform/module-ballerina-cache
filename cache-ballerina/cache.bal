@@ -41,7 +41,6 @@ public enum EvictionPolicy {
 }
 
 type CacheEntry record {|
-    string key;
     any data;
     decimal expTime;  // exp time since epoch. calculated based on the `maxAge` parameter when inserting to map
 |};
@@ -52,48 +51,45 @@ boolean cleanupInProgress = false;
 class Cleanup {
 
     *task:Job;
-    private LinkedList linkedList;
     private Cache cache;
 
     public function execute() {
         // This check will skip the processes triggered while the clean up in progress.
         if (!cleanupInProgress) {
             cleanupInProgress = true;
-            cleanup(self.cache, self.linkedList);
+            time:Utc currentUtc = time:utcNow();
+            externCleanUp(self.cache, <decimal>currentUtc[0] + currentUtc[1]);
             cleanupInProgress = false;
         }
     }
 
-    public isolated function init(Cache cache, LinkedList linkedList) {
-        self.linkedList = linkedList;
+    public isolated function init(Cache cache) {
         self.cache = cache;
     }
 }
 
 # The `cache:Cache` object, which is used for all the cache-related operations. It is not recommended to insert `()`
 # as the value of the cache since it doesn't make any sense to cache a nil.
-public class Cache {
+public isolated class Cache {
 
     *AbstractCache;
 
-    private int maxCapacity;
-    private EvictionPolicy evictionPolicy;
-    private float evictionFactor;
-    private decimal defaultMaxAge;
-    private LinkedList linkedList;
+    private final int maxCapacity;
+    private final EvictionPolicy evictionPolicy;
+    private final float evictionFactor;
+    private final decimal defaultMaxAge;
 
-    # Called when a new `cache:Cache` object is created.
+    # Initializes new `cache:Cache` instance.
     # ```ballerina
-    # cache:Cache cache = new({capacity: 10, evictionFactor: 0.2});
+    # cache:Cache cache = new(capacity = 10, evictionFactor = 0.2);
     # ```
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
-    public isolated function init(CacheConfig cacheConfig = {}) {
+    public isolated function init(*CacheConfig cacheConfig) {
         self.maxCapacity = cacheConfig.capacity;
         self.evictionPolicy = cacheConfig.evictionPolicy;
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAge =  cacheConfig.defaultMaxAge;
-        self.linkedList = new LinkedList();
 
         // Cache capacity must be a positive value.
         if (self.maxCapacity <= 0) {
@@ -108,17 +104,13 @@ public class Cache {
         if (self.defaultMaxAge != -1d && self.defaultMaxAge <= 0d) {
             panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
-
-        externLockInit();
-        externInit(self, self.maxCapacity);
-
+        externInit(self);
         decimal? interval = cacheConfig?.cleanupInterval;
         if (interval is decimal) {
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
             time:Civil time = time:utcToCivil(newTime);
-            var result = task:scheduleJobRecurByFrequency(new Cleanup(self, self.linkedList), interval,
-                                        startTime = time);
+            var result = task:scheduleJobRecurByFrequency(new Cleanup(self), interval, startTime = time);
             if (result is task:Error) {
                 string message = string `Failed to schedule the cleanup task: ${result.message()}`;
                 panic prepareError(message);
@@ -141,10 +133,7 @@ public class Cache {
         if (value is ()) {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
         }
-        // If the current cache is full (i.e. size = capacity), evict cache.
-        if (self.size() == self.maxCapacity) {
-            evict(self, self.maxCapacity, self.evictionFactor, self.linkedList);
-        }
+
         time:Utc currentUtc = time:utcNow();
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
@@ -160,21 +149,10 @@ public class Cache {
         }
 
         CacheEntry entry = {
-            key: key,
             data: value,
             expTime: calculatedExpTime
         };
-        Node newNode = { value: entry };
-
-        if (self.hasKey(key)) {
-            Node oldNode = externGet(self, key);
-            // Move the node to front
-            self.linkedList.remove(oldNode);
-            self.linkedList.addFirst(newNode);
-        } else {
-            self.linkedList.addFirst(newNode);
-        }
-        externPut(self, key, newNode);
+        return externPut(self, key, entry);
     }
 
     # Returns the cached value associated with the provided key.
@@ -189,23 +167,11 @@ public class Cache {
         if (!self.hasKey(key)) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
-
-        Node node = externGet(self, key);
-        CacheEntry entry = <CacheEntry>node.value;
-
-        // Check whether the cache entry is already expired. Even though the cache cleaning task is configured
-        // and runs in predefined intervals, sometimes the cache entry might not have been removed at this point
-        // even though it is expired. So this check guarantees that the expired cache entries will not be returned.
         time:Utc currentUtc = time:utcNow();
-        if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
-            self.linkedList.remove(node);
-            externRemove(self, key);
-            return ();
+        any? entry = externGet(self, key, <decimal>currentUtc[0] + currentUtc[1]);
+        if (entry is CacheEntry) {
+            return entry.data;
         }
-        // Move the node to front
-        self.linkedList.remove(node);
-        self.linkedList.addFirst(node);
-        return entry.data;
     }
 
     # Discards a cached value from the cache.
@@ -220,9 +186,6 @@ public class Cache {
         if (!self.hasKey(key)) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
-
-        Node node = externGet(self, key);
-        self.linkedList.remove(node);
         externRemove(self, key);
     }
 
@@ -234,7 +197,6 @@ public class Cache {
     # + return - `()` if successfully discarded all the values from the cache or a `cache:Error` if any error
     #            occurred while discarding all the values from the cache.
     public isolated function invalidateAll() returns Error? {
-        self.linkedList.clear();
         externRemoveAll(self);
     }
 
@@ -281,53 +243,7 @@ public class Cache {
     }
 }
 
-isolated function evict(Cache cache, int capacity, float evictionFactor, LinkedList linkedList) {
-    int evictionKeysCount = <int>(<float> capacity * evictionFactor);
-    foreach int i in 1...evictionKeysCount {
-        Node? node = linkedList.removeLast();
-        if (node is Node) {
-            CacheEntry entry = <CacheEntry>node.value;
-            externRemove(cache, entry.key);
-            // The return result (error which occurred due to unavailability of the key or nil) is ignored
-            // since no purpose of handling it.
-        } else {
-            break;
-        }
-    }
-}
-
-isolated function cleanup(Cache cache, LinkedList linkedList) {
-    string[] keys = cache.keys();
-    if (keys.length() == 0) {
-        return;
-    }
-    foreach string key in keys {
-        Node node = externGet(cache, key);
-        CacheEntry entry = <CacheEntry>node.value;
-        time:Utc currentUtc = time:utcNow();
-        if (entry.expTime != -1d && entry.expTime < (<decimal>currentUtc[0] + currentUtc[1])) {
-            linkedList.remove(node);
-            externRemove(cache, entry.key);
-            // The return result (error which occurred due to unavailability of the key or nil) is ignored
-            // since no purpose of handling it.
-            return;
-        }
-    }
-}
-
-isolated function externInit(Cache cache, int capacity) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externPut(Cache cache, string key, Node value) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externGet(Cache cache, string key) returns Node = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
-} external;
-
-isolated function externRemove(Cache cache, string key) = @java:Method {
+isolated function externInit(Cache cache) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
 
@@ -344,5 +260,21 @@ isolated function externKeys(Cache cache) returns string[] = @java:Method {
 } external;
 
 isolated function externSize(Cache cache) returns int = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function externPut(Cache cache, string key, any value) = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function externGet(Cache cache, string key, decimal currentTime) returns CacheEntry? = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function externRemove(Cache cache, string key) = @java:Method {
+    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+} external;
+
+isolated function externCleanUp(Cache cache, decimal currentTime) = @java:Method {
     'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
 } external;
