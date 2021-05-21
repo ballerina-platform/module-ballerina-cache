@@ -74,10 +74,10 @@ public isolated class Cache {
 
     *AbstractCache;
 
-    private final int & readonly maxCapacity;
-    private final EvictionPolicy & readonly evictionPolicy;
-    private final float & readonly evictionFactor;
-    private final decimal & readonly defaultMaxAge;
+    private final int maxCapacity;
+    private final EvictionPolicy evictionPolicy;
+    private final float evictionFactor;
+    private final decimal defaultMaxAge;
 
     # Initializes new `cache:Cache` instance.
     # ```ballerina
