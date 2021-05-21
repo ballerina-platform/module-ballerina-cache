@@ -42,6 +42,8 @@ public class Cache {
     private static final String EXPIRE_TIME = "expTime";
     private static final String CACHE = "CACHE";
 
+    private Cache() {}
+
     public static void externInit(BObject cache) {
         int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
         cacheMap = new ConcurrentLinkedHashMap<>(capacity);
@@ -101,13 +103,6 @@ public class Cache {
     public static int externSize(BObject cache) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         return cacheMap.size();
-    }
-
-    @SuppressWarnings("unchecked")
-    public static void externReplace(BObject cache, BString key, BMap<BString, Object> oldValue,
-                                     BMap<BString, Object> newValue) {
-        cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
-        cacheMap.replace(key, oldValue, newValue);
     }
 
     @SuppressWarnings("unchecked")

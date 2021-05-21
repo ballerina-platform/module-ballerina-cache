@@ -81,7 +81,7 @@ public isolated class Cache {
 
     # Initializes new `cache:Cache` instance.
     # ```ballerina
-    # cache:Cache cache = new(capacity: 10, evictionFactor: 0.2);
+    # cache:Cache cache = new(capacity = 10, evictionFactor = 0.2);
     # ```
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
@@ -171,8 +171,6 @@ public isolated class Cache {
         any? entry = externGet(self, key, <decimal>currentUtc[0] + currentUtc[1]);
         if (entry is CacheEntry) {
             return entry.data;
-        } else {
-            return ();
         }
     }
 

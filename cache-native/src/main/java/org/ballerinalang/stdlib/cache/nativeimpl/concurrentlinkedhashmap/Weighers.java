@@ -33,9 +33,7 @@ final class Weighers {
      *
      * @return A weigher where a value takes one unit of capacity.
      */
-    @SuppressWarnings({
-            "unchecked"
-    })
+    @SuppressWarnings("unchecked")
     public static <V> Weigher<V> singleton() {
         return (Weigher<V>) SingletonWeigher.INSTANCE;
     }
