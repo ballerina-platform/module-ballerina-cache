@@ -10,8 +10,7 @@ The cache entries can be safely accessed by multiple concurrent threads as it is
 The Cache entries will be evicted in case of the following scenarios:
 
 - When using the `get` API, if the returning cache entry has expired, it gets removed.
-- When using the `put` API, if the cache size has reached its capacity, the number of entries get removed based on 
-the `eviction policy` and the `eviction factor`.
+- When using the `put` API, if the cache size has reached its capacity, the number of entries that gets removed will be based on the `eviction policy` and the `eviction factor`.
 - If `cleanupIntervalInSeconds` (optional property) is configured, the timer task will remove the expired cache 
 entries based on the configured interval. The main benefit of this property is that you can optimize the memory 
 usage while adding some additional CPU costs and vice versa. The default behaviour is the CPU-optimized method.
@@ -31,5 +30,3 @@ public type AbstractCache object {
 };
 ```
 The Ballerina Cache package provides the `cache:Cache` class, which is a `map` data structure based implementation of the `cache:AbstractCache` object.
-
-For information on the operations, which you can perform with the cache module, see the below **Functions**.
