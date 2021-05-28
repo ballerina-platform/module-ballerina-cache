@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,7 +53,7 @@ import java.util.function.Function;
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V>, Serializable {
+public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
     /** The maximum weighted capacity of the map. */
     static final int MAXIMUM_CAPACITY = 1 << 30;
@@ -169,9 +170,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      * @throws IllegalArgumentException if the capacity is negative
      */
     public void setCapacity(int capacity) {
-        if (capacity < 0) {
-            throw new IllegalArgumentException("Capacity must be a positive value.");
-        }
         evictionLock.lock();
         try {
             this.capacity = Math.min(capacity, MAXIMUM_CAPACITY);
@@ -587,7 +585,57 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         return node.getValue();
     }
 
+    @Override
+    public V getOrDefault(Object key, V defaultValue) {
+        return null;
+    }
+
+    @Override
+    public void forEach(BiConsumer<? super K, ? super V> action) {
+
+    }
+
     public V putIfAbsent(K key, V value) {
+        return null;
+    }
+
+    @Override
+    public boolean remove(Object key, Object value) {
+        return false;
+    }
+
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
+        return false;
+    }
+
+    @Override
+    public V replace(K key, V value) {
+        return null;
+    }
+
+    @Override
+    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+
+    }
+
+    @Override
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         return null;
     }
 
@@ -642,104 +690,19 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
     }
 
     @Override
-    public V getOrDefault(Object key, V defaultValue) {
-        return null;
-    }
+    public void putAll(Map<? extends K, ? extends V> m) {
 
-    @Override
-    public void forEach(BiConsumer<? super K, ? super V> action) {
-
-    }
-
-    public boolean remove(Object key, Object value) {
-        Node node = data.get(key);
-        if ((node == null) || (value == null)) {
-            return false;
-        }
-
-        WeightedValue<V> weightedValue = node.get();
-        for (;;) {
-            if (weightedValue.hasValue(value)) {
-                if (node.tryToRetire(weightedValue)) {
-                    if (data.remove(key, node)) {
-                        afterCompletion(new RemovalTask(node));
-                        return true;
-                    }
-                } else {
-                    weightedValue = node.get();
-                    if (weightedValue.isAlive()) {
-                        // retry as an intermediate update may have replaced the value
-                        // with
-                        // an equal instance that has a different reference identity
-                        continue;
-                    }
-                }
-            }
-            return false;
-        }
-    }
-
-    public V replace(K key, V value) {
-        return null;
-    }
-
-    @Override
-    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
-
-    }
-
-    @Override
-    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
-        return null;
-    }
-
-    @Override
-    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return null;
-    }
-
-    @Override
-    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return null;
-    }
-
-    @Override
-    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        return null;
-    }
-
-    @Override
-    public boolean replace(K key, V oldValue, V newValue) {
-        checkNotNull(oldValue);
-        checkNotNull(newValue);
-
-        final int weight = weigher.weightOf(newValue);
-        final WeightedValue<V> newWeightedValue = new WeightedValue<>(newValue, weight);
-
-        final Node node = data.get(key);
-        if (node == null) {
-            return false;
-        }
-        for (;;) {
-            final WeightedValue<V> weightedValue = node.get();
-            if (!weightedValue.isAlive() || !weightedValue.hasValue(oldValue)) {
-                return false;
-            }
-            if (node.compareAndSet(weightedValue, newWeightedValue)) {
-                int weightedDifference = weight - weightedValue.weight;
-                final Task task = (weightedDifference == 0)
-                        ? new ReadTask(node)
-                        : new UpdateTask(node, weightedDifference);
-                afterCompletion(task);
-                return true;
-            }
-        }
     }
 
     @Override
     public Set<K> keySet() {
         Set<K> ks = keySet;
         return (ks == null) ? (keySet = new KeySet()) : ks;
+    }
+
+    @Override
+    public Collection<V> values() {
+        return null;
     }
 
     @Override
