@@ -23,6 +23,8 @@ package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
  */
 final class Weighers {
 
+    private Weighers() {}
+
     /**
      * A weigher where a value has a weight of <tt>1</tt>. A map bounded with this weigher
      * will evict when the number of key-value pairs exceeds the capacity.
