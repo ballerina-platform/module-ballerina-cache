@@ -471,8 +471,7 @@ isolated function testCreateCacheWithNegativeDefaultMaxAge() {
 }
 
 @test:Config {
-    groups: ["cache", "cleanup", "negative"],
-    enable: false
+    groups: ["cache", "cleanup", "negative"]
 }
 isolated function testCreateCacheWithNegativeCleanUpInterval() {
     CacheConfig config = {

@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
@@ -153,13 +151,6 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
         }
     }
 
-    /** Asserts that the object is not null. */
-    private static void checkNotNull(Object o) {
-        if (o == null) {
-            throw new NullPointerException("Node can't be null");
-        }
-    }
-
     /* ---------------- Eviction Support -------------- */
 
     /**
@@ -198,12 +189,6 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
         // for removal.
         while (hasOverflowed()) {
             Node node = evictionDeque.pollFirst();
-
-            // If weighted values are used, then the pending operations will adjust
-            // the size to reflect the correct weight
-            if (node == null) {
-                return;
-            }
             data.remove(node.key, node);
             node.makeDead();
         }
@@ -565,7 +550,6 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
 
     @Override
     public boolean containsValue(Object value) {
-        checkNotNull(value);
 
         for (Node node : data.values()) {
             if (node.getValue().equals(value)) {
@@ -649,7 +633,6 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
      */
     @Override
     public V put(K key, V value) {
-        checkNotNull(value);
         final int weight = weigher.weightOf(value);
         final WeightedValue<V> weightedValue = new WeightedValue<>(value, weight);
         final Node node = new Node(key, weightedValue);
@@ -739,9 +722,9 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
      * page-replacement algorithm's data structures.
      */
     @SuppressWarnings("serial")
-    private final class Node extends AtomicReference<WeightedValue<V>> implements Linked<Node> {
+    private class Node extends AtomicReference<WeightedValue<V>> implements Linked<Node> {
         private static final long serialVersionUID = 1;
-        private final K key;
+        private K key;
 
         private Node prev;
         private Node next;
@@ -770,23 +753,6 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
         /** Retrieves the value held by the current <tt>WeightedValue</tt>. */
         V getValue() {
             return get().value;
-        }
-
-        /**
-         * Attempts to transition the node from the <tt>alive</tt> state to the
-         * <tt>retired</tt> state.
-         *
-         * @param expect the expected weighted value
-         * @return if successful
-         */
-        public boolean tryToRetire(WeightedValue<V> expect) {
-            if (expect.isAlive()) {
-                WeightedValue<V> retired = new WeightedValue<>(
-                        expect.value,
-                        -expect.weight);
-                return compareAndSet(expect, retired);
-            }
-            return false;
         }
 
         /**
@@ -836,22 +802,7 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
 
         @Override
         public int size() {
-            return map.size();
-        }
-
-        @Override
-        public void clear() {
-            map.clear();
-        }
-
-        @Override
-        public boolean contains(Object obj) {
-            return containsKey(obj);
-        }
-
-        @Override
-        public boolean remove(Object obj) {
-            return (map.remove(obj) != null);
+            return 0;
         }
 
         @Override
@@ -863,45 +814,14 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
     /** An adapter to safely externalize the entries. */
     private final class EntrySet extends AbstractSet<Entry<K, V>> {
 
-        final ConcurrentLinkedHashMap<K, V> map = ConcurrentLinkedHashMap.this;
-
-        @Override
-        public int size() {
-            return map.size();
-        }
-
-        @Override
-        public void clear() {
-            map.clear();
-        }
-
         @Override
         public Iterator<Entry<K, V>> iterator() {
             return new EntryIterator();
         }
 
         @Override
-        public boolean contains(Object obj) {
-            if (!(obj instanceof Entry<?, ?>)) {
-                return false;
-            }
-            Entry<?, ?> entry = (Entry<?, ?>) obj;
-            Node node = map.data.get(entry.getKey());
-            return (node != null) && (node.getValue().equals(entry.getValue()));
-        }
-
-        @Override
-        public boolean add(Entry<K, V> entry) {
-            return (map.putIfAbsent(entry.getKey(), entry.getValue()) == null);
-        }
-
-        @Override
-        public boolean remove(Object obj) {
-            if (!(obj instanceof Entry<?, ?>)) {
-                return false;
-            }
-            Entry<?, ?> entry = (Entry<?, ?>) obj;
-            return map.remove(entry.getKey(), entry.getValue());
+        public int size() {
+            return 0;
         }
     }
 
@@ -938,42 +858,38 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
         public WriteThroughEntry(Node node) {
             super(node.key, node.getValue());
         }
-
-        @Override
-        public V setValue(V value) {
-            put(getKey(), value);
-            return super.setValue(value);
-        }
-
-        private Object writeReplace() {
-            return new AbstractMap.SimpleEntry<>(this);
-        }
     }
 
     /** An executor that is always terminated. */
     private static final class DisabledExecutorService extends AbstractExecutorService {
 
+        @Override
+        public void shutdown() {
+
+        }
+
+        @Override
+        public List<Runnable> shutdownNow() {
+            return null;
+        }
+
         public boolean isShutdown() {
             return true;
         }
 
+        @Override
         public boolean isTerminated() {
-            return true;
+            return false;
         }
 
-        public void shutdown() {
+        @Override
+        public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+            return false;
         }
 
-        public List<Runnable> shutdownNow() {
-            return Collections.emptyList();
-        }
-
-        public boolean awaitTermination(long timeout, TimeUnit unit) {
-            return true;
-        }
-
+        @Override
         public void execute(Runnable command) {
-            throw new RejectedExecutionException("The task rejected by the executor");
+
         }
     }
 
@@ -1020,34 +936,7 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
 
     private static final long serialVersionUID = 1;
 
-    private Object writeReplace() {
-        return new SerializationProxy<>(this);
-    }
-
     private void readObject(ObjectInputStream stream) throws InvalidObjectException {
         throw new InvalidObjectException("Proxy required");
-    }
-
-    /**
-     * A proxy that is serialized instead of the map. The page-replacement algorithm's
-     * data structures are not serialized so the deserialized instance contains only the
-     * entries. This is acceptable as caches hold transient data that is recomputable and
-     * serialization would tend to be used as a fast warm-up process.
-     */
-    private static final class SerializationProxy<K, V> implements Serializable {
-
-        public final Weigher<? super V> weigher;
-        public final int concurrencyLevel;
-        public final Map<K, V> data;
-        public final int capacity;
-
-        private SerializationProxy(ConcurrentLinkedHashMap<K, V> map) {
-            concurrencyLevel = map.concurrencyLevel;
-            data = new HashMap<>(map);
-            capacity = map.capacity;
-            weigher = map.weigher;
-        }
-
-        private static final long serialVersionUID = 1;
     }
 }
