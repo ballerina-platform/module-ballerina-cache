@@ -504,7 +504,7 @@ isolated function testPutWithNullValue() {
 @test:Config {
     groups: ["cache", "invalidate", "negative"]
 }
-isolated function testInvalidateWithNullValue() {
+isolated function testInvalidateWithNonExistingValue() {
     Cache cache = new();
     error? result = cache.invalidate("A");
     test:assertTrue(result is error);
