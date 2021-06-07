@@ -20,14 +20,8 @@ public type Error distinct error;
 # Prepare the `error` as a `cache:Error`.
 #
 # + message - Error message
-# + err - `error` instance
 # + return - Prepared `Error` instance
-isolated function prepareError(string message, error? err = ()) returns Error {
-    Error cacheError;
-    if (err is error) {
-        cacheError = error Error(message, err);
-    } else {
-        cacheError = error Error(message);
-    }
+isolated function prepareError(string message) returns Error {
+    Error cacheError = error Error(message);
     return cacheError;
 }

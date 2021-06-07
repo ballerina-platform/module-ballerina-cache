@@ -22,8 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
@@ -52,7 +50,7 @@ import java.util.function.Function;
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
  */
-public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V>, Serializable {
+public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
     /** The maximum weighted capacity of the map. */
     static final int MAXIMUM_CAPACITY = 1 << 30;
@@ -152,13 +150,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         }
     }
 
-    /** Asserts that the object is not null. */
-    private static void checkNotNull(Object o) {
-        if (o == null) {
-            throw new NullPointerException("Node can't be null");
-        }
-    }
-
     /* ---------------- Eviction Support -------------- */
 
     /**
@@ -169,9 +160,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      * @throws IllegalArgumentException if the capacity is negative
      */
     public void setCapacity(int capacity) {
-        if (capacity < 0) {
-            throw new IllegalArgumentException("Capacity must be a positive value.");
-        }
         evictionLock.lock();
         try {
             this.capacity = Math.min(capacity, MAXIMUM_CAPACITY);
@@ -200,12 +188,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         // for removal.
         while (hasOverflowed()) {
             Node node = evictionDeque.pollFirst();
-
-            // If weighted values are used, then the pending operations will adjust
-            // the size to reflect the correct weight
-            if (node == null) {
-                return;
-            }
             data.remove(node.key, node);
             node.makeDead();
         }
@@ -567,7 +549,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
 
     @Override
     public boolean containsValue(Object value) {
-        checkNotNull(value);
 
         for (Node node : data.values()) {
             if (node.getValue().equals(value)) {
@@ -587,7 +568,57 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         return node.getValue();
     }
 
+    @Override
+    public V getOrDefault(Object key, V defaultValue) {
+        return null;
+    }
+
+    @Override
+    public void forEach(BiConsumer<? super K, ? super V> action) {
+
+    }
+
     public V putIfAbsent(K key, V value) {
+        return null;
+    }
+
+    @Override
+    public boolean remove(Object key, Object value) {
+        return false;
+    }
+
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
+        return false;
+    }
+
+    @Override
+    public V replace(K key, V value) {
+        return null;
+    }
+
+    @Override
+    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+
+    }
+
+    @Override
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return null;
+    }
+
+    @Override
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         return null;
     }
 
@@ -601,7 +632,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      */
     @Override
     public V put(K key, V value) {
-        checkNotNull(value);
         final int weight = weigher.weightOf(value);
         final WeightedValue<V> weightedValue = new WeightedValue<>(value, weight);
         final Node node = new Node(key, weightedValue);
@@ -642,104 +672,19 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
     }
 
     @Override
-    public V getOrDefault(Object key, V defaultValue) {
-        return null;
-    }
+    public void putAll(Map<? extends K, ? extends V> m) {
 
-    @Override
-    public void forEach(BiConsumer<? super K, ? super V> action) {
-
-    }
-
-    public boolean remove(Object key, Object value) {
-        Node node = data.get(key);
-        if ((node == null) || (value == null)) {
-            return false;
-        }
-
-        WeightedValue<V> weightedValue = node.get();
-        for (;;) {
-            if (weightedValue.hasValue(value)) {
-                if (node.tryToRetire(weightedValue)) {
-                    if (data.remove(key, node)) {
-                        afterCompletion(new RemovalTask(node));
-                        return true;
-                    }
-                } else {
-                    weightedValue = node.get();
-                    if (weightedValue.isAlive()) {
-                        // retry as an intermediate update may have replaced the value
-                        // with
-                        // an equal instance that has a different reference identity
-                        continue;
-                    }
-                }
-            }
-            return false;
-        }
-    }
-
-    public V replace(K key, V value) {
-        return null;
-    }
-
-    @Override
-    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
-
-    }
-
-    @Override
-    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
-        return null;
-    }
-
-    @Override
-    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return null;
-    }
-
-    @Override
-    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return null;
-    }
-
-    @Override
-    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        return null;
-    }
-
-    @Override
-    public boolean replace(K key, V oldValue, V newValue) {
-        checkNotNull(oldValue);
-        checkNotNull(newValue);
-
-        final int weight = weigher.weightOf(newValue);
-        final WeightedValue<V> newWeightedValue = new WeightedValue<>(newValue, weight);
-
-        final Node node = data.get(key);
-        if (node == null) {
-            return false;
-        }
-        for (;;) {
-            final WeightedValue<V> weightedValue = node.get();
-            if (!weightedValue.isAlive() || !weightedValue.hasValue(oldValue)) {
-                return false;
-            }
-            if (node.compareAndSet(weightedValue, newWeightedValue)) {
-                int weightedDifference = weight - weightedValue.weight;
-                final Task task = (weightedDifference == 0)
-                        ? new ReadTask(node)
-                        : new UpdateTask(node, weightedDifference);
-                afterCompletion(task);
-                return true;
-            }
-        }
     }
 
     @Override
     public Set<K> keySet() {
         Set<K> ks = keySet;
         return (ks == null) ? (keySet = new KeySet()) : ks;
+    }
+
+    @Override
+    public Collection<V> values() {
+        return null;
     }
 
     @Override
@@ -776,9 +721,9 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
      * page-replacement algorithm's data structures.
      */
     @SuppressWarnings("serial")
-    private final class Node extends AtomicReference<WeightedValue<V>> implements Linked<Node> {
+    private class Node extends AtomicReference<WeightedValue<V>> implements Linked<Node> {
         private static final long serialVersionUID = 1;
-        private final K key;
+        private K key;
 
         private Node prev;
         private Node next;
@@ -807,23 +752,6 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         /** Retrieves the value held by the current <tt>WeightedValue</tt>. */
         V getValue() {
             return get().value;
-        }
-
-        /**
-         * Attempts to transition the node from the <tt>alive</tt> state to the
-         * <tt>retired</tt> state.
-         *
-         * @param expect the expected weighted value
-         * @return if successful
-         */
-        public boolean tryToRetire(WeightedValue<V> expect) {
-            if (expect.isAlive()) {
-                WeightedValue<V> retired = new WeightedValue<>(
-                        expect.value,
-                        -expect.weight);
-                return compareAndSet(expect, retired);
-            }
-            return false;
         }
 
         /**
@@ -873,22 +801,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
 
         @Override
         public int size() {
-            return map.size();
-        }
-
-        @Override
-        public void clear() {
-            map.clear();
-        }
-
-        @Override
-        public boolean contains(Object obj) {
-            return containsKey(obj);
-        }
-
-        @Override
-        public boolean remove(Object obj) {
-            return (map.remove(obj) != null);
+            return 0;
         }
 
         @Override
@@ -900,45 +813,14 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
     /** An adapter to safely externalize the entries. */
     private final class EntrySet extends AbstractSet<Entry<K, V>> {
 
-        final ConcurrentLinkedHashMap<K, V> map = ConcurrentLinkedHashMap.this;
-
-        @Override
-        public int size() {
-            return map.size();
-        }
-
-        @Override
-        public void clear() {
-            map.clear();
-        }
-
         @Override
         public Iterator<Entry<K, V>> iterator() {
             return new EntryIterator();
         }
 
         @Override
-        public boolean contains(Object obj) {
-            if (!(obj instanceof Entry<?, ?>)) {
-                return false;
-            }
-            Entry<?, ?> entry = (Entry<?, ?>) obj;
-            Node node = map.data.get(entry.getKey());
-            return (node != null) && (node.getValue().equals(entry.getValue()));
-        }
-
-        @Override
-        public boolean add(Entry<K, V> entry) {
-            return (map.putIfAbsent(entry.getKey(), entry.getValue()) == null);
-        }
-
-        @Override
-        public boolean remove(Object obj) {
-            if (!(obj instanceof Entry<?, ?>)) {
-                return false;
-            }
-            Entry<?, ?> entry = (Entry<?, ?>) obj;
-            return map.remove(entry.getKey(), entry.getValue());
+        public int size() {
+            return 0;
         }
     }
 
@@ -975,42 +857,38 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
         public WriteThroughEntry(Node node) {
             super(node.key, node.getValue());
         }
-
-        @Override
-        public V setValue(V value) {
-            put(getKey(), value);
-            return super.setValue(value);
-        }
-
-        private Object writeReplace() {
-            return new AbstractMap.SimpleEntry<>(this);
-        }
     }
 
     /** An executor that is always terminated. */
     private static final class DisabledExecutorService extends AbstractExecutorService {
 
+        @Override
+        public void shutdown() {
+
+        }
+
+        @Override
+        public List<Runnable> shutdownNow() {
+            return null;
+        }
+
         public boolean isShutdown() {
             return true;
         }
 
+        @Override
         public boolean isTerminated() {
-            return true;
+            return false;
         }
 
-        public void shutdown() {
+        @Override
+        public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+            return false;
         }
 
-        public List<Runnable> shutdownNow() {
-            return Collections.emptyList();
-        }
-
-        public boolean awaitTermination(long timeout, TimeUnit unit) {
-            return true;
-        }
-
+        @Override
         public void execute(Runnable command) {
-            throw new RejectedExecutionException("The task rejected by the executor");
+
         }
     }
 
@@ -1057,34 +935,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
 
     private static final long serialVersionUID = 1;
 
-    private Object writeReplace() {
-        return new SerializationProxy<>(this);
-    }
-
     private void readObject(ObjectInputStream stream) throws InvalidObjectException {
         throw new InvalidObjectException("Proxy required");
-    }
-
-    /**
-     * A proxy that is serialized instead of the map. The page-replacement algorithm's
-     * data structures are not serialized so the deserialized instance contains only the
-     * entries. This is acceptable as caches hold transient data that is recomputable and
-     * serialization would tend to be used as a fast warm-up process.
-     */
-    private static final class SerializationProxy<K, V> implements Serializable {
-
-        public final Weigher<? super V> weigher;
-        public final int concurrencyLevel;
-        public final Map<K, V> data;
-        public final int capacity;
-
-        private SerializationProxy(ConcurrentLinkedHashMap<K, V> map) {
-            concurrencyLevel = map.concurrencyLevel;
-            data = new HashMap<>(map);
-            capacity = map.capacity;
-            weigher = map.weigher;
-        }
-
-        private static final long serialVersionUID = 1;
     }
 }
