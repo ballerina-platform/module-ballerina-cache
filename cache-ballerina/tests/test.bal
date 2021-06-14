@@ -469,3 +469,48 @@ isolated function testCreateCacheWithNegativeDefaultMaxAge() {
          test:assertFail("Output mismatched");
     }
 }
+
+@test:Config {
+    groups: ["cache", "cleanup", "negative"]
+}
+isolated function testCreateCacheWithNegativeCleanUpInterval() {
+    CacheConfig config = {
+        cleanupInterval: -1d
+    };
+    Cache|error cache = trap new(config);
+    test:assertTrue(cache is error);
+    if (cache is error) {
+        test:assertEquals(cache.toString(), "error Error (\"Failed to schedule the cleanup task: " +
+        "Repeat interval must be >= 0\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
+}
+
+@test:Config {
+    groups: ["cache", "put", "negative"]
+}
+isolated function testPutWithNullValue() {
+    Cache cache = new();
+    error? result = cache.put("A", ());
+    test:assertTrue(result is error);
+    if (result is error) {
+        test:assertEquals(result.toString(), "error Error (\"Unsupported cache value '()' for the key: A.\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
+}
+
+@test:Config {
+    groups: ["cache", "invalidate", "negative"]
+}
+isolated function testInvalidateWithNonExistingValue() {
+    Cache cache = new();
+    error? result = cache.invalidate("A");
+    test:assertTrue(result is error);
+    if (result is error) {
+        test:assertEquals(result.toString(), "error Error (\"Cache entry from the given key: A, is not available.\")");
+    } else {
+         test:assertFail("Output mismatched");
+    }
+}
