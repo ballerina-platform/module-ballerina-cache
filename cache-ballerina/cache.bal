@@ -35,7 +35,7 @@ public type CacheConfig record {|
     decimal cleanupInterval?;
 |};
 
-# Possible types of eviction policy that can be passed into the `EvictionPolicy`
+# Possible types of eviction policy that can be passed into the `EvictionPolicy`.
 public enum EvictionPolicy {
     LRU
 }
