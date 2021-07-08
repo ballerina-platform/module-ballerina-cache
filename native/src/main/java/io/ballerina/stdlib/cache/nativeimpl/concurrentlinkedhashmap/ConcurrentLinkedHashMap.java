@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
+package io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;

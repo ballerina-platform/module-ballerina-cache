@@ -17,11 +17,11 @@
   -->
 <FindBugsFilter>
     <Match>
-        <Class name="org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap.ConcurrentLinkedHashMap$Node" />
+        <Class name="io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap.ConcurrentLinkedHashMap$Node" />
         <Bug pattern="SE_INNER_CLASS" />
     </Match>
     <Match>
-        <Class name="org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap.ConcurrentLinkedHashMap$WriteThroughEntry" />
+        <Class name="io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap.ConcurrentLinkedHashMap$WriteThroughEntry" />
         <Bug pattern="SE_INNER_CLASS" />
     </Match>
 </FindBugsFilter>

@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
+package io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 
 /**
  *  This class provides a doubly-linked list that is optimized for the virtual
