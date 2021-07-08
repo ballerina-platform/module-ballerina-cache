@@ -13,7 +13,8 @@ plugins {
 
 rootProject.name = 'cache'
 include(':build-config:checkstyle')
-include ':cache-native', ':cache-ballerina'
+include ':cache-native'
+include ':cache-ballerina'
 
 gradleEnterprise {
     buildScan {
