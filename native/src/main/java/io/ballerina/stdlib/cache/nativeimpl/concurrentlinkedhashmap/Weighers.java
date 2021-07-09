@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
+package io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 
 /**
  * A common set of {@link Weigher} implementations.

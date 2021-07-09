@@ -244,37 +244,37 @@ public isolated class Cache {
 }
 
 isolated function externInit(Cache cache) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;
 
 isolated function externRemoveAll(Cache cache) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;
 
 isolated function externHasKey(Cache cache, string key) returns boolean = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;
 
 isolated function externKeys(Cache cache) returns string[] = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;
 
 isolated function externSize(Cache cache) returns int = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;
 
 isolated function externPut(Cache cache, string key, any value) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;
 
 isolated function externGet(Cache cache, string key, decimal currentTime) returns CacheEntry? = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;
 
 isolated function externRemove(Cache cache, string key) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;
 
 isolated function externCleanUp(Cache cache, decimal currentTime) = @java:Method {
-    'class: "org.ballerinalang.stdlib.cache.nativeimpl.Cache"
+    'class: "io.ballerina.stdlib.cache.nativeimpl.Cache"
 } external;

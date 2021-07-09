@@ -12,9 +12,13 @@ plugins {
 }
 
 rootProject.name = 'cache'
-include(':build-config:checkstyle')
+include(':checkstyle')
 include ':cache-native'
 include ':cache-ballerina'
+
+project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
+project(':cache-native').projectDir = file('native')
+project(':cache-ballerina').projectDir = file('ballerina')
 
 gradleEnterprise {
     buildScan {

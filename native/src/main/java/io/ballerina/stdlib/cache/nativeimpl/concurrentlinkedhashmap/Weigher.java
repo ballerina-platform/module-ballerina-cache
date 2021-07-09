@@ -15,28 +15,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.ballerinalang.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
+package io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 
 /**
- * An element that is linked on the Deque.
+ * A class that can determine the weight of a value. The total weight threshold is used to
+ * determine when an eviction is required.
  */
-interface Linked<T extends Linked<T>> {
+interface Weigher<V> {
 
     /**
-     * Retrieves the previous element or <tt>null</tt> if either the element is unlinked
-     * or the first element on the deque.
+     * Measures an object's weight to determine how many units of capacity that the value
+     * consumes. A value must consume a minimum of one unit.
+     *
+     * @param value the object to weigh
+     * @return the object's weight
      */
-    T getPrevious();
-
-    /** Sets the previous element or <tt>null</tt> if there is no link. */
-    void setPrevious(T prev);
-
-    /**
-     * Retrieves the next element or <tt>null</tt> if either the element is unlinked or
-     * the last element on the deque.
-     */
-    T getNext();
-
-    /** Sets the next element or <tt>null</tt> if there is no link. */
-    void setNext(T next);
+    int weightOf(V value);
 }
