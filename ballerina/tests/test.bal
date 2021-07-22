@@ -514,3 +514,20 @@ isolated function testInvalidateWithNonExistingValue() {
          test:assertFail("Output mismatched");
     }
 }
+
+@test:Config {
+    groups: ["cache", "Eviction"]
+}
+isolated function testEvictionCount() returns error? {
+    CacheConfig config = {
+        capacity: 1,
+        evictionFactor: 0.1
+    };
+    Cache cache = new(config);
+    check cache.put("A", "1");
+    check cache.put("B", "2");
+    check cache.put("C", "3");
+    string[] keys = ["C"];
+    test:assertEquals(cache.size(), keys.length(), "Cache size did not match");
+    test:assertEquals(cache.keys(), keys, "Cache keys did not match");
+}

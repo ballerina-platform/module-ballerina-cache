@@ -56,7 +56,7 @@ public class Cache {
         float evictionFactor = (float) cache.getFloatValue(StringUtils.fromString(EVICTION_FACTOR));
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         if (cacheMap.size() >= capacity) {
-            int evictionKeysCount = (int) (capacity * evictionFactor);
+            int evictionKeysCount = (int) Math.ceil(capacity * evictionFactor);
                 cacheMap.setCapacity((capacity - evictionKeysCount));
                 cacheMap.setCapacity(capacity);
         }
