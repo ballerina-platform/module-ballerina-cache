@@ -1,8 +1,8 @@
 [package]
 org = "ballerina"
 name = "cache"
-version = "3.0.0"
+version = "3.0.1"
 distribution = "slbeta3"
 
 [[platform.java11.dependency]]
-path = "../native/build/libs/cache-native-3.0.0.jar"
+path = "../native/build/libs/cache-native-3.0.1-SNAPSHOT.jar"
