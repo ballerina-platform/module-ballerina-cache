@@ -29,7 +29,7 @@ isolated function testCreateCache() {
         evictionPolicy: LRU
     };
     Cache|error cache = trap new(config);
-    if (cache is Cache) {
+    if cache is Cache {
        test:assertEquals(cache.size(), 0);
     } else {
        test:assertFail(cache.toString());
@@ -62,12 +62,8 @@ isolated function testPutExistingEntry() returns error? {
     check cache.put(key, "Random value");
     check cache.put(key, "Ballerina");
     test:assertEquals(cache.size(), 1);
-    any|error results = cache.get(key);
-    if (results is any) {
-        test:assertEquals(results.toString(), "Ballerina");
-    } else {
-         test:assertFail("Output mismatched");
-    }
+    any results = check cache.get(key);
+    test:assertEquals(results.toString(), "Ballerina");
 }
 
 @test:Config {
@@ -89,7 +85,7 @@ isolated function testPutWithMaxAge() returns error? {
 @test:Config {
     groups: ["create", "get"]
 }
-isolated function testGetExistingEntry() {
+isolated function testGetExistingEntry() returns error? {
     CacheConfig config = {
         capacity: 10,
         evictionFactor: 0.2
@@ -97,16 +93,9 @@ isolated function testGetExistingEntry() {
     string key = "Hello";
     string value = "Ballerina";
     Cache cache = new(config);
-    any|error results = cache.put(key, value);
-    if (results is error) {
-        test:assertFail("Test failed");
-    }
-    any|error expected = cache.get(key);
-    if (expected is any) {
-        test:assertEquals(expected.toString(), value);
-    } else {
-         test:assertFail("Output mismatched");
-    }
+    _ = check cache.put(key, value);
+    any expected = check cache.get(key);
+    test:assertEquals(expected.toString(), value);
 }
 
 @test:Config {
@@ -119,7 +108,7 @@ isolated function testGetNonExistingEntry() {
     };
     Cache cache = new(config);
     any|error expected = cache.get("Hello");
-    if (expected is error) {
+    if expected is error {
         test:assertEquals(expected.toString(), "error Error (\"Cache entry from the given key: " +
                               "Hello, is not available.\")");
     } else {
@@ -142,12 +131,8 @@ isolated function testGetExpiredEntry() returns error? {
     check cache.put(key, value, maxAgeInSeconds);
     decimal sleepTime = maxAgeInSeconds * 2 + 1;
     runtime:sleep(sleepTime);
-    any|error expected = cache.get(key);
-    if (expected is any) {
-        test:assertEquals(expected.toString(), "");
-    } else {
-         test:assertFail("Output mismatched");
-    }
+    any expected = check cache.get(key);
+    test:assertEquals(expected.toString(), "");
 }
 
 @test:Config {
@@ -294,7 +279,7 @@ isolated function testCacheEvictionWithCapacity2() returns error? {
     check cache.put("H", "8");
     check cache.put("I", "9");
     check cache.put("J", "10");
-    any|Error x = cache.get("A");
+    _ = check cache.get("A");
     check cache.put("K", "11");
     test:assertEquals(cache.size(), keys.length());
     test:assertEquals(cache.keys(), keys);

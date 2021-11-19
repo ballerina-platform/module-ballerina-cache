@@ -55,7 +55,7 @@ class Cleanup {
 
     public function execute() {
         // This check will skip the processes triggered while the clean up in progress.
-        if (!cleanupInProgress) {
+        if !cleanupInProgress {
             cleanupInProgress = true;
             time:Utc currentUtc = time:utcNow();
             externCleanUp(self.cache, <decimal>currentUtc[0] + currentUtc[1]);
@@ -92,21 +92,21 @@ public isolated class Cache {
         self.defaultMaxAge =  cacheConfig.defaultMaxAge;
 
         // Cache capacity must be a positive value.
-        if (self.maxCapacity <= 0) {
+        if self.maxCapacity <= 0 {
             panic prepareError("Capacity must be greater than 0.");
         }
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if (self.evictionFactor <= 0.0 || self.evictionFactor > 1.0) {
+        if self.evictionFactor <= 0.0 || self.evictionFactor > 1.0 {
             panic prepareError("Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
         }
 
         // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if (self.defaultMaxAge != -1d && self.defaultMaxAge <= 0d) {
+        if self.defaultMaxAge != -1d && self.defaultMaxAge <= 0d {
             panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
         }
         externInit(self);
         decimal? interval = cacheConfig?.cleanupInterval;
-        if (interval is decimal) {
+        if interval is decimal {
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
             time:Civil time = time:utcToCivil(newTime);
@@ -119,7 +119,7 @@ public isolated class Cache {
     }
 
     # Adds the given key value pair to the cache. If the cache previously contained a value associated with the
-    # provided key, the old value wil be replaced by the newly-provided value.
+    # provided key, the old value will be replaced by the newly-provided value.
     # ```ballerina
     # check cache.put("Hello", "Ballerina");
     # ```
@@ -130,7 +130,7 @@ public isolated class Cache {
     #                     valid forever.
     # + return - `()` if successfully added to the cache or a `cache:Error` if a `()` value is inserted to the cache.
     public isolated function put(string key, any value, decimal maxAge = -1) returns Error? {
-        if (value is ()) {
+        if value is () {
             return prepareError("Unsupported cache value '()' for the key: " + key + ".");
         }
 
@@ -138,11 +138,11 @@ public isolated class Cache {
         // Calculate the `expTime` of the cache entry based on the `maxAgeInSeconds` property and
         // `defaultMaxAge` property.
         decimal calculatedExpTime = -1;
-        if (maxAge != -1d && maxAge > 0d) {
+        if maxAge != -1d && maxAge > 0d {
             time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> maxAge);
             calculatedExpTime = <decimal>newTime[0] + newTime[1];
         } else {
-            if (self.defaultMaxAge != -1d) {
+            if self.defaultMaxAge != -1d {
                 time:Utc newTime = time:utcAddSeconds(currentUtc, <decimal> self.defaultMaxAge);
                 calculatedExpTime = <decimal>newTime[0] + newTime[1];
             }
@@ -164,12 +164,12 @@ public isolated class Cache {
     # + return - The cached value associated with the provided key or a `cache:Error` if the provided cache key is not
     #            exisiting in the cache or any error occurred while retrieving the value from the cache.
     public isolated function get(string key) returns any|Error {
-        if (!self.hasKey(key)) {
+        if !self.hasKey(key) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
         time:Utc currentUtc = time:utcNow();
         any? entry = externGet(self, key, <decimal>currentUtc[0] + currentUtc[1]);
-        if (entry is CacheEntry) {
+        if entry is CacheEntry {
             return entry.data;
         }
     }
@@ -183,7 +183,7 @@ public isolated class Cache {
     # + return - `()` if successfully discarded the value or a `cache:Error` if the provided cache key is not present
     #            in the cache
     public isolated function invalidate(string key) returns Error? {
-        if (!self.hasKey(key)) {
+        if !self.hasKey(key) {
             return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
         externRemove(self, key);
