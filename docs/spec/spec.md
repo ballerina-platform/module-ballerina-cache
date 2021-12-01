@@ -1,0 +1,98 @@
+# Specification: Ballerina Cache Library
+
+_Owners_: @daneshk @kalaiyarasiganeshalingam  
+_Reviewers_: @daneshk  
+_Created_: 2021/12/01  
+_Updated_: 2021/12/01   
+_Issue_: [#2325](https://github.com/ballerina-platform/ballerina-standard-library/issues/2325)
+
+# Introduction
+This is the specification for the Cache library which provides a mechanism to manage frequently accessed data in-memory by using a semi-persistent mapping from key to value. It is part of Ballerina Standard Library. [Ballerina programming language](https://ballerina.io/) is an open-source programming language for the cloud that makes it easier to use, combine, and create network services.
+
+# Contents
+1. [Overview](#1-overview)
+2. [Eviction](#2-eviction)
+3. [Operations](#3-operations)
+    * 3.1 [Put](#3.1-put)
+    * 3.2 [Get](#3.2-get)
+    * 3.3 [invalidate](#3.3-invalidate)
+    * 3.4 [invalidateAll](#3.4-invalidateAll)
+    * 3.5 [hasKey](#3.5-hasKey)
+    * 3.6 [keys](#3.6-keys)
+    * 3.7 [size](#3.7-size)
+    * 3.8 [capacity](#3.8-capacity)
+
+## 1. Overview
+This specification elaborates on the eviction and functionalities available in the Cache library. 
+
+This library is based on the [Least Recently Used (LRU)](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) algorithm and can be initialized by configuring the following properties:
+
+- capacity - Maximum number of entries allowed in the cache.
+- evictionFactor - The factor by which the entries will be evicted once the cache is full.
+- evictionPolicy - The policy which is used to evict entries once the cache is full.
+- defaultMaxAge - The max-age (in second) which all the cache entries are valid. '-1' means, the entries are valid forever.
+- cleanupInterval - The interval (in seconds) of the recurrence task, which will clean up the cache.
+
+## 2. Eviction
+The cache eviction is a process to eliminate entry/entries from the cache by following the mechanism. The entries will be evicted in case of the following scenarios:
+
+- When getting the entry, if the returning cache entry has expired, it gets removed.
+- When putting the entry, if the cache size has reached its capacity, the number of entries gets removed. Entries are eliminated in terms of LRU policy, and the number of entries is also calculated by the capacity of the cache and the eviction factor.
+- If `cleanupIntervalInSeconds` (optional property of the `cacheConfig`) is configured, the recurrence task will remove the expired cache entries based on the configured interval.
+
+## 3. Operations
+The cache defines the most basic operations on a collection of cache entries, which entails basic reading, writing, and deleting individual cache items. This is thread-safe. Hence, data can be safely accessed by multiple concurrent threads.
+
+### 3.1 Put
+This adds the given key-value pair to the cache with an entry expiration time. The value can be in any of the ballerina types, but it is not allowed to insert `()` as the
+value of the cache since it doesn't make sense to cache nil. If the cache previously contained a value associated with the provided key, the old value will be replaced by the newly-provided value.
+```ballerina
+check cache.put("Hello", "Ballerina");
+```
+
+### 3.2 Get
+This is used to fetch the cached value associated with the provided key.
+
+```ballerina
+any value = check cache.get(key);
+```
+
+### 3.3 Invalidate
+This is used to discard a cached entry from the cache by its unique key.
+
+```ballerina
+check cache.invalidate(key);
+```
+
+### 3.4 InvalidateAll
+This is used to discard all the cached values from the cache.
+
+```ballerina
+check cache.invalidateAll();
+```
+
+### 3.5 HasKey
+This is used to check whether the given key has an associated cached value.
+
+```ballerina
+boolean result = cache.hasKey(key);
+```
+
+### 3.6 Keys
+This is used to get a list of all the keys in the cache.
+
+```ballerina
+string[] keys = cache.keys();
+```
+
+### 3.7 Size
+This is used to get the size of the cache.
+```ballerina
+int result = cache.size();
+```
+
+### 3.8 Capacity
+This is used to get the capacity of the cache.
+```ballerina
+int result = cache.capacity();
+```
