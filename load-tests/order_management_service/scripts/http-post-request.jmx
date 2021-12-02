@@ -39,7 +39,7 @@
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host,localhost)}</stringProp>
-          <stringProp name="HTTPSampler.port">${__P(port,9090)}</stringProp>
+          <stringProp name="HTTPSampler.port">${__P(port,9098)}</stringProp>
           <stringProp name="HTTPSampler.protocol">${__P(protocol,http)}</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">${__P(path)}</stringProp>
@@ -54,25 +54,12 @@
           <stringProp name="HTTPSampler.response_timeout">120000</stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
-            <collectionProp name="HeaderManager.headers">
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Content-Type</stringProp>
-                <stringProp name="Header.value">application/json</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">Bearer eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTlRBeFptTXhORE15WkRnM01UVTFaR00wTXpFek9ESmhaV0k0TkRObFpEVTFPR0ZrTmpGaU1RIn0.eyJpc3MiOiJ3c28yIiwgInN1YiI6ImJhbGxlcmluYSIsICJhdWQiOiJ2RXd6YmNhc0pWUW0xalZZSFVIQ2poeFo0dFlhIiwgImV4cCI6MTYzODM0MTA0MiwgIm5iZiI6MTYzODMzNzQ0MiwgImlhdCI6MTYzODMzNzQ0MiwgImFjdGlvbiI6ImFkZF9vcmRlciIsICJzY3AiOiJhZG1pbiIsICJzY3AxIjoiYWRtaW4iLCAic2NwMiI6ImFkbWluIiwgInNjcDMiOiJhZG1pbiIsICJzY3A0IjoiYWRtaW4iLCAic2NwNSI6ImFkbWluIiwgInNjcDYiOiJhZG1pbiIsICJzY3A3IjoiYWRtaW4iLCAic2NwOCI6ImFkbWluIiwgInNjcDkiOiJhZG1pbiIsICJzY3AxMCI6ImFkbWluIiwgInNjcDExIjoiYWRtaW4iLCAic2NwMTIiOiJhZG1pbiIsICJzY3AxMyI6ImFkbWluIiwgInNjcDE0IjoiYWRtaW4iLCAic2NwMTUiOiJhZG1pbiIsICJzY3AxNiI6ImFkbWluIiwgInNjcDE3IjoiYWRtaW4iLCAic2NwMTgiOiJhZG1pbiIsICJzY3AxOSI6ImFkbWluIiwgInNjcDIwIjoiYWRtaW4iLCAic2NwMjEiOiJhZG1pbiIsICJzY3AyMiI6ImFkbWluIiwgInNjcDIzIjoiYWRtaW4iLCAic2NwMjQiOiJhZG1pbiIsICJzY3AyNSI6ImFkbWluIiwgInNjcDI2IjoiYWRtaW4iLCAic2NwMjciOiJhZG1pbiIsICJzY3AyOCI6ImFkbWluIiwgInNjcDI5IjoiYWRtaW4iLCAic2NwMzAiOiJhZG1pbiIsICJzY3AzMSI6ImFkbWluIiwgInNjcDMyIjoiYWRtaW4iLCAic2NwMzMiOiJhZG1pbiIsICJzY3AzNCI6ImFkbWluIiwgInNjcDM1IjoiYWRtaW4iLCAic2NwMzYiOiJhZG1pbiIsICJzY3AzNyI6ImFkbWluIiwgInNjcDM4IjoiYWRtaW4iLCAic2NwMzkiOiJhZG1pbiIsICJzY3A0MCI6ImFkbWluIiwgInNjcDQxIjoiYWRtaW4iLCAic2NwNDIiOiJhZG1pbiIsICJzY3A0MyI6ImFkbWluIiwgInNjcDQ0IjoiYWRtaW4iLCAic2NwNDUiOiJhZG1pbiIsICJzY3A0NiI6ImFkbWluIiwgInNjcDQ3IjoiYWRtaW4iLCAic2NwNTAiOiJhZG1pbiIsICJzY3A1MSI6ImFkbWluIiwgInNjcDUyIjoiYWRtaW4iLCAic2NwNTMiOiJhZG1pbiIsICJzY3A1NCI6ImFkbWluIiwgInNjcDU1IjoiYWRtaW4iLCAic2NwNTYiOiJhZG1pbiIsICJzY3A1NyI6ImFkbWluIiwgInNjcDYwIjoiYWRtaW4iLCAic2NwNjEiOiJhZG1pbiIsICJzY3A2MiI6ImFkbWluIiwgInNjcDYzIjoiYWRtaW4iLCAic2NwNjQiOiJhZG1pbiIsICJzY3A2NSI6ImFkbWluIiwgInNjcDY2IjoiYWRtaW4iLCAic2NwNjciOiJhZG1pbiIsICJzY3A3MCI6ImFkbWluIiwgInNjcDcxIjoiYWRtaW4iLCAic2NwNzIiOiJhZG1pbiIsICJzY3A3MyI6ImFkbWluIiwgInNjcDc0IjoiYWRtaW4iLCAic2NwNzUiOiJhZG1pbiIsICJzY3A3NiI6ImFkbWluIiwgInNjcDc3IjoiYWRtaW4iLCAic2NwODAiOiJhZG1pbiIsICJzY3A4MSI6ImFkbWluIiwgInNjcDgyIjoiYWRtaW4iLCAic2NwODMiOiJhZG1pbiIsICJzY3A4NCI6ImFkbWluIiwgInNjcDg1IjoiYWRtaW4iLCAic2NwODYiOiJhZG1pbiIsICJzY3A4NyI6ImFkbWluIiwgInNjcDkwIjoiYWRtaW4iLCAic2NwOTEiOiJhZG1pbiIsICJzY3A5MiI6ImFkbWluIiwgInNjcDkzIjoiYWRtaW4iLCAic2NwOTQiOiJhZG1pbiIsICJzY3A5NSI6ImFkbWluIiwgInNjcDk2IjoiYWRtaW4iLCAic2NwOTciOiJhZG1pbiIsICJzY3AxMDAiOiJhZG1pbiIsICJzY3AxMDEiOiJhZG1pbiIsICJzY3AxMDIiOiJhZG1pbiIsICJzY3AxMDMiOiJhZG1pbiIsICJzY3AxMDQiOiJhZG1pbiIsICJzY3AxMDUiOiJhZG1pbiIsICJzY3AxMDYiOiJhZG1pbiIsICJzY3AxMDciOiJhZG1pbiIsICJzY3AxMTAiOiJhZG1pbiIsICJzY3AxMTEiOiJhZG1pbiIsICJzY3AxMTIiOiJhZG1pbiIsICJzY3AxMTMiOiJhZG1pbiIsICJzY3AxMTQiOiJhZG1pbiIsICJzY3AxMTUiOiJhZG1pbiIsICJzY3AxMTYiOiJhZG1pbiIsICJzY3AxMTciOiJhZG1pbiIsICJzY3AxMnAiOiJhZG1pbiIsICJzY3AxMjEiOiJhZG1pbiIsICJzY3AxMjIiOiJhZG1pbiIsICJzY3AxMjMiOiJhZG1pbiIsICJzY3AxMjQiOiJhZG1pbiIsICJzY3AxMjUiOiJhZG1pbiIsICJzY3AxMjYiOiJhZG1pbiIsICJzY3AxMjciOiJhZG1pbiJ9.WLjKQzSOQLs-XaJC-8nDgbbpkooNRm953_rJNlTC5zdmi5jRkosqC45TwWOl25RyK5KU8stBZR40IpAvhwR9AYJNc8gVf5dEmvhs--_ziOGXdoCaCQh-K4CaXPZU6H-S0Hd9InON8HSL3DJSi-92aoH93vXR6EBuk1KBV3kfz2I-FiQNxAA4ZmJcjXcMykr2YtXl7pZn_eGVi1N4XVPQ-PRALsU02tqfpdsyKC6WQ5sSg-kL-FA4HVIcoO0350U7y6ujtaxWZcmd6zszyj-MNPClsODTtaCnejr0v9WOiOnANSQeUkrxySA_900cjuEKTeNIRceiPvBzs4-xlPn9iA</stringProp>
-              </elementProp>
-            </collectionProp>
-          </HeaderManager>
-          <hashTree/>
           <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
             <collectionProp name="Asserion.test_strings">
-              <stringProp name="-196708348">${__P(response_size)}</stringProp>
+              <stringProp name="49586">200</stringProp>
             </collectionProp>
             <stringProp name="Assertion.custom_message"></stringProp>
-            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
             <boolProp name="Assertion.assume_success">false</boolProp>
             <intProp name="Assertion.test_type">16</intProp>
           </ResponseAssertion>

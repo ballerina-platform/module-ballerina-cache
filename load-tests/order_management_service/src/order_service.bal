@@ -23,7 +23,7 @@ final http:JwtValidatorConfig config = {
     clockSkew: 60,
     scopeKey: "action",
     signatureConfig: {
-        certFile: "./resources/management_service/public.crt"
+        certFile: "./resources/order_service/public.crt"
     },
     cacheConfig: {
         capacity: 10,
@@ -33,7 +33,7 @@ final http:JwtValidatorConfig config = {
     }
 };
 
-listener http:Listener orderEP = new (9090,
+listener http:Listener orderEP = new (9097,
     secureSocket = {
         key: {
             certFile: "./resources/order_service/public.crt",
