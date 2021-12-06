@@ -1,6 +1,6 @@
 [plugin]
-id = "file-compiler-plugin"
-class = "io.ballerina.stdlib.file.compiler.FileCompilerPlugin"
+id = "cache-compiler-plugin"
+class = "io.ballerina.stdlib.cache.compiler.CacheCompilerPlugin"
 
 [[dependency]]
-path = "../compiler-plugin/build/libs/file-compiler-plugin-@project.version@.jar"
+path = "../compiler-plugin/build/libs/cache-compiler-plugin-@project.version@.jar"

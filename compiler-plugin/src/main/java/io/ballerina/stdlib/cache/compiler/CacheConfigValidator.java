@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.ballerina.stdlib.sql.compiler.analyzer;
+package io.ballerina.stdlib.cache.compiler;
 
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
@@ -36,7 +36,6 @@ import io.ballerina.compiler.syntax.tree.UnaryExpressionNode;
 import io.ballerina.compiler.syntax.tree.VariableDeclarationNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.sql.compiler.Constants;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
@@ -45,18 +44,10 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import java.util.List;
 import java.util.Optional;
 
-import static io.ballerina.stdlib.sql.compiler.Constants.BALLERINA;
-import static io.ballerina.stdlib.sql.compiler.Constants.CONNECTION_POOL;
-import static io.ballerina.stdlib.sql.compiler.Constants.SQL;
-import static io.ballerina.stdlib.sql.compiler.Constants.UNNECESSARY_CHARS_REGEX;
-import static io.ballerina.stdlib.sql.compiler.SQLDiagnosticsCodes.SQL_101;
-import static io.ballerina.stdlib.sql.compiler.SQLDiagnosticsCodes.SQL_102;
-import static io.ballerina.stdlib.sql.compiler.SQLDiagnosticsCodes.SQL_103;
-
 /**
- * ConnectionPoolConfigAnalyzer.
+ * CacheConfigAnalyzer.
  */
-public class ConnectionPoolConfigAnalyzer implements AnalysisTask<SyntaxNodeAnalysisContext> {
+public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
 
     @Override
     public void perform(SyntaxNodeAnalysisContext ctx) {
@@ -70,7 +61,7 @@ public class ConnectionPoolConfigAnalyzer implements AnalysisTask<SyntaxNodeAnal
                 .symbol(ctx.node());
         if (varSymOptional.isPresent()) {
             TypeSymbol typeSymbol = ((VariableSymbol) varSymOptional.get()).typeDescriptor();
-            if (!isConnectionPoolVariable(typeSymbol)) {
+            if (!isCacheConfigVariable(typeSymbol)) {
                 return;
             }
 
@@ -95,35 +86,49 @@ public class ConnectionPoolConfigAnalyzer implements AnalysisTask<SyntaxNodeAnal
                     ((MappingConstructorExpressionNode) initializer).fields();
             for (MappingFieldNode field : fields) {
                 String name = ((SpecificFieldNode) field).fieldName().toString()
-                        .trim().replaceAll(UNNECESSARY_CHARS_REGEX, "");
+                        .trim().replaceAll(Constants.UNNECESSARY_CHARS_REGEX, "");
                 ExpressionNode valueNode = ((SpecificFieldNode) field).valueExpr().get();
                 switch (name) {
-                    case Constants.ConnectionPool.MAX_OPEN_CONNECTIONS:
-                        int maxOpenConnections = Integer.parseInt(getTerminalNodeValue(valueNode));
-                        if (maxOpenConnections < 1) {
-                            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(SQL_101.getCode(), SQL_101.getMessage(),
-                                    SQL_101.getSeverity());
+                    case Constants.CAPACITY:
+                        int maxCapacity = Integer.parseInt(getTerminalNodeValue(valueNode));
+                        if (maxCapacity <= 0) {
+                            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                    DiagnosticsCodes.CACHE_101.getErrorCode(), DiagnosticsCodes.CACHE_101.getError(),
+                                    DiagnosticsCodes.CACHE_101.getSeverity());
 
                             ctx.reportDiagnostic(
                                     DiagnosticFactory.createDiagnostic(diagnosticInfo, valueNode.location()));
 
                         }
                         break;
-                    case Constants.ConnectionPool.MIN_IDLE_CONNECTIONS:
-                        int minIdleConnection = Integer.parseInt(getTerminalNodeValue(valueNode));
-                        if (minIdleConnection < 0) {
-                            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(SQL_102.getCode(), SQL_102.getMessage(),
-                                    SQL_102.getSeverity());
+                    case Constants.EVICTION_FACTOR:
+                        float evictionFactor = Float.parseFloat(getTerminalNodeValue(valueNode));
+                        if (evictionFactor < 0 || evictionFactor >= 1) {
+                            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                    DiagnosticsCodes.CACHE_102.getErrorCode(), DiagnosticsCodes.CACHE_102.getError(),
+                                    DiagnosticsCodes.CACHE_102.getSeverity());
                             ctx.reportDiagnostic(
                                     DiagnosticFactory.createDiagnostic(diagnosticInfo, valueNode.location()));
 
                         }
                         break;
-                    case Constants.ConnectionPool.MAX_CONNECTION_LIFE_TIME:
-                        float maxConnectionTime = Float.parseFloat(getTerminalNodeValue(valueNode));
-                        if (maxConnectionTime < 30) {
-                            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(SQL_103.getCode(), SQL_103.getMessage(),
-                                    SQL_103.getSeverity());
+                    case Constants.DEFAULT_MAX_AGE:
+                        float defaultMaxAge = Float.parseFloat(getTerminalNodeValue(valueNode));
+                        if (defaultMaxAge != -1 && defaultMaxAge < 0) {
+                            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                    DiagnosticsCodes.CACHE_103.getErrorCode(), DiagnosticsCodes.CACHE_103.getError(),
+                                    DiagnosticsCodes.CACHE_103.getSeverity());
+                            ctx.reportDiagnostic(
+                                    DiagnosticFactory.createDiagnostic(diagnosticInfo, valueNode.location()));
+
+                        }
+                        break;
+                    case Constants.CLEAN_UP_INTERVAL:
+                        float cleanUpInterval = Float.parseFloat(getTerminalNodeValue(valueNode));
+                        if (cleanUpInterval <= 0) {
+                            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                    DiagnosticsCodes.CACHE_104.getErrorCode(), DiagnosticsCodes.CACHE_104.getError(),
+                                    DiagnosticsCodes.CACHE_104.getSeverity());
                             ctx.reportDiagnostic(
                                     DiagnosticFactory.createDiagnostic(diagnosticInfo, valueNode.location()));
 
@@ -146,27 +151,28 @@ public class ConnectionPoolConfigAnalyzer implements AnalysisTask<SyntaxNodeAnal
             value = unaryExpressionNode.unaryOperator() +
                     ((BasicLiteralNode) unaryExpressionNode.expression()).literalToken().text();
         }
-        return value.replaceAll(UNNECESSARY_CHARS_REGEX, "");
+        return value.replaceAll(Constants.UNNECESSARY_CHARS_REGEX, "");
     }
 
-    private boolean isConnectionPoolVariable(TypeSymbol type) {
+    private boolean isCacheConfigVariable(TypeSymbol type) {
         if (type.typeKind() == TypeDescKind.UNION) {
             return ((UnionTypeSymbol) type).memberTypeDescriptors().stream()
                     .filter(typeDescriptor -> typeDescriptor instanceof TypeReferenceTypeSymbol)
                     .map(typeReferenceTypeSymbol -> (TypeReferenceTypeSymbol) typeReferenceTypeSymbol)
-                    .anyMatch(this::isSQLConnectionPoolVariable);
+                    .anyMatch(this::isCacheConfigVariable);
         }
         if (type.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            return isSQLConnectionPoolVariable((TypeReferenceTypeSymbol) type);
+            return isCacheConfigVariable((TypeReferenceTypeSymbol) type);
         }
         return false;
     }
 
-    private boolean isSQLConnectionPoolVariable(TypeReferenceTypeSymbol typeSymbol) {
+    private boolean isCacheConfigVariable(TypeReferenceTypeSymbol typeSymbol) {
         if (typeSymbol.typeDescriptor().typeKind() == TypeDescKind.RECORD) {
             ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
-            return SQL.equals(moduleSymbol.getName().get()) && BALLERINA.equals(moduleSymbol.id().orgName())
-                    && typeSymbol.definition().getName().get().equals(CONNECTION_POOL);
+            return Constants.CACHE.equals(moduleSymbol.getName().get()) &&
+                    Constants.BALLERINA.equals(moduleSymbol.id().orgName())
+                    && typeSymbol.definition().getName().get().equals(Constants.CACHE_CONFIG);
         }
         return false;
     }
