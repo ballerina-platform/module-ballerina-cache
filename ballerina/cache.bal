@@ -24,8 +24,8 @@ import ballerina/time;
 # + capacity - Maximum number of entries allowed in the cache
 # + evictionFactor - The factor by which the entries will be evicted once the cache is full
 # + evictionPolicy - The policy which is used to evict entries once the cache is full
-# + defaultMaxAge - The default value in seconds which all the cache entries are valid. '-1' means, the entries are
-#                   valid forever. This will be overwritten by the the `maxAge` property set when inserting item to
+# + defaultMaxAge - The max-age in seconds which all the cache entries are valid. '-1' means, the entries are
+#                   valid forever. This will be overwritten by the `maxAge` property set when inserting item into
 #                   the cache
 # + cleanupInterval - Interval (in seconds) of the timer task, which will clean up the cache
 public type CacheConfig record {|
