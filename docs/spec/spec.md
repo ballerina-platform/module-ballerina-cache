@@ -39,6 +39,7 @@ The cache eviction is a process to eliminate entry/entries from the cache by fol
 - When getting the entry, if the returning cache entry has expired, it gets removed.
 - When putting the entry, if the cache size has reached its capacity, the number of entries gets removed. Entries are eliminated in terms of LRU policy, and the number of entries is also calculated by the capacity of the cache and the eviction factor.
 - If `cleanupInterval` (optional property of the `cacheConfig`) is configured, the recurrence task will remove the expired cache entries based on the configured interval. 
+
 ## 3. Operations
 The cache defines the most basic operations on a collection of cache entries, which entails basic reading, writing, and deleting individual cache items. This is thread-safe. Hence, data can be safely accessed by multiple concurrent threads.
 
