@@ -23,7 +23,7 @@ This is the specification for the Cache library which provides a mechanism to ma
     * 3.8 [capacity](#3.8-capacity)
 
 ## 1. Overview
-This specification elaborates on the eviction and functionalities available in the Cache library. 
+This specification elaborates functionalities available in the Cache library.
 
 This library is based on the [Least Recently Used (LRU)](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) algorithm and can be initialized by configuring the following properties:
 
@@ -38,30 +38,29 @@ The cache eviction is a process to eliminate entry/entries from the cache by fol
 
 - When getting the entry, if the returning cache entry has expired, it gets removed.
 - When putting the entry, if the cache size has reached its capacity, the number of entries gets removed. Entries are eliminated in terms of LRU policy, and the number of entries is also calculated by the capacity of the cache and the eviction factor.
-- If `cleanupIntervalInSeconds` (optional property of the `cacheConfig`) is configured, the recurrence task will remove the expired cache entries based on the configured interval.
-
+- If `cleanupInterval` (optional property of the `cacheConfig`) is configured, the recurrence task will remove the expired cache entries based on the configured interval. 
 ## 3. Operations
 The cache defines the most basic operations on a collection of cache entries, which entails basic reading, writing, and deleting individual cache items. This is thread-safe. Hence, data can be safely accessed by multiple concurrent threads.
 
 ### 3.1 Put
-This adds the given key-value pair to the cache with an entry expiration time. The value can be in any of the ballerina types, but it is not allowed to insert `()` as the
-value of the cache since it doesn't make sense to cache nil. If the cache previously contained a value associated with the provided key, the old value will be replaced by the newly-provided value.
+This adds the given key-value pair to the cache with an entry expiration time. The value can be in any of the ballerina types, but it is not allowed 
+to insert `()` as the value of the cache since it doesn't make sense to have nil value. If the cache previously contained a value associated with the provided key, the old value will be replaced by the newly-provided value.
 ```ballerina
-check cache.put("Hello", "Ballerina");
+check cache.put("key", "value");
 ```
 
 ### 3.2 Get
 This is used to fetch the cached value associated with the provided key.
 
 ```ballerina
-any value = check cache.get(key);
+any value = check cache.get("key");
 ```
 
 ### 3.3 Invalidate
 This is used to discard a cached entry from the cache by its unique key.
 
 ```ballerina
-check cache.invalidate(key);
+check cache.invalidate("key");
 ```
 
 ### 3.4 InvalidateAll
@@ -75,7 +74,7 @@ check cache.invalidateAll();
 This is used to check whether the given key has an associated cached value.
 
 ```ballerina
-boolean result = cache.hasKey(key);
+boolean result = cache.hasKey("key");
 ```
 
 ### 3.6 Keys
