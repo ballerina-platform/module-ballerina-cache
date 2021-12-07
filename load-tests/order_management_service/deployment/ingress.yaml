@@ -17,6 +17,3 @@ spec:
                 name: order-managemen
                 port:
                   number: 9098
-  tls:
-    - hosts:
-        - "bal.perf.test"
