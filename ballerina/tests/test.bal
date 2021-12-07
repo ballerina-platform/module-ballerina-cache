@@ -373,3 +373,13 @@ isolated function testEvictionCount() returns error? {
     test:assertEquals(cache.size(), keys.length(), "Cache size did not match");
     test:assertEquals(cache.keys(), keys, "Cache keys did not match");
 }
+
+@test:Config {
+    groups: ["cache", "cleanup", "negative"]
+}
+isolated function testCreateCacheWithNegativeCleanUpInterval() {
+    CacheConfig config = {
+        cleanupInterval: -1d
+    };
+    Cache _ = new(config);
+}

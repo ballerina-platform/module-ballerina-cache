@@ -58,17 +58,41 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testInvalidConnectionParamConfig() {
+    public void testInvalidConfig1() {
         Package currentPackage = loadPackage("sample1");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
                 .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
                 .collect(Collectors.toList());
+        assertValues(errorDiagnosticsList);
+    }
+
+    @Test
+    public void testInvalidConfig2() {
+        Package currentPackage = loadPackage("sample2");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        assertValues(errorDiagnosticsList);
+    }
+
+    @Test
+    public void testInvalidConfig3() {
+        Package currentPackage = loadPackage("sample3");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        assertValues(errorDiagnosticsList);
+    }
+
+    private void assertValues(List<Diagnostic> errorDiagnosticsList) {
         long availableErrors = errorDiagnosticsList.size();
-
-        Assert.assertEquals(availableErrors, 4);
-
+        Assert.assertEquals(availableErrors, 5);
         DiagnosticInfo invalidCapacity = errorDiagnosticsList.get(0).diagnosticInfo();
         Assert.assertEquals(invalidCapacity.code(), DiagnosticsCodes.CACHE_101.getErrorCode());
         Assert.assertEquals(invalidCapacity.messageFormat(),
@@ -89,5 +113,10 @@ public class CompilerPluginTest {
         Assert.assertEquals(invalidCleanupInterval.code(), DiagnosticsCodes.CACHE_104.getErrorCode());
         Assert.assertEquals(invalidCleanupInterval.messageFormat(),
                 "invalid value: expected value is greater than zero");
+
+        DiagnosticInfo invalidPolicy = errorDiagnosticsList.get(4).diagnosticInfo();
+        Assert.assertEquals(invalidPolicy.code(), DiagnosticsCodes.CACHE_105.getErrorCode());
+        Assert.assertEquals(invalidPolicy.messageFormat(),
+                "invalid value: expected value is 'cache:LRU'");
     }
 }

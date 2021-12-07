@@ -117,6 +117,3 @@ build.finalizedBy ":${packageName}-compiler-plugin-tests:build"
 test.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-compiler-plugin:build"
 test.finalizedBy ":${packageName}-compiler-plugin-tests:build"
-
-publishToMavenLocal.dependsOn build
-publish.dependsOn build

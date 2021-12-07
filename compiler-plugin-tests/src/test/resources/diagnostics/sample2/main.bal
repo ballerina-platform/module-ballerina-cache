@@ -18,13 +18,7 @@ import ballerina/cache;
 
 public function main() returns error? {
 
-    cache:CacheConfig config = {
-        capacity:-1,
-        evictionFactor: 2,
-        defaultMaxAge: -2,
-        cleanupInterval: -1,
-        evictionPolicy: "LRU"
-    };
-    cache:Cache cache = new(config);
+    cache:Cache cache = new(capacity = -1, evictionFactor = 2, defaultMaxAge = -2, cleanupInterval = -1,
+                            evictionPolicy = "LRU");
     check cache.put("hi", "Ballerina");
 }

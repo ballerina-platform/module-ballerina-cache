@@ -28,7 +28,9 @@ public class Constants {
     public static final String CAPACITY = "capacity";
     public static final String CLEAN_UP_INTERVAL = "cleanupInterval";
     public static final String EVICTION_FACTOR = "evictionFactor";
+    public static final String EVICTION_POLICY = "evictionPolicy";
     public static final String DEFAULT_MAX_AGE = "defaultMaxAge";
+    public static final String POLICY_VALUE = "cache:LRU";
     public static final String UNNECESSARY_CHARS_REGEX = "\"|\\n";
 
 }

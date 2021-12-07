@@ -31,7 +31,8 @@ public enum DiagnosticsCodes {
             "CACHE_102", ERROR),
     CACHE_103("invalid value: expected value is greater than 0 or -1 for indicate forever valid",
             "CACHE_103", ERROR),
-    CACHE_104("invalid value: expected value is greater than zero", "CACHE_104", ERROR);
+    CACHE_104("invalid value: expected value is greater than zero", "CACHE_104", ERROR),
+    CACHE_105("invalid value: expected value is 'cache:LRU'", "CACHE_105", ERROR);
 
     private final String error;
     private final String errorCode;

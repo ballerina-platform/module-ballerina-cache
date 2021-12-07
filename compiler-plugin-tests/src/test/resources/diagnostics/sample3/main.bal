@@ -14,17 +14,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
+
 import ballerina/cache;
 
-public function main() returns error? {
+cache:CacheConfig config = {
+    capacity:-1,
+    evictionFactor: 2,
+    defaultMaxAge: -2,
+    cleanupInterval: -1,
+    evictionPolicy: "LRU"
+};
 
-    cache:CacheConfig config = {
-        capacity:-1,
-        evictionFactor: 2,
-        defaultMaxAge: -2,
-        cleanupInterval: -1,
-        evictionPolicy: "LRU"
-    };
+public function main() returns error? {
     cache:Cache cache = new(config);
     check cache.put("hi", "Ballerina");
 }
