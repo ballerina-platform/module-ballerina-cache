@@ -1,12 +1,12 @@
 [package]
 org = "ballerina"
 name = "cache"
-version = "3.0.1"
+version = "3.1.0"
 authors = ["Ballerina"]
 keywords = ["cache", "LRU"]
 repository = "https://github.com/ballerina-platform/module-ballerina-cache"
 license = ["Apache-2.0"]
-distribution = "slbeta3"
+distribution = "slbeta6"
 
 [[platform.java11.dependency]]
-path = "../native/build/libs/cache-native-3.0.1.jar"
+path = "../native/build/libs/cache-native-3.1.0-SNAPSHOT.jar"
