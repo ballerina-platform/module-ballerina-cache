@@ -9,7 +9,7 @@ dependencies-toml-version = "2"
 [[package]]
 org = "ballerina"
 name = "cache"
-version = "3.1.0"
+version = "3.2.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.runtime"},
@@ -44,7 +44,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.1.0"
+version = "2.2.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -68,7 +68,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.1.0"
+version = "2.2.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
