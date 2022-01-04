@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.cache.nativeimpl;
 
+
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
@@ -41,6 +42,7 @@ public class Cache {
     private static final String EVICTION_FACTOR = "evictionFactor";
     private static final String EXPIRE_TIME = "expTime";
     private static final String CACHE = "CACHE";
+    private static final String ERROR = "Error";
 
     private Cache() {}
 
@@ -64,13 +66,15 @@ public class Cache {
     }
 
     @SuppressWarnings("unchecked")
-    public static BMap<BString, Object> externGet(BObject cache, BString key, BDecimal currentTime) {
+    public static Object externGet(BObject cache, BString key, BDecimal currentTime) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         BMap<BString, Object> value = cacheMap.get(key);
-        Long time = ((BDecimal) value.get(StringUtils.fromString(EXPIRE_TIME))).decimalValue().longValue();
-        if (time != -1 && time <= currentTime.decimalValue().longValue()) {
-            cacheMap.remove(key);
-            return null;
+        if (value != null && value.get(StringUtils.fromString(EXPIRE_TIME)) != null) {
+            Long time = ((BDecimal) value.get(StringUtils.fromString(EXPIRE_TIME))).decimalValue().longValue();
+            if (time != -1 && time <= currentTime.decimalValue().longValue()) {
+                cacheMap.remove(key);
+                return null;
+            }
         }
         return value;
     }

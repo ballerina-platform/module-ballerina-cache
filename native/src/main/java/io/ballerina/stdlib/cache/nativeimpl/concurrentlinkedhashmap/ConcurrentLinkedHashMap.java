@@ -544,12 +544,14 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
 
     @Override
     public boolean containsKey(Object key) {
-        return data.containsKey(key);
+        if (key != null) {
+            return data.containsKey(key);
+        }
+        return false;
     }
 
     @Override
     public boolean containsValue(Object value) {
-
         for (Node node : data.values()) {
             if (node.getValue().equals(value)) {
                 return true;
@@ -560,12 +562,18 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
 
     @Override
     public V get(Object key) {
-        final Node node = data.get(key);
-        if (node == null) {
-            return null;
+        if (key != null) {
+            boolean hasKey = data.containsKey(key);
+            if (hasKey) {
+                final Node node = data.get(key);
+                if (node == null) {
+                    return null;
+                }
+                afterCompletion(new ReadTask(node));
+                return node.getValue();
+            }
         }
-        afterCompletion(new ReadTask(node));
-        return node.getValue();
+        return null;
     }
 
     @Override
@@ -632,43 +640,49 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
      */
     @Override
     public V put(K key, V value) {
-        final int weight = weigher.weightOf(value);
-        final WeightedValue<V> weightedValue = new WeightedValue<>(value, weight);
-        final Node node = new Node(key, weightedValue);
+        if (key != null) {
+            final int weight = weigher.weightOf(value);
+            final WeightedValue<V> weightedValue = new WeightedValue<>(value, weight);
+            final Node node = new Node(key, weightedValue);
 
-        for (;;) {
-            final Node prior = data.putIfAbsent(node.key, node);
-            if (prior == null) {
-                afterCompletion(new AddTask(node, weight));
-                return null;
-            }
-            for (;;) {
-                final WeightedValue<V> oldWeightedValue = prior.get();
-                if (!oldWeightedValue.isAlive()) {
-                    break;
+            for (; ; ) {
+                final Node prior = data.putIfAbsent(node.key, node);
+                if (prior == null) {
+                    afterCompletion(new AddTask(node, weight));
+                    return null;
                 }
-                if (prior.compareAndSet(oldWeightedValue, weightedValue)) {
-                    final int weightedDifference = weight - oldWeightedValue.weight;
-                    final Task task = (weightedDifference == 0)
-                            ? new ReadTask(prior)
-                            : new UpdateTask(prior, weightedDifference);
-                    afterCompletion(task);
-                    return oldWeightedValue.value;
+                for (; ; ) {
+                    final WeightedValue<V> oldWeightedValue = prior.get();
+                    if (!oldWeightedValue.isAlive()) {
+                        break;
+                    }
+                    if (prior.compareAndSet(oldWeightedValue, weightedValue)) {
+                        final int weightedDifference = weight - oldWeightedValue.weight;
+                        final Task task = (weightedDifference == 0)
+                                ? new ReadTask(prior)
+                                : new UpdateTask(prior, weightedDifference);
+                        afterCompletion(task);
+                        return oldWeightedValue.value;
+                    }
                 }
             }
         }
+        return null;
     }
 
     @Override
     public V remove(Object key) {
-        final Node node = data.remove(key);
-        if (node == null) {
-            return null;
-        }
+        if (key != null) {
+            final Node node = data.remove(key);
+            if (node == null) {
+                return null;
+            }
 
-        node.makeRetired();
-        afterCompletion(new RemovalTask(node));
-        return node.getValue();
+            node.makeRetired();
+            afterCompletion(new RemovalTask(node));
+            return node.getValue();
+        }
+        return null;
     }
 
     @Override
