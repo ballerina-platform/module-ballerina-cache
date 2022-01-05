@@ -465,8 +465,7 @@ isolated function testCreateCacheWithNegativeCleanUpInterval() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.toString(), "error Error (\"Failed to schedule the cleanup task: " +
-        "Repeat interval must be >= 0\")");
+        test:assertEquals(cache.message(), "Cleanup interval must be greater than 0");
     } else {
          test:assertFail("Output mismatched");
     }
