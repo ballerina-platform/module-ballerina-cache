@@ -540,10 +540,11 @@ isolated function testEvictionCount() returns error? {
 }
 
 // todo: The following tests are added to increase code coverage.
+
 @test:Config {
     groups: ["cache"]
 }
-isolated function testCacheHasNullKey() returns error? {
+isolated function testCacheContainNullKey() returns error? {
    test:assertFalse(externContainsKey());
 }
 

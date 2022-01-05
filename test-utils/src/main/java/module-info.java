@@ -17,7 +17,6 @@
  */
 
 module io.ballerina.stdlib.cache.testutils {
-    requires io.ballerina.runtime;
     requires io.ballerina.stdlib.cache;
     exports io.ballerina.stdlib.cache.testutils;
 }
