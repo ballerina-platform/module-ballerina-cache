@@ -49,4 +49,14 @@ public class CacheTest {
     public void testContainsKeyWithNullKey() {
         Assert.assertFalse(cacheMap.containsKey(null));
     }
+
+    @Test()
+    public void testGetWithNullKey() {
+        Assert.assertNull(cacheMap.get(null));
+    }
+
+    @Test()
+    public void testRemoveWithNullKey() {
+        Assert.assertNull(cacheMap.remove(null));
+    }
 }
