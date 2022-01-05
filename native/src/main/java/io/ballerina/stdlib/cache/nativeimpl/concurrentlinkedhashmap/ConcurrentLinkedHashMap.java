@@ -644,14 +644,13 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
             final int weight = weigher.weightOf(value);
             final WeightedValue<V> weightedValue = new WeightedValue<>(value, weight);
             final Node node = new Node(key, weightedValue);
-
-            for (; ; ) {
+            while (true) {
                 final Node prior = data.putIfAbsent(node.key, node);
                 if (prior == null) {
                     afterCompletion(new AddTask(node, weight));
                     return null;
                 }
-                for (; ; ) {
+                while (true) {
                     final WeightedValue<V> oldWeightedValue = prior.get();
                     if (!oldWeightedValue.isAlive()) {
                         break;
