@@ -19,5 +19,4 @@
 module io.ballerina.stdlib.cache {
     requires io.ballerina.runtime;
     exports io.ballerina.stdlib.cache.nativeimpl;
-    exports io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 }
