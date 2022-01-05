@@ -14,10 +14,12 @@ plugins {
 rootProject.name = 'cache'
 include(':checkstyle')
 include ':cache-native'
+include ':cache-test-utils'
 include ':cache-ballerina'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
 project(':cache-native').projectDir = file('native')
+project(':cache-test-utils').projectDir = file('test-utils')
 project(':cache-ballerina').projectDir = file('ballerina')
 
 gradleEnterprise {
