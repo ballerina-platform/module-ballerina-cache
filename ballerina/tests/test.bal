@@ -466,7 +466,7 @@ isolated function testCreateCacheWithNegativeCleanUpInterval() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.message(), "Cleanup interval must be in a positive value.");
+        test:assertEquals(cache.message(), "The cleanup interval must be a positive value.");
     } else {
          test:assertFail("Output mismatched");
     }
