@@ -5,6 +5,7 @@ version = "3.2.0"
 authors = ["Ballerina"]
 keywords = ["cache", "LRU"]
 repository = "https://github.com/ballerina-platform/module-ballerina-cache"
+icon = "resources/icon.png"
 license = ["Apache-2.0"]
 distribution = "2201.0.0"
 
