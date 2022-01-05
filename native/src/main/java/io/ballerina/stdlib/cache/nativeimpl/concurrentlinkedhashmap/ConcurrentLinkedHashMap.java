@@ -97,6 +97,7 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
 
     // The backing data store holding the key-value associations
     final ConcurrentHashMap<K, Node> data;
+    int concurrencyLevel = 16;
 
     // These fields provide support to bound the map by a maximum capacity
     transient LinkedDeque<Node> evictionDeque;
@@ -129,7 +130,10 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
     public ConcurrentLinkedHashMap(int maximumCapacity) {
         // The data store and its maximum capacity
         capacity = maximumCapacity;
-        data = new ConcurrentHashMap<>(3, 0.75f, 16);
+        data = new ConcurrentHashMap<>(
+                3,
+                0.75f,
+                16);
 
         // The eviction support
         weigher = Weighers.singleton();
@@ -442,6 +446,7 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
 
         public void run() {
             weightedSize += weight;
+
             // ignore out-of-order write operations
             if (node.get().isAlive()) {
                 evictionDeque.add(node);
@@ -577,7 +582,9 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
     }
 
     @Override
-    public void forEach(BiConsumer<? super K, ? super V> action) {}
+    public void forEach(BiConsumer<? super K, ? super V> action) {
+
+    }
 
     public V putIfAbsent(K key, V value) {
         return null;
@@ -599,7 +606,9 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
     }
 
     @Override
-    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {}
+    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+
+    }
 
     @Override
     public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
@@ -676,7 +685,9 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
     }
 
     @Override
-    public void putAll(Map<? extends K, ? extends V> m) {}
+    public void putAll(Map<? extends K, ? extends V> m) {
+
+    }
 
     @Override
     public Set<K> keySet() {
@@ -761,7 +772,7 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
          * <tt>retired</tt> state, if a valid transition.
          */
         public void makeRetired() {
-            while (true) {
+            for (;;) {
                 WeightedValue<V> current = get();
                 if (!current.isAlive()) {
                     return;
@@ -780,7 +791,7 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
          * <tt>weightedSize</tt>.
          */
         public void makeDead() {
-            while (true) {
+            for (;;) {
                 WeightedValue<V> current = get();
                 WeightedValue<V> dead = new WeightedValue<>(current.value, 0);
                 if (compareAndSet(current, dead)) {
@@ -865,7 +876,9 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
     private static final class DisabledExecutorService extends AbstractExecutorService {
 
         @Override
-        public void shutdown() {}
+        public void shutdown() {
+
+        }
 
         @Override
         public List<Runnable> shutdownNow() {
@@ -887,7 +900,9 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
         }
 
         @Override
-        public void execute(Runnable command) {}
+        public void execute(Runnable command) {
+
+        }
     }
 
     /** An operation that can be lazily applied to the page replacement policy. */

@@ -41,6 +41,7 @@ public class Cache {
     private static final String EVICTION_FACTOR = "evictionFactor";
     private static final String EXPIRE_TIME = "expTime";
     private static final String CACHE = "CACHE";
+    private static final String ERROR = "Error";
 
     private Cache() {}
 
