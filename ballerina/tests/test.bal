@@ -475,7 +475,7 @@ isolated function testCreateCacheWithNegativeCleanUpInterval() {
 @test:Config {
     groups: ["cache", "cleanup", "negative"]
 }
-isolated function testCleanUpTaskStratTime() {
+isolated function testCleanUpTaskStartTime() {
     CacheConfig config = {
         cleanupInterval: 0
     };
