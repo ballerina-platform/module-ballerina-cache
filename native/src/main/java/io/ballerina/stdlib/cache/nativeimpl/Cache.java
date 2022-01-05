@@ -65,7 +65,7 @@ public class Cache {
     }
 
     @SuppressWarnings("unchecked")
-    public static Object externGet(BObject cache, BString key, BDecimal currentTime) {
+    public static BMap<BString, Object> externGet(BObject cache, BString key, BDecimal currentTime) {
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
         BMap<BString, Object> value = cacheMap.get(key);
         if (value != null && value.get(StringUtils.fromString(EXPIRE_TIME)) != null) {
