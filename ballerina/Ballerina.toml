@@ -11,3 +11,7 @@ distribution = "2201.0.0"
 
 [[platform.java11.dependency]]
 path = "../native/build/libs/cache-native-3.2.0-SNAPSHOT.jar"
+
+[[platform.java11.dependency]]
+path = "../test-utils/build/libs/cache-test-utils-3.2.0-SNAPSHOT.jar"
+scope = "testOnly"
