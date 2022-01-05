@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/lang.runtime as runtime;
+import ballerina/lang.'string as strings;
 import ballerina/test;
 
 @test:Config {
@@ -465,7 +466,24 @@ isolated function testCreateCacheWithNegativeCleanUpInterval() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.message(), "Cleanup interval must be greater than 0");
+        test:assertEquals(cache.message(), "Cleanup interval must be in a positive value.");
+    } else {
+         test:assertFail("Output mismatched");
+    }
+}
+
+@test:Config {
+    groups: ["cache", "cleanup", "negative"]
+}
+isolated function testCleanUpTaskStratTime() {
+    CacheConfig config = {
+        cleanupInterval: 0
+    };
+    Cache|error cache = trap new(config);
+    test:assertTrue(cache is error);
+    if (cache is error) {
+        test:assertTrue(strings:includes(cache.message(), "Scheduled time should be greater than the current time"),
+        cache.message());
     } else {
          test:assertFail("Output mismatched");
     }
