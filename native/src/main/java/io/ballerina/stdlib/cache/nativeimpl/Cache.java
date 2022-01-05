@@ -18,7 +18,6 @@
 
 package io.ballerina.stdlib.cache.nativeimpl;
 
-
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
