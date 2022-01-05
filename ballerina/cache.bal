@@ -107,8 +107,8 @@ public isolated class Cache {
         externInit(self);
         decimal? interval = cacheConfig?.cleanupInterval;
         if interval is decimal {
-            if interval < 0d {
-                panic prepareError("The cleanup interval must be a positive value.");
+            if interval <= 0d {
+                panic prepareError("The cleanup interval must be greater than 0.");
             }
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
