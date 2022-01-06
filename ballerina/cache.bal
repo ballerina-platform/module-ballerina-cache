@@ -167,13 +167,12 @@ public isolated class Cache {
     # + return - The cached value associated with the provided key or a `cache:Error` if the provided cache key is not
     #            exisiting in the cache or any error occurred while retrieving the value from the cache.
     public isolated function get(string key) returns any|Error {
-        if !self.hasKey(key) {
-            return prepareError("Cache entry from the given key: " + key + ", is not available.");
-        }
         time:Utc currentUtc = time:utcNow();
         any? entry = externGet(self, key, <decimal>currentUtc[0] + currentUtc[1]);
         if entry is CacheEntry {
             return entry.data;
+        } else {
+            return prepareError("Cache entry from the given key: " + key + ", is not available.");
         }
     }
 
