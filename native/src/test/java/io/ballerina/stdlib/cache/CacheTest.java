@@ -40,12 +40,12 @@ public class CacheTest {
         Assert.assertNull(cacheMap.put(null, "value"));
     }
 
-    @Test(description = "")
+    @Test()
     public void testPutWithNullValue() {
         Assert.assertNull(cacheMap.put("key", null));
     }
 
-    @Test(description = "")
+    @Test()
     public void testContainsKeyWithNullKey() {
         Assert.assertFalse(cacheMap.containsKey(null));
     }

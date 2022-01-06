@@ -561,16 +561,13 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
 
     @Override
     public V get(Object key) {
-        if (key != null) {
-            boolean hasKey = data.containsKey(key);
-            if (hasKey) {
-                final Node node = data.get(key);
-                if (node == null) {
-                    return null;
-                }
-                afterCompletion(new ReadTask(node));
-                return node.getValue();
+        if (key != null && data.containsKey(key)) {
+            final Node node = data.get(key);
+            if (node == null) {
+                return null;
             }
+            afterCompletion(new ReadTask(node));
+            return node.getValue();
         }
         return null;
     }

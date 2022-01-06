@@ -361,7 +361,7 @@ isolated function testCreateCacheWithNegativeCapacity() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    if (cache is error) {
+    if cache is error {
         test:assertEquals(cache.message(), "Capacity must be greater than 0.");
     } else {
          test:assertFail("Output mismatched");
