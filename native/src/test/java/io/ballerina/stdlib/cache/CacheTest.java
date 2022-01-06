@@ -42,7 +42,7 @@ public class CacheTest {
 
     @Test()
     public void testPutWithNullValue() {
-        Assert.assertNull(cacheMap.put("key", null));
+        Assert.assertNull(cacheMap.put("test", null));
     }
 
     @Test()
@@ -58,5 +58,16 @@ public class CacheTest {
     @Test()
     public void testRemoveWithNullKey() {
         Assert.assertNull(cacheMap.remove(null));
+    }
+
+    @Test()
+    public void testContainValue() {
+        cacheMap.put("key", "value");
+        Assert.assertTrue(cacheMap.containsValue("value"));
+    }
+
+    @Test()
+    public void negativeTestContainValue() {
+        Assert.assertFalse(cacheMap.containsValue("value1"));
     }
 }
