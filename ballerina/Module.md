@@ -2,11 +2,12 @@
 
 This module provides APIs for in-memory caching by using a semi-persistent mapping from keys to values. Cache entries are added to the cache manually and are stored in the cache until either evicted or invalidated manually.
 
-This is based on the Least Recently Used (LRU) eviction algorithm and using a `map` data structure. It does not allow the `()` as a key or value of the cache, and entries can be safely accessed by multiple concurrent threads as it is thread-safe.
+This is based on the Least Recently Used (LRU) eviction algorithm by using a `map` data structure and defining the most basic operations on a collection of cache entries, which entails basic reading, writing, and deleting individual cache items. 
+It does not allow the `()` as a key or value of the cache, and entries can be safely accessed by multiple concurrent threads as it is thread-safe.
 
-The Cache can be defined as follows:
+The Cache can be defined with optional configurations as follows:
 ```ballerina
-cache:Cache cache = new (capacity = 10, evictionFactor = 0.2);
+cache:Cache cache = new (capacity = 10, evictionFactor = 0.2, defaultMaxAge = 0.5, cleanupInterval = 1);
 ```
 
 The Cache entries will be evicted in case of the following scenarios:
