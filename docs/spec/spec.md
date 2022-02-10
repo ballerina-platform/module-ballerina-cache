@@ -3,11 +3,17 @@
 _Owners_: @daneshk @kalaiyarasiganeshalingam  
 _Reviewers_: @daneshk  
 _Created_: 2021/12/01  
-_Updated_: 2021/12/01   
+_Updated_: 2022/02/10   
 _Issue_: [#2325](https://github.com/ballerina-platform/ballerina-standard-library/issues/2325)
 
 # Introduction
-This is the specification for the Cache library which provides a mechanism to manage frequently accessed data in-memory by using a semi-persistent mapping from key to value. It is part of Ballerina Standard Library. [Ballerina programming language](https://ballerina.io/) is an open-source programming language for the cloud that makes it easier to use, combine, and create network services.
+This is the specification for the Cache standard library of [Ballerina language](https://ballerina.io/), which provides a mechanism to manage frequently accessed data in-memory by using a semi-persistent mapping from key to value.
+
+The Cache library specification has evolved and may continue to evolve in the future. Released versions of the specification can be found under the relevant Github tag.
+
+If you have any feedback or suggestions about the library, start a discussion via a [Github issue](https://github.com/ballerina-platform/ballerina-standard-library/issues) or in the [Slack channel](https://ballerina.io/community/). Based on the outcome of the discussion, specification and implementation can be updated. Community feedback is always welcome. Any accepted proposal which affects the specification is stored under `/docs/proposals`. Proposals under discussion can be found with the label `type/proposal` in Github.
+
+Conforming implementation of the specification is released and included in the distribution. Any deviation from the specification is considered a bug.
 
 # Contents
 1. [Overview](#1-overview)

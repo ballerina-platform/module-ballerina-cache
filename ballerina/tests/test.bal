@@ -361,7 +361,7 @@ isolated function testCreateCacheWithNegativeCapacity() {
     };
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
-    if (cache is error) {
+    if cache is error {
         test:assertEquals(cache.message(), "Capacity must be greater than 0.");
     } else {
          test:assertFail("Output mismatched");
@@ -470,7 +470,6 @@ isolated function testCreateCacheWithNegativeCleanUpInterval() {
     Cache|error cache = trap new(config);
     test:assertTrue(cache is error);
     if (cache is error) {
-        test:assertEquals(cache.message(), "Failed to schedule the cleanup task: Repeat interval must be >= 0");
         test:assertEquals(cache.message(), "The cleanup interval must be greater than 0.");
     } else {
          test:assertFail("Output mismatched");

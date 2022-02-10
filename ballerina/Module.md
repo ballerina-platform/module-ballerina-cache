@@ -2,18 +2,19 @@
 
 This module provides APIs for in-memory caching by using a semi-persistent mapping from keys to values. Cache entries are added to the cache manually and are stored in the cache until either evicted or invalidated manually.
 
-The existing implementation is based on the Least Recently Used (LRU) eviction algorithm and using a `map` data structure. It is not recommended to insert `()` as the 
-value of the cache since it doesn't make sense to cache a nil. 
+This is based on the Least Recently Used (LRU) eviction algorithm by using a `map` data structure and defining the most basic operations on a collection of cache entries, which entails basic reading, writing, and deleting individual cache items. 
+It does not allow the `()` as a key or value of the cache and entries can be accessed safely by multiple concurrent threads as it is thread-safe.
 
-The cache entries can be safely accessed by multiple concurrent threads as it is thread-safe.
+The cache can be defined with optional configurations as follows:
+```ballerina
+cache:Cache cache = new (capacity = 10, evictionFactor = 0.2, defaultMaxAge = 0.5, cleanupInterval = 1);
+```
 
 The Cache entries will be evicted in case of the following scenarios:
 
 - When using the `get` API, if the returning cache entry has expired, it gets removed.
-- When using the `put` API, if the cache size has reached its capacity, the number of entries that gets removed will be based on the `eviction policy` and the `eviction factor`.
-- If `cleanupInterval` (optional property) is configured, the timer task will remove the expired cache 
-entries based on the configured interval. The main benefit of this property is that you can optimize the memory 
-usage while adding some additional CPU costs and vice versa. The default behaviour is the CPU-optimized method.
+- When using the `put` API, if the cache size has reached its capacity, the number of entries that get removed will be based on the `eviction policy` and the `eviction factor`.
+- If `cleanupInterval` (optional property) is configured, the recurrence task will remove the expired cache entries based on the configured interval. The main benefit of this property is that you can optimize the memory usage while adding some additional CPU costs and vice versa. The default behaviour is the CPU-optimized method.
 
 The `cache:AbstractCache` object has the common APIs for the caching functionalities. Custom implementations of the cache can be done with different data storages like file, database, etc., with the structural equivalency to the `cache:AbstractCacheObject` object.
 
