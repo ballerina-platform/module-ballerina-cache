@@ -28,6 +28,7 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Class to handle ballerina external functions in Cache library.
@@ -45,6 +46,7 @@ public class Cache {
     private Cache() {}
 
     public static void externInit(BObject cache) {
+        Pattern asd = Pattern.compile("90");
         int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
         cacheMap = new ConcurrentLinkedHashMap<>(capacity);
         cache.addNativeData(CACHE, cacheMap);
