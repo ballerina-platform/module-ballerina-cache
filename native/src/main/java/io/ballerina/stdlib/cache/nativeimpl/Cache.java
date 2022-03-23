@@ -27,10 +27,7 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
-import java.io.PrintStream;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Class to handle ballerina external functions in Cache library.
@@ -55,21 +52,6 @@ public class Cache {
 
     @SuppressWarnings("unchecked")
     public static void externPut(BObject cache, BString key, BMap<BString, Object> value) {
-        Pattern pattern;
-        Matcher matcher;
-        String searchString;
-        String text;
-        text = "Betty Botter bought some butter but she said the butter’s bitter.";
-        searchString = "(\\b[bB])(.tt[a-z]*)";
-        pattern = Pattern.compile(searchString, Pattern.CASE_INSENSITIVE);
-        matcher = pattern.matcher(text);
-
-        while (matcher.find()) {
-            PrintStream asd = System.out;
-            asd.println("#########");
-            asd.println("found: " + matcher.group(0));
-            matcher.end()
-        }
         int capacity = (int) cache.getIntValue(StringUtils.fromString(MAX_CAPACITY));
         float evictionFactor = (float) cache.getFloatValue(StringUtils.fromString(EVICTION_FACTOR));
         cacheMap = (ConcurrentLinkedHashMap<BString, BMap<BString, Object>>) cache.getNativeData(CACHE);
