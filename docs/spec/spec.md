@@ -19,14 +19,14 @@ The conforming implementation of the specification is released and included in t
 1. [Overview](#1-overview)
 2. [Eviction](#2-eviction)
 3. [Operations](#3-operations)
-    * 3.1 [Put](#3.1-put)
-    * 3.2 [Get](#3.2-get)
-    * 3.3 [invalidate](#3.3-invalidate)
-    * 3.4 [invalidateAll](#3.4-invalidateAll)
-    * 3.5 [hasKey](#3.5-hasKey)
-    * 3.6 [keys](#3.6-keys)
-    * 3.7 [size](#3.7-size)
-    * 3.8 [capacity](#3.8-capacity)
+    * 3.1. [Put](#31-put)
+    * 3.2. [Get](#32-get)
+    * 3.3. [invalidate](#33-invalidate)
+    * 3.4. [invalidateAll](#34-invalidateall)
+    * 3.5. [hasKey](#35-haskey)
+    * 3.6. [keys](#36-keys)
+    * 3.7. [size](#37-size)
+    * 3.8. [capacity](#38-capacity)
 
 ## 1. Overview
 This specification elaborates functionalities available in the Cache library.
@@ -49,55 +49,55 @@ The cache eviction is a process to eliminate entry/entries from the cache by fol
 ## 3. Operations
 The cache defines the most basic operations on a collection of cache entries, which entails basic reading, writing, and deleting individual cache items. This is thread-safe. Hence, data can be safely accessed by multiple concurrent threads.
 
-### 3.1 Put
+### 3.1. Put
 This adds the given key-value pair to the cache with an entry expiration time. The value can be in any of the ballerina types, but it is not allowed 
 to insert `()` as the value of the cache since it doesn't make sense to have nil value. If the cache previously contained a value associated with the provided key, the old value will be replaced by the newly-provided value.
 ```ballerina
 check cache.put("key", "value");
 ```
 
-### 3.2 Get
+### 3.2. Get
 This is used to fetch the cached value associated with the provided key.
 
 ```ballerina
 any value = check cache.get("key");
 ```
 
-### 3.3 Invalidate
+### 3.3. Invalidate
 This is used to discard a cached entry from the cache by its unique key.
 
 ```ballerina
 check cache.invalidate("key");
 ```
 
-### 3.4 InvalidateAll
+### 3.4. InvalidateAll
 This is used to discard all the cached values from the cache.
 
 ```ballerina
 check cache.invalidateAll();
 ```
 
-### 3.5 HasKey
+### 3.5. HasKey
 This is used to check whether the given key has an associated cached value.
 
 ```ballerina
 boolean result = cache.hasKey("key");
 ```
 
-### 3.6 Keys
+### 3.6. Keys
 This is used to get a list of all the keys in the cache.
 
 ```ballerina
 string[] keys = cache.keys();
 ```
 
-### 3.7 Size
+### 3.7. Size
 This is used to get the size of the cache.
 ```ballerina
 int result = cache.size();
 ```
 
-### 3.8 Capacity
+### 3.8. Capacity
 This is used to get the capacity of the cache.
 ```ballerina
 int result = cache.capacity();
