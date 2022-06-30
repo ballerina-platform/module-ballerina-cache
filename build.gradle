@@ -67,6 +67,8 @@ subprojects {
         /* Standard libraries */
         ballerinaStdLibs "io.ballerina.stdlib:task-ballerina:${stdlibTaskVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:time-ballerina:${stdlibTimeVersion}"
+        ballerinaStdLibs "io.ballerina.stdlib:log-ballerina:${stdlibLogVersion}"
+        ballerinaStdLibs "io.ballerina.stdlib:io-ballerina:${stdlibIoVersion}"
     }
 }
 
@@ -87,5 +89,11 @@ release {
 }
 
 task build {
+    dependsOn(':cache-native:build')
+    dependsOn(':cache-compiler-plugin:build')
     dependsOn('cache-ballerina:build')
+    dependsOn(':cache-compiler-plugin-tests:build')
 }
+
+publishToMavenLocal.dependsOn build
+publish.dependsOn build

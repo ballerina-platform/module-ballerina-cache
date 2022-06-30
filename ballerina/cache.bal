@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/jballerina.java;
+import ballerina/log;
 import ballerina/task;
 import ballerina/time;
 
@@ -91,32 +92,15 @@ public isolated class Cache {
         self.evictionFactor = cacheConfig.evictionFactor;
         self.defaultMaxAge =  cacheConfig.defaultMaxAge;
 
-        // Cache capacity must be a positive value.
-        if self.maxCapacity <= 0 {
-            panic prepareError("Capacity must be greater than 0.");
-        }
-        // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if self.evictionFactor <= 0.0 || self.evictionFactor > 1.0 {
-            panic prepareError("Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).");
-        }
-
-        // Cache eviction factor must be between 0.0 (exclusive) and 1.0 (inclusive).
-        if self.defaultMaxAge != -1d && self.defaultMaxAge <= 0d {
-            panic prepareError("Default max age should be greater than 0 or -1 for indicate forever valid.");
-        }
         externInit(self);
         decimal? interval = cacheConfig?.cleanupInterval;
         if interval is decimal {
-            if interval <= 0d {
-                panic prepareError("The cleanup interval must be greater than 0.");
-            }
             time:Utc currentUtc = time:utcNow();
             time:Utc newTime = time:utcAddSeconds(currentUtc, interval);
             time:Civil time = time:utcToCivil(newTime);
             var result = task:scheduleJobRecurByFrequency(new Cleanup(self), interval, startTime = time);
             if (result is task:Error) {
-                string message = string `Failed to schedule the cleanup task: ${result.message()}`;
-                panic prepareError(message);
+                 log:printWarn(string `Failed to schedule the cleanup task: ${result.message()}`);
             }
         }
     }
