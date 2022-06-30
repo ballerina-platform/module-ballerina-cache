@@ -32,5 +32,4 @@ public class Constants {
     public static final String DEFAULT_MAX_AGE = "defaultMaxAge";
     public static final String POLICY_VALUE = "cache:LRU";
     public static final String UNNECESSARY_CHARS_REGEX = "\"|\\n";
-
 }
