@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/jballerina.java;
-import ballerina/log;
 import ballerina/task;
 import ballerina/time;
 
@@ -100,7 +99,7 @@ public isolated class Cache {
             time:Civil time = time:utcToCivil(newTime);
             var result = task:scheduleJobRecurByFrequency(new Cleanup(self), interval, startTime = time);
             if (result is task:Error) {
-                 log:printWarn(string `Failed to schedule the cleanup task: ${result.message()}`);
+                panic prepareError(string `Failed to schedule the cleanup task: ${result.message()}`);
             }
         }
     }
