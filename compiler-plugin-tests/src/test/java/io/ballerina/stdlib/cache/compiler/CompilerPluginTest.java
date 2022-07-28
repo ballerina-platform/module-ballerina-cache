@@ -87,27 +87,27 @@ public class CompilerPluginTest {
         DiagnosticInfo invalidCapacity = errorDiagnosticsList.get(0).diagnosticInfo();
         Assert.assertEquals(invalidCapacity.code(), DiagnosticsCodes.CACHE_101.getErrorCode());
         Assert.assertEquals(invalidCapacity.messageFormat(),
-                "invalid value: expected value is greater than zero");
+                "invalid value: a greater than zero value is expected");
 
         DiagnosticInfo invalidEvictionFactor = errorDiagnosticsList.get(1).diagnosticInfo();
         Assert.assertEquals(invalidEvictionFactor.code(), DiagnosticsCodes.CACHE_102.getErrorCode());
         Assert.assertEquals(invalidEvictionFactor.messageFormat(),
-                "invalid value: expected value is between 0 (exclusive) and 1 (inclusive)");
+                "invalid value: a value between 0 (exclusive) and 1 (inclusive) is expected");
 
 
         DiagnosticInfo invalidDefaultMaxAge = errorDiagnosticsList.get(2).diagnosticInfo();
         Assert.assertEquals(invalidDefaultMaxAge.code(), DiagnosticsCodes.CACHE_103.getErrorCode());
         Assert.assertEquals(invalidDefaultMaxAge.messageFormat(),
-                "invalid value: expected value is greater than 0 or -1 for indicate forever valid");
+                "invalid value: a greater than 0 value or -1(to indicate forever valid) value is expected");
 
         DiagnosticInfo invalidCleanupInterval = errorDiagnosticsList.get(3).diagnosticInfo();
         Assert.assertEquals(invalidCleanupInterval.code(), DiagnosticsCodes.CACHE_104.getErrorCode());
         Assert.assertEquals(invalidCleanupInterval.messageFormat(),
-                "invalid value: expected value is greater than zero");
+                "invalid value: a greater than zero value is expected");
 
         DiagnosticInfo invalidPolicy = errorDiagnosticsList.get(4).diagnosticInfo();
         Assert.assertEquals(invalidPolicy.code(), DiagnosticsCodes.CACHE_105.getErrorCode());
         Assert.assertEquals(invalidPolicy.messageFormat(),
-                "invalid value: expected value is 'cache:LRU'");
+                "invalid value: only 'cache:LRU' value is supported");
     }
 }

@@ -26,13 +26,13 @@ import static io.ballerina.tools.diagnostics.DiagnosticSeverity.ERROR;
  */
 public enum DiagnosticsCodes {
 
-    CACHE_101("invalid value: expected value is greater than zero", "CACHE_101", ERROR),
-    CACHE_102("invalid value: expected value is between 0 (exclusive) and 1 (inclusive)",
+    CACHE_101("invalid value: a greater than zero value is expected", "CACHE_101", ERROR),
+    CACHE_102("invalid value: a value between 0 (exclusive) and 1 (inclusive) is expected",
             "CACHE_102", ERROR),
-    CACHE_103("invalid value: expected value is greater than 0 or -1 for indicate forever valid",
+    CACHE_103("invalid value: a greater than 0 value or -1(to indicate forever valid) value is expected",
             "CACHE_103", ERROR),
-    CACHE_104("invalid value: expected value is greater than zero", "CACHE_104", ERROR),
-    CACHE_105("invalid value: expected value is 'cache:LRU'", "CACHE_105", ERROR);
+    CACHE_104("invalid value: a greater than zero value is expected", "CACHE_104", ERROR),
+    CACHE_105("invalid value: only 'cache:LRU' value is supported", "CACHE_105", ERROR);
 
     private final String error;
     private final String errorCode;
