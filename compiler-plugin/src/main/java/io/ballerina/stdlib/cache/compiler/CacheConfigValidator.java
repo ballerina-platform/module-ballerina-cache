@@ -26,7 +26,6 @@ import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
-import io.ballerina.compiler.syntax.tree.FieldAccessExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
@@ -101,12 +100,14 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                     SpecificFieldNode fieldNode = (SpecificFieldNode) field;
                     String name = fieldNode.fieldName().toString()
                             .trim().replaceAll(Constants.UNNECESSARY_CHARS_REGEX, "");
-                    ExpressionNode valueNode = fieldNode.valueExpr().get();
-                    String value = getTerminalNodeValue(valueNode);
-                    if (value == null) {
-                        return;
+                    Optional<ExpressionNode> expressionNode = fieldNode.valueExpr();
+                    if (expressionNode.isPresent()) {
+                        ExpressionNode valueNode = expressionNode.get();
+                        String value = getTerminalNodeValue(valueNode);
+                        if (value != null) {
+                            validateConfig(name, value, ctx, valueNode.location());
+                        }
                     }
-                    validateConfig(name, value, ctx, valueNode.location());
                 }
             }
         }
@@ -123,8 +124,6 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
             UnaryExpressionNode unaryExpressionNode = (UnaryExpressionNode) valueNode;
             value = unaryExpressionNode.unaryOperator() +
                     ((BasicLiteralNode) unaryExpressionNode.expression()).literalToken().text();
-        } else if (valueNode instanceof FieldAccessExpressionNode) {
-            value = ((FieldAccessExpressionNode) valueNode).expression().toSourceCode().trim();
         }
         if (value != null) {
             return value.replaceAll(Constants.UNNECESSARY_CHARS_REGEX, "");
@@ -147,18 +146,26 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
 
     private boolean isCacheConfigVariable(TypeReferenceTypeSymbol typeSymbol) {
         TypeDescKind typeDescKind = typeSymbol.typeDescriptor().typeKind();
-        ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
-        if (typeDescKind == TypeDescKind.RECORD) {
-            return Constants.CACHE.equals(moduleSymbol.getName().get()) &&
-                    Constants.BALLERINA.equals(moduleSymbol.id().orgName()) &&
-                    typeSymbol.definition().getName().get().equals(Constants.CACHE_CONFIG);
-        } else if (typeDescKind == TypeDescKind.OBJECT) {
-                return Constants.CACHE.equals(moduleSymbol.getName().get()) &&
-                        Constants.BALLERINA.equals(moduleSymbol.id().orgName())
-                        && typeSymbol.definition().getName().get().equalsIgnoreCase(Constants.CACHE);
-        } else {
-            return false;
+        Optional<ModuleSymbol> module = typeSymbol.getModule();
+        if (module.isPresent()) {
+            ModuleSymbol moduleSymbol = module.get();
+            Optional<String> name = moduleSymbol.getName();
+            Optional<String> typeName = typeSymbol.definition().getName();
+            if (name.isPresent() && typeName.isPresent()) {
+                if (typeDescKind == TypeDescKind.RECORD) {
+                    return Constants.CACHE.equals(name.get()) &&
+                            Constants.BALLERINA.equals(moduleSymbol.id().orgName()) &&
+                            typeName.get().equals(Constants.CACHE_CONFIG);
+                } else if (typeDescKind == TypeDescKind.OBJECT) {
+                    return Constants.CACHE.equals(name.get()) &&
+                            Constants.BALLERINA.equals(moduleSymbol.id().orgName())
+                            && typeName.get().equalsIgnoreCase(Constants.CACHE);
+                } else {
+                    return false;
+                }
+            }
         }
+        return false;
     }
 
     private void validateConfig(String name, String value, SyntaxNodeAnalysisContext ctx, Location location) {
@@ -218,11 +225,15 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                     }
                     break;
                 default:
-                    // Can ignore all other fields
                     break;
             }
         } catch (NumberFormatException e) {
-            //
+            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                    DiagnosticsCodes.CACHE_106.getErrorCode(),
+                    DiagnosticsCodes.CACHE_106.getError() + e.getMessage(),
+                    DiagnosticsCodes.CACHE_106.getSeverity());
+            ctx.reportDiagnostic(
+                    DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
         }
     }
 }
