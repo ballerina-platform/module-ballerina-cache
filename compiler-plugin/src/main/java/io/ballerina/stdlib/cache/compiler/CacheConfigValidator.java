@@ -174,66 +174,50 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                 case Constants.CAPACITY:
                     int maxCapacity = Integer.parseInt(value);
                     if (maxCapacity <= 0) {
-                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                                DiagnosticsCodes.CACHE_101.getErrorCode(), DiagnosticsCodes.CACHE_101.getError(),
-                                DiagnosticsCodes.CACHE_101.getSeverity());
-
-                        ctx.reportDiagnostic(
-                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
+                        reportDiagnostic(ctx, location, DiagnosticsCodes.CACHE_101.getErrorCode(),
+                                DiagnosticsCodes.CACHE_101.getError(), DiagnosticsCodes.CACHE_101.getSeverity());
                     }
                     break;
                 case Constants.EVICTION_FACTOR:
                     float evictionFactor = Float.parseFloat(value);
                     if (evictionFactor < 0 || evictionFactor >= 1) {
-                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                                DiagnosticsCodes.CACHE_102.getErrorCode(), DiagnosticsCodes.CACHE_102.getError(),
-                                DiagnosticsCodes.CACHE_102.getSeverity());
-                        ctx.reportDiagnostic(
-                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
-
+                        reportDiagnostic(ctx, location, DiagnosticsCodes.CACHE_102.getErrorCode(),
+                                DiagnosticsCodes.CACHE_102.getError(), DiagnosticsCodes.CACHE_102.getSeverity());
                     }
                     break;
                 case Constants.DEFAULT_MAX_AGE:
                     float defaultMaxAge = Float.parseFloat(value);
                     if (defaultMaxAge != -1 && defaultMaxAge < 0) {
-                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                                DiagnosticsCodes.CACHE_103.getErrorCode(), DiagnosticsCodes.CACHE_103.getError(),
-                                DiagnosticsCodes.CACHE_103.getSeverity());
-                        ctx.reportDiagnostic(
-                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
-
+                        reportDiagnostic(ctx, location, DiagnosticsCodes.CACHE_103.getErrorCode(),
+                                DiagnosticsCodes.CACHE_103.getError(), DiagnosticsCodes.CACHE_103.getSeverity());
                     }
                     break;
                 case Constants.CLEAN_UP_INTERVAL:
                     float cleanUpInterval = Float.parseFloat(value);
                     if (cleanUpInterval <= 0) {
-                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                                DiagnosticsCodes.CACHE_104.getErrorCode(), DiagnosticsCodes.CACHE_104.getError(),
-                                DiagnosticsCodes.CACHE_104.getSeverity());
-                        ctx.reportDiagnostic(
-                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
-
+                        reportDiagnostic(ctx, location, DiagnosticsCodes.CACHE_104.getErrorCode(),
+                                DiagnosticsCodes.CACHE_104.getError(), DiagnosticsCodes.CACHE_104.getSeverity());
                     }
                     break;
                 case Constants.EVICTION_POLICY:
                     if (!value.equals(Constants.POLICY_VALUE)) {
-                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                                DiagnosticsCodes.CACHE_105.getErrorCode(), DiagnosticsCodes.CACHE_105.getError(),
-                                DiagnosticsCodes.CACHE_105.getSeverity());
-                        ctx.reportDiagnostic(
-                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
+                        reportDiagnostic(ctx, location, DiagnosticsCodes.CACHE_105.getErrorCode(),
+                                DiagnosticsCodes.CACHE_105.getError(), DiagnosticsCodes.CACHE_105.getSeverity());
                     }
                     break;
                 default:
                     break;
             }
         } catch (NumberFormatException e) {
-            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                    DiagnosticsCodes.CACHE_106.getErrorCode(),
+            reportDiagnostic(ctx, location, DiagnosticsCodes.CACHE_106.getErrorCode(),
                     DiagnosticsCodes.CACHE_106.getError() + e.getMessage(),
                     DiagnosticsCodes.CACHE_106.getSeverity());
-            ctx.reportDiagnostic(
-                    DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
         }
+    }
+
+    public void reportDiagnostic(SyntaxNodeAnalysisContext ctx, Location location, String code,
+                                        String message, DiagnosticSeverity diagnosticSeverity) {
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(code, message, diagnosticSeverity);
+        ctx.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
     }
 }
