@@ -100,27 +100,35 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                     SpecificFieldNode fieldNode = (SpecificFieldNode) field;
                     String name = fieldNode.fieldName().toString()
                             .trim().replaceAll(Constants.UNNECESSARY_CHARS_REGEX, "");
-                    ExpressionNode valueNode = fieldNode.valueExpr().get();
-                    String value = getTerminalNodeValue(valueNode);
-                    validateConfig(name, value, ctx, valueNode.location());
+                    Optional<ExpressionNode> expressionNode = fieldNode.valueExpr();
+                    if (expressionNode.isPresent()) {
+                        ExpressionNode valueNode = expressionNode.get();
+                        String value = getTerminalNodeValue(valueNode);
+                        if (value != null) {
+                            validateConfig(name, value, ctx, valueNode.location());
+                        }
+                    }
                 }
             }
         }
     }
 
     private String getTerminalNodeValue(Node valueNode) {
-        String value;
+        String value = null;
         if (valueNode instanceof BasicLiteralNode) {
             value = ((BasicLiteralNode) valueNode).literalToken().text();
         } else if (valueNode instanceof QualifiedNameReferenceNode) {
             QualifiedNameReferenceNode qualifiedNameReferenceNode = (QualifiedNameReferenceNode) valueNode;
             value = qualifiedNameReferenceNode.toString();
-        } else {
+        } else if (valueNode instanceof UnaryExpressionNode) {
             UnaryExpressionNode unaryExpressionNode = (UnaryExpressionNode) valueNode;
             value = unaryExpressionNode.unaryOperator() +
                     ((BasicLiteralNode) unaryExpressionNode.expression()).literalToken().text();
         }
-        return value.replaceAll(Constants.UNNECESSARY_CHARS_REGEX, "");
+        if (value != null) {
+            return value.replaceAll(Constants.UNNECESSARY_CHARS_REGEX, "");
+        }
+        return null;
     }
 
     private boolean isCacheConfigVariable(TypeSymbol type) {
@@ -138,78 +146,94 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
 
     private boolean isCacheConfigVariable(TypeReferenceTypeSymbol typeSymbol) {
         TypeDescKind typeDescKind = typeSymbol.typeDescriptor().typeKind();
-        ModuleSymbol moduleSymbol = typeSymbol.getModule().get();
-        if (typeDescKind == TypeDescKind.RECORD) {
-            return Constants.CACHE.equals(moduleSymbol.getName().get()) &&
-                    Constants.BALLERINA.equals(moduleSymbol.id().orgName()) &&
-                    typeSymbol.definition().getName().get().equals(Constants.CACHE_CONFIG);
-        } else if (typeDescKind == TypeDescKind.OBJECT) {
-                return Constants.CACHE.equals(moduleSymbol.getName().get()) &&
-                        Constants.BALLERINA.equals(moduleSymbol.id().orgName())
-                        && typeSymbol.definition().getName().get().equalsIgnoreCase(Constants.CACHE);
-        } else {
-            return false;
+        Optional<ModuleSymbol> module = typeSymbol.getModule();
+        if (module.isPresent()) {
+            ModuleSymbol moduleSymbol = module.get();
+            Optional<String> name = moduleSymbol.getName();
+            Optional<String> typeName = typeSymbol.definition().getName();
+            if (name.isPresent() && typeName.isPresent()) {
+                if (typeDescKind == TypeDescKind.RECORD) {
+                    return Constants.CACHE.equals(name.get()) &&
+                            Constants.BALLERINA.equals(moduleSymbol.id().orgName()) &&
+                            typeName.get().equals(Constants.CACHE_CONFIG);
+                } else if (typeDescKind == TypeDescKind.OBJECT) {
+                    return Constants.CACHE.equals(name.get()) &&
+                            Constants.BALLERINA.equals(moduleSymbol.id().orgName())
+                            && typeName.get().equalsIgnoreCase(Constants.CACHE);
+                } else {
+                    return false;
+                }
+            }
         }
+        return false;
     }
 
     private void validateConfig(String name, String value, SyntaxNodeAnalysisContext ctx, Location location) {
-        switch (name) {
-            case Constants.CAPACITY:
-                int maxCapacity = Integer.parseInt(value);
-                if (maxCapacity <= 0) {
-                    DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                            DiagnosticsCodes.CACHE_101.getErrorCode(), DiagnosticsCodes.CACHE_101.getError(),
-                            DiagnosticsCodes.CACHE_101.getSeverity());
+        try {
+            switch (name) {
+                case Constants.CAPACITY:
+                    int maxCapacity = Integer.parseInt(value);
+                    if (maxCapacity <= 0) {
+                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                DiagnosticsCodes.CACHE_101.getErrorCode(), DiagnosticsCodes.CACHE_101.getError(),
+                                DiagnosticsCodes.CACHE_101.getSeverity());
 
-                    ctx.reportDiagnostic(
-                            DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
-                }
-                break;
-            case Constants.EVICTION_FACTOR:
-                float evictionFactor = Float.parseFloat(value);
-                if (evictionFactor < 0 || evictionFactor >= 1) {
-                    DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                            DiagnosticsCodes.CACHE_102.getErrorCode(), DiagnosticsCodes.CACHE_102.getError(),
-                            DiagnosticsCodes.CACHE_102.getSeverity());
-                    ctx.reportDiagnostic(
-                            DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
+                        ctx.reportDiagnostic(
+                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
+                    }
+                    break;
+                case Constants.EVICTION_FACTOR:
+                    float evictionFactor = Float.parseFloat(value);
+                    if (evictionFactor < 0 || evictionFactor >= 1) {
+                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                DiagnosticsCodes.CACHE_102.getErrorCode(), DiagnosticsCodes.CACHE_102.getError(),
+                                DiagnosticsCodes.CACHE_102.getSeverity());
+                        ctx.reportDiagnostic(
+                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
 
-                }
-                break;
-            case Constants.DEFAULT_MAX_AGE:
-                float defaultMaxAge = Float.parseFloat(value);
-                if (defaultMaxAge != -1 && defaultMaxAge < 0) {
-                    DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                            DiagnosticsCodes.CACHE_103.getErrorCode(), DiagnosticsCodes.CACHE_103.getError(),
-                            DiagnosticsCodes.CACHE_103.getSeverity());
-                    ctx.reportDiagnostic(
-                            DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
+                    }
+                    break;
+                case Constants.DEFAULT_MAX_AGE:
+                    float defaultMaxAge = Float.parseFloat(value);
+                    if (defaultMaxAge != -1 && defaultMaxAge < 0) {
+                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                DiagnosticsCodes.CACHE_103.getErrorCode(), DiagnosticsCodes.CACHE_103.getError(),
+                                DiagnosticsCodes.CACHE_103.getSeverity());
+                        ctx.reportDiagnostic(
+                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
 
-                }
-                break;
-            case Constants.CLEAN_UP_INTERVAL:
-                float cleanUpInterval = Float.parseFloat(value);
-                if (cleanUpInterval <= 0) {
-                    DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                            DiagnosticsCodes.CACHE_104.getErrorCode(), DiagnosticsCodes.CACHE_104.getError(),
-                            DiagnosticsCodes.CACHE_104.getSeverity());
-                    ctx.reportDiagnostic(
-                            DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
+                    }
+                    break;
+                case Constants.CLEAN_UP_INTERVAL:
+                    float cleanUpInterval = Float.parseFloat(value);
+                    if (cleanUpInterval <= 0) {
+                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                DiagnosticsCodes.CACHE_104.getErrorCode(), DiagnosticsCodes.CACHE_104.getError(),
+                                DiagnosticsCodes.CACHE_104.getSeverity());
+                        ctx.reportDiagnostic(
+                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
 
-                }
-                break;
-            case Constants.EVICTION_POLICY:
-                if (!value.equals(Constants.POLICY_VALUE)) {
-                    DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
-                            DiagnosticsCodes.CACHE_105.getErrorCode(), DiagnosticsCodes.CACHE_105.getError(),
-                            DiagnosticsCodes.CACHE_105.getSeverity());
-                    ctx.reportDiagnostic(
-                            DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
-                }
-                break;
-            default:
-                // Can ignore all other fields
-                break;
+                    }
+                    break;
+                case Constants.EVICTION_POLICY:
+                    if (!value.equals(Constants.POLICY_VALUE)) {
+                        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                                DiagnosticsCodes.CACHE_105.getErrorCode(), DiagnosticsCodes.CACHE_105.getError(),
+                                DiagnosticsCodes.CACHE_105.getSeverity());
+                        ctx.reportDiagnostic(
+                                DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
+                    }
+                    break;
+                default:
+                    break;
             }
+        } catch (NumberFormatException e) {
+            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                    DiagnosticsCodes.CACHE_106.getErrorCode(),
+                    DiagnosticsCodes.CACHE_106.getError() + e.getMessage(),
+                    DiagnosticsCodes.CACHE_106.getSeverity());
+            ctx.reportDiagnostic(
+                    DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
+        }
     }
 }

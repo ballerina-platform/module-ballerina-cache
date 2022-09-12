@@ -3,4 +3,4 @@ id = "cache-compiler-plugin"
 class = "io.ballerina.stdlib.cache.compiler.CacheCompilerPlugin"
 
 [[dependency]]
-path = "../compiler-plugin/build/libs/cache-compiler-plugin-3.2.3-SNAPSHOT.jar"
+path = "../compiler-plugin/build/libs/cache-compiler-plugin-3.3.0-SNAPSHOT.jar"

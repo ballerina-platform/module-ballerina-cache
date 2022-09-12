@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/constraint;
 import ballerina/jballerina.java;
 import ballerina/task;
 import ballerina/time;
@@ -28,10 +29,23 @@ import ballerina/time;
 #                   the cache
 # + cleanupInterval - Interval (in seconds) of the timer task, which will clean up the cache
 public type CacheConfig record {|
+    @constraint:Int {
+        minValue: 1
+    }
     int capacity = 100;
+    @constraint:Float {
+        minValueExclusive: 0,
+        maxValue: 1
+    }
     float evictionFactor = 0.25;
     EvictionPolicy evictionPolicy = LRU;
+    @constraint:Number {
+        minValue: -1
+    }
     decimal defaultMaxAge = -1;
+    @constraint:Number {
+        minValueExclusive: 0
+    }
     decimal cleanupInterval?;
 |};
 
@@ -86,10 +100,14 @@ public isolated class Cache {
     #
     # + cacheConfig - Configurations for the `cache:Cache` object
     public isolated function init(*CacheConfig cacheConfig) {
-        self.maxCapacity = cacheConfig.capacity;
-        self.evictionPolicy = cacheConfig.evictionPolicy;
-        self.evictionFactor = cacheConfig.evictionFactor;
-        self.defaultMaxAge =  cacheConfig.defaultMaxAge;
+        CacheConfig|error validatedConfig = constraint:validate(cacheConfig);
+        if validatedConfig is error {
+            panic prepareError(validatedConfig.message());
+        }
+        self.maxCapacity = validatedConfig.capacity;
+        self.evictionPolicy = validatedConfig.evictionPolicy;
+        self.evictionFactor = validatedConfig.evictionFactor;
+        self.defaultMaxAge =  validatedConfig.defaultMaxAge;
 
         externInit(self);
         decimal? interval = cacheConfig?.cleanupInterval;
