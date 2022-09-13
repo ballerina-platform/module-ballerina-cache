@@ -215,7 +215,7 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         }
     }
 
-    public void reportDiagnostic(SyntaxNodeAnalysisContext ctx, Location location, String code,
+    private void reportDiagnostic(SyntaxNodeAnalysisContext ctx, Location location, String code,
                                         String message, DiagnosticSeverity diagnosticSeverity) {
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(code, message, diagnosticSeverity);
         ctx.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
