@@ -81,6 +81,24 @@ public class CompilerPluginTest {
         assertValues(errorDiagnosticsList);
     }
 
+    @Test
+    public void testInvalidConfig4() {
+        DiagnosticResult diagnosticResult = loadPackage("sample4").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 2);
+        DiagnosticInfo invalidCleanupInterval = errorDiagnosticsList.get(0).diagnosticInfo();
+        Assert.assertEquals(invalidCleanupInterval.code(), DiagnosticsCodes.CACHE_104.getErrorCode());
+        Assert.assertEquals(invalidCleanupInterval.messageFormat(),
+                "invalid value: a greater than zero value is expected");
+
+        DiagnosticInfo invalidPolicy = errorDiagnosticsList.get(1).diagnosticInfo();
+        Assert.assertEquals(invalidPolicy.code(), DiagnosticsCodes.CACHE_105.getErrorCode());
+        Assert.assertEquals(invalidPolicy.messageFormat(),
+                "invalid value: only 'cache:LRU' value is supported");
+    }
+
     private void assertValues(List<Diagnostic> errorDiagnosticsList) {
         long availableErrors = errorDiagnosticsList.size();
         Assert.assertEquals(availableErrors, 5);
