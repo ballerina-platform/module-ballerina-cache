@@ -99,6 +99,15 @@ public class CompilerPluginTest {
                 "invalid value: only 'cache:LRU' value is supported");
     }
 
+    @Test
+    public void testConfigWithOutVariables() {
+        DiagnosticResult diagnosticResult = loadPackage("sample5").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 0);
+    }
+
     private void assertValues(List<Diagnostic> errorDiagnosticsList) {
         long availableErrors = errorDiagnosticsList.size();
         Assert.assertEquals(availableErrors, 5);
