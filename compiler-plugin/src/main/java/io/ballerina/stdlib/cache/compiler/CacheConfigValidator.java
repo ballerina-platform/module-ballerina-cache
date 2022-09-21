@@ -33,6 +33,7 @@ import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.NamedArgumentNode;
 import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.ParenthesizedArgList;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
@@ -84,13 +85,16 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
             }
             ExpressionNode initializer = optionalInitializer.get();
             if (initializer instanceof ImplicitNewExpressionNode) {
-                SeparatedNodeList<FunctionArgumentNode> fields =
-                        ((ImplicitNewExpressionNode) initializer).parenthesizedArgList().get().arguments();
-                for (FunctionArgumentNode field : fields) {
-                    if (field instanceof NamedArgumentNode) {
-                        NamedArgumentNode fieldNode = (NamedArgumentNode) field;
-                        validateConfig(fieldNode.argumentName().toSourceCode().trim(),
-                                fieldNode.expression().toSourceCode().trim(), ctx, field.location());
+                Optional<ParenthesizedArgList> parenthesizedArgList =
+                        ((ImplicitNewExpressionNode) initializer).parenthesizedArgList();
+                if (parenthesizedArgList.isPresent()) {
+                    SeparatedNodeList<FunctionArgumentNode> fields = parenthesizedArgList.get().arguments();
+                    for (FunctionArgumentNode field : fields) {
+                        if (field instanceof NamedArgumentNode) {
+                            NamedArgumentNode fieldNode = (NamedArgumentNode) field;
+                            validateConfig(fieldNode.argumentName().toSourceCode().trim(),
+                                    fieldNode.expression().toSourceCode().trim(), ctx, field.location());
+                        }
                     }
                 }
             } else if (initializer instanceof MappingConstructorExpressionNode) {
