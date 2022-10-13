@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [Introduced the compiler plugin to validate cache configurations](https://github.com/ballerina-platform/ballerina-standard-library/issues/1435)
 
+### Changed
+- [API docs updated](https://github.com/ballerina-platform/ballerina-standard-library/issues/3463)
+
 ## [2.0.0-alpha5] - 2021-03-19
 
 ### Added
