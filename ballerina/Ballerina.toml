@@ -1,16 +1,16 @@
 [package]
 org = "ballerina"
 name = "cache"
-version = "3.3.0"
+version = "3.4.0"
 authors = ["Ballerina"]
 keywords = ["cache", "LRU"]
 repository = "https://github.com/ballerina-platform/module-ballerina-cache"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.3.0"
+distribution = "2201.4.0"
 
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "cache-native"
-version = "3.3.0"
-path = "../native/build/libs/cache-native-3.3.0-SNAPSHOT.jar"
+version = "3.4.0"
+path = "../native/build/libs/cache-native-3.4.0-SNAPSHOT.jar"
