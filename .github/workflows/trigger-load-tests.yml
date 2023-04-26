@@ -17,6 +17,14 @@ on:
         required: false
   schedule:
     - cron: '0 2 * * *'
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   call_stdlib_trigger_load_test_workflow:
