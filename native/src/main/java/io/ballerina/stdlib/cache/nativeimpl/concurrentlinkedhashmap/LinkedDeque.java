@@ -41,7 +41,7 @@ public class LinkedDeque<E extends Linked<E>> {
      */
     E last = null;
 
-    public  LinkedDeque(){}
+    public  LinkedDeque() {}
 
     /**
      * Links the element to the back of the deque so that it becomes the last element.

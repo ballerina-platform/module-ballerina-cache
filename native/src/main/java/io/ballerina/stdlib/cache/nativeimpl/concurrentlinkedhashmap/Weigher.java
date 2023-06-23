@@ -20,6 +20,8 @@ package io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 /**
  * A class that can determine the weight of a value. The total weight threshold is used to
  * determine when an eviction is required.
+ *
+ * @param <V> the type of values to weigh
  */
 interface Weigher<V> {
 
