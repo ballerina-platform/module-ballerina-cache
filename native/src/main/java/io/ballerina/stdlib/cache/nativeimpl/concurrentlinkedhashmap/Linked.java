@@ -19,6 +19,8 @@ package io.ballerina.stdlib.cache.nativeimpl.concurrentlinkedhashmap;
 
 /**
  * An element that is linked on the Deque.
+ *
+ * @param <T> the type of elements held in this collection
  */
 interface Linked<T extends Linked<T>> {
 

@@ -702,7 +702,11 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
         return (es == null) ? (entrySet = new EntrySet()) : es;
     }
 
-    /** A value, its weight, and the entry's status. */
+    /**
+     * A value, its weight, and the entry's status.
+     *
+     * @param <V> the type of the value
+     */
     private static final class WeightedValue<V> {
 
         private final int weight;
