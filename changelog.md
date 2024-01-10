@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- [Fix the compilation failure when constants are used in cache config](https://github.com/ballerina-platform/ballerina-library/issues/5915)
+
+## [2.1.0-beta.1] - 2021-06-02
+
 ### Added
 - [Introduced the compiler plugin to validate cache configurations](https://github.com/ballerina-platform/ballerina-standard-library/issues/1435)
 

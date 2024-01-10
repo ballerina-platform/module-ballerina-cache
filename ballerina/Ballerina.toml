@@ -1,7 +1,7 @@
 [package]
 org = "ballerina"
 name = "cache"
-version = "3.7.0"
+version = "3.7.1"
 authors = ["Ballerina"]
 keywords = ["cache", "LRU"]
 repository = "https://github.com/ballerina-platform/module-ballerina-cache"
@@ -15,5 +15,5 @@ graalvmCompatible = true
 [[platform.java17.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "cache-native"
-version = "3.7.0"
-path = "../native/build/libs/cache-native-3.7.0.jar"
+version = "3.7.1"
+path = "../native/build/libs/cache-native-3.7.1-SNAPSHOT.jar"

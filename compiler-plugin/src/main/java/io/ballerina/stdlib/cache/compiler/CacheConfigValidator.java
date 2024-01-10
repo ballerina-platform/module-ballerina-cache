@@ -17,6 +17,7 @@
  */
 package io.ballerina.stdlib.cache.compiler;
 
+import io.ballerina.compiler.api.symbols.ConstantSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
@@ -107,7 +108,7 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                     Optional<ExpressionNode> expressionNode = fieldNode.valueExpr();
                     if (expressionNode.isPresent()) {
                         ExpressionNode valueNode = expressionNode.get();
-                        String value = getTerminalNodeValue(valueNode);
+                        String value = getTerminalNodeValue(valueNode, ctx);
                         if (value != null) {
                             validateConfig(name, value, ctx, valueNode.location());
                         }
@@ -117,13 +118,17 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
         }
     }
 
-    private String getTerminalNodeValue(Node valueNode) {
+    private String getTerminalNodeValue(Node valueNode, SyntaxNodeAnalysisContext ctx) {
         String value = null;
         if (valueNode instanceof BasicLiteralNode) {
             value = ((BasicLiteralNode) valueNode).literalToken().text();
         } else if (valueNode instanceof QualifiedNameReferenceNode) {
-            QualifiedNameReferenceNode qualifiedNameReferenceNode = (QualifiedNameReferenceNode) valueNode;
-            value = qualifiedNameReferenceNode.toString();
+            if (ctx.semanticModel().symbol(valueNode).get() instanceof ConstantSymbol constantSymbol) {
+                value = constantSymbol.constValue().toString();
+            } else {
+                QualifiedNameReferenceNode qualifiedNameReferenceNode = (QualifiedNameReferenceNode) valueNode;
+                value = qualifiedNameReferenceNode.toString();
+            }
         } else if (valueNode instanceof UnaryExpressionNode) {
             UnaryExpressionNode unaryExpressionNode = (UnaryExpressionNode) valueNode;
             value = unaryExpressionNode.unaryOperator() +
