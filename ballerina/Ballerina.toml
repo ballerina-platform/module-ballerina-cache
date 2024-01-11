@@ -16,4 +16,4 @@ graalvmCompatible = true
 groupId = "io.ballerina.stdlib"
 artifactId = "cache-native"
 version = "3.7.1"
-path = "../native/build/libs/cache-native-3.7.1-SNAPSHOT.jar"
+path = "../native/build/libs/cache-native-3.7.1.jar"
