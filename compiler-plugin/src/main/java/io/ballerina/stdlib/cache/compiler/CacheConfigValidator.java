@@ -218,6 +218,7 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                     break;
             }
         } catch (NumberFormatException e) {
+            // ignore
             // This occurs when there is a variable reference in the value in scenarios like having a
             // constant or configurable. In such cases like configurable, we cannot validate the value as the value is
             // resolved at runtime. Hence, ignoring the validation. And for constants, if they are not in the same file,
