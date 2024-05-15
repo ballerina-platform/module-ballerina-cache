@@ -218,9 +218,11 @@ public class CacheConfigValidator implements AnalysisTask<SyntaxNodeAnalysisCont
                     break;
             }
         } catch (NumberFormatException e) {
-            reportDiagnostic(ctx, location, DiagnosticsCodes.CACHE_106.getErrorCode(),
-                    DiagnosticsCodes.CACHE_106.getError() + e.getMessage(),
-                    DiagnosticsCodes.CACHE_106.getSeverity());
+            // This occurs when there is a variable reference in the value in scenarios like having a
+            // constant or configurable. In such cases like configurable, we cannot validate the value as the value is
+            // resolved at runtime. Hence, ignoring the validation. And for constants, if they are not in the same file,
+            // we cannot read them from the compiler plugin. Hence, ignoring the validation. These will be validated
+            // runtime.
         }
     }
 
