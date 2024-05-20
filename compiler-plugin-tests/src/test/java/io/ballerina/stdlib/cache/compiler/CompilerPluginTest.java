@@ -117,6 +117,16 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnosticsList.size(), 0);
     }
 
+    @Test(description = "Tests whether there are no compilation failures for constants and configurables as included " +
+            "params. Those validations will be ignored.")
+    public void testConfigWithIncludedParams() {
+        DiagnosticResult diagnosticResult = loadPackage("sample7").getCompilation().diagnosticResult();
+        List<Diagnostic> errorDiagnosticsList = diagnosticResult.diagnostics().stream()
+                .filter(r -> r.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnosticsList.size(), 0);
+    }
+
     private void assertValues(List<Diagnostic> errorDiagnosticsList) {
         long availableErrors = errorDiagnosticsList.size();
         Assert.assertEquals(availableErrors, 5);
