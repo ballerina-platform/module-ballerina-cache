@@ -41,7 +41,7 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
 
 test {
     systemProperty "ballerina.offline.flag", "true"
@@ -63,9 +63,12 @@ test {
 }
 
 spotbugsTest {
+    def classLoader = plugins["com.github.spotbugs"].class.classLoader
+    def SpotBugsConfidence = classLoader.findLoadedClass("com.github.spotbugs.snom.Confidence")
+    def SpotBugsEffort = classLoader.findLoadedClass("com.github.spotbugs.snom.Effort")
     ignoreFailures = true
-    effort = "max"
-    reportLevel = "low"
+    effort = SpotBugsEffort.MAX
+    reportLevel = SpotBugsConfidence.LOW
     reportsDir = file("$project.buildDir/reports/spotbugs")
     def excludeFile = file("${rootDir}/build-config/spotbugs-exclude.xml")
     if (excludeFile.exists()) {
