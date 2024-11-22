@@ -5,12 +5,12 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.10.0-20240926-231800-8a5a4343"
+distribution-version = "2201.11.0-20241121-075100-c4c87cbc"
 
 [[package]]
 org = "ballerina"
 name = "cache"
-version = "3.8.0"
+version = "3.9.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -26,7 +26,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "constraint"
-version = "1.5.0"
+version = "1.6.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -44,12 +44,38 @@ modules = [
 
 [[package]]
 org = "ballerina"
+name = "lang.__internal"
+version = "0.0.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.object"}
+]
+
+[[package]]
+org = "ballerina"
+name = "lang.array"
+version = "0.0.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.__internal"}
+]
+
+[[package]]
+org = "ballerina"
 name = "lang.error"
 version = "0.0.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+
+[[package]]
+org = "ballerina"
+name = "lang.object"
+version = "0.0.0"
+scope = "testOnly"
 
 [[package]]
 org = "ballerina"
@@ -66,7 +92,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -82,6 +108,7 @@ version = "0.0.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.array"},
 	{org = "ballerina", name = "lang.error"}
 ]
 modules = [
@@ -91,7 +118,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.4.0"
+version = "2.6.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
