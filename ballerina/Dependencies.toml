@@ -5,12 +5,12 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.11.0"
+distribution-version = "2201.12.0-20250228-201300-8d411a0f"
 
 [[package]]
 org = "ballerina"
 name = "cache"
-version = "3.9.0"
+version = "3.9.1"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "jballerina.java"},
