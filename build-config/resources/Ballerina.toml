@@ -7,12 +7,12 @@ keywords = ["cache", "LRU"]
 repository = "https://github.com/ballerina-platform/module-ballerina-cache"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.14.0"
+distribution = "2201.12.0"
 
-[platform.java25]
+[platform.java21]
 graalvmCompatible = true
 
-[[platform.java25.dependency]]
+[[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "cache-native"
 version = "@toml.version@"
