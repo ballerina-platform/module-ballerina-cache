@@ -1,9 +1,13 @@
 ## Overview
 
-This module provides APIs for in-memory caching by using a semi-persistent mapping from keys to values. Cache entries are added to the cache manually and are stored in the cache until either evicted or invalidated manually.
+This module provides APIs for in-memory caching using a semi-persistent mapping from keys to values, based on the Least Recently Used (LRU) eviction algorithm. Cache entries are added manually and stored until evicted or invalidated, with thread-safe access for concurrent use.
 
-This is based on the Least Recently Used (LRU) eviction algorithm by using a `map` data structure and defining the most basic operations on a collection of cache entries, which entails basic reading, writing, and deleting individual cache items. 
-It does not allow the `()` as a key or value of the cache and entries can be accessed safely by multiple concurrent threads as it is thread-safe.
+## Key Features
+
+- Manual cache entry addition, retrieval, and invalidation
+- Configurable capacity, eviction factor, max age, and cleanup interval
+- Thread-safe concurrent access
+- Custom cache implementations via the `cache:AbstractCache` object
 
 The cache can be defined with optional configurations as follows:
 ```ballerina

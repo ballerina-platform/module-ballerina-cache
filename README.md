@@ -1,5 +1,4 @@
-Ballerina Cache Library
-===================
+# Ballerina Cache Library
 
   [![Build](https://github.com/ballerina-platform/module-ballerina-cache/actions/workflows/build-timestamped-master.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-cache/actions/workflows/build-timestamped-master.yml)
   [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-cache/branch/master/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-cache)
@@ -8,10 +7,9 @@ Ballerina Cache Library
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-cache.svg)](https://github.com/ballerina-platform/module-ballerina-cache/commits/master)
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/cache.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fcache)
 
-This library provides APIs for in-memory caching by using a semi-persistent mapping from keys to values. Cache entries are added to the cache manually and are stored in the cache until either evicted or invalidated manually.
+## Overview
 
-This is based on the Least Recently Used (LRU) eviction algorithm by using a `map` data structure and defining the most basic operations on a collection of cache entries, which entails basic reading, writing, and deleting individual cache items.
-It does not allow the `()` as a key or value of the cache and entries can be accessed safely by multiple concurrent threads as it is thread-safe.
+This module provides APIs for in-memory caching using a semi-persistent mapping from keys to values, based on the Least Recently Used (LRU) eviction algorithm. Cache entries are added manually and stored until evicted or invalidated, with thread-safe access for concurrent use.
 
 The cache can be defined with optional configurations as follows:
 ```ballerina
@@ -101,7 +99,7 @@ Execute the commands below to build from the source.
 
 ## Contribute to Ballerina
 
-As an open source project, Ballerina welcomes contributions from the community. 
+As an open-source project, Ballerina welcomes contributions from the community. 
 
 For more information, go to the [contribution guidelines](https://github.com/ballerina-platform/ballerina-lang/blob/master/CONTRIBUTING.md).
 
