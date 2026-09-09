@@ -2,7 +2,7 @@
 
 This module provides APIs for in-memory caching using a semi-persistent mapping from keys to values, based on the Least Recently Used (LRU) eviction algorithm. Cache entries are added manually and stored until evicted or invalidated, with thread-safe access for concurrent use.
 
-## Key Features
+### Key Features
 
 - Manual cache entry addition, retrieval, and invalidation
 - Configurable capacity, eviction factor, max age, and cleanup interval
