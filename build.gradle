@@ -92,7 +92,7 @@ release {
     }
 }
 
-task build {
+tasks.named('build') {
     dependsOn(':cache-native:build')
     dependsOn(':cache-compiler-plugin:build')
     dependsOn('cache-ballerina:build')
