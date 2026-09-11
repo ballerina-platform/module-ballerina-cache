@@ -92,11 +92,22 @@ release {
     }
 }
 
-task build {
-    dependsOn(':cache-native:build')
-    dependsOn(':cache-compiler-plugin:build')
-    dependsOn('cache-ballerina:build')
-    dependsOn(':cache-compiler-plugin-tests:build')
+if (tasks.names.contains('build')) {
+    tasks.named('build') {
+        dependsOn(':cache-native:build')
+        dependsOn(':cache-compiler-plugin:build')
+        dependsOn('cache-ballerina:build')
+        dependsOn(':cache-compiler-plugin-tests:build')
+
+    }
+} else {
+    tasks.register('build') {
+        dependsOn(':cache-native:build')
+        dependsOn(':cache-compiler-plugin:build')
+        dependsOn('cache-ballerina:build')
+        dependsOn(':cache-compiler-plugin-tests:build')
+
+    }
 }
 
 publishToMavenLocal.dependsOn build
