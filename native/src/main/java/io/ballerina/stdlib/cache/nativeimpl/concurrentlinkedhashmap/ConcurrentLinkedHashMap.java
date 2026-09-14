@@ -108,7 +108,9 @@ public class ConcurrentLinkedHashMap<K, V> implements ConcurrentMap<K, V>, Seria
     volatile int capacity;
 
     volatile int nextOrder;
-    int drainedOrder;
+
+    // must write under lock
+    volatile int drainedOrder;
 
     final transient Lock evictionLock;
     final Queue<Task>[] buffers;
