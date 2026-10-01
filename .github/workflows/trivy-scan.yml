@@ -2,6 +2,7 @@ name: Trivy
 
 on:
   workflow_dispatch:
+  pull_request:
   schedule:
     - cron:  "30 20 * * *"
 
@@ -9,5 +10,5 @@ jobs:
   call_workflow:
     name: Run Trivy Scan Workflow
     if: ${{ github.repository_owner == 'ballerina-platform' }}
-    uses: ballerina-platform/ballerina-library/.github/workflows/trivy-scan-template.yml@main
+    uses: ballerina-platform/ballerina-library/.github/workflows/trivy-scan-template.yml@bal-scan-dev-central
     secrets: inherit
