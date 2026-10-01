@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/jballerina.java;
+
 const API_KEY = "234567890234567890-34567890-dkajf";
 
 string passwordPrefix = "pass";
@@ -37,3 +39,9 @@ function parseCount(string value, int unused) returns int {
     }
     return 0;
 }
+
+isolated function externAbs(int value) returns int = @java:Method {
+    'class: "java.lang.Math",
+    name: "abs",
+    paramTypes: ["long"]
+} external;
