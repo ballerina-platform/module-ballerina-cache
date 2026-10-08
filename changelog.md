@@ -6,12 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+- [Fix the compilation failure when constants and configurables are used in cache config as included params](https://github.com/ballerina-platform/ballerina-library/issues/6036)
+
+## [3.10.1] - 2026-10-08
+
 ### Changed
 
 - [[#9132] Updated Keywords and Reformat README for Connector Store Discoverability](https://github.com/ballerina-platform/ballerina-library/issues/9132)
+- Upgrade Gradle to 9.5.1 and the Ballerina Gradle plugin to 4.0.0
 
 ### Fixed
-- [Fix the compilation failure when constants and configurables are used in cache config as included params](https://github.com/ballerina-platform/ballerina-library/issues/6036)
+
+- Make `drainedOrder` in `ConcurrentLinkedHashMap` volatile so reads outside the lock see the latest value
 
 ## [3.7.1] - 2024-01-11
 
